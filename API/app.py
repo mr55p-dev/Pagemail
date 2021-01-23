@@ -1,50 +1,52 @@
 # Imports
 from typing import Optional
-from uuid import UUID
-from datetime import date
+from uuid import UUID, uuid4
+from datetime import datetime
 from dotenv import load_dotenv
 import logging
 import os
+from fastapi.params import Form
+from pydantic.networks import AnyHttpUrl, EmailStr
 
 import sqlalchemy
 import databases
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, DateTime
 
 from fastapi import FastAPI
-from fastapi_users import models
-from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 from pydantic import BaseModel
 
 # Get the environment variables
 load_dotenv(verbose=True)
 DATABASE_URL=os.getenv("DATABASE_URI")
+SECRET = os.getenv("SECRET_KEY")
 
 # ============================ #
 #  Set up the database models  #
 # ============================ #
-# User classes
-class User(models.BaseUser):
-    pass
 
-class UserCreate(models.BaseUserCreate):
-    pass
-
-class UserUpdate(User, models.BaseUserUpdate):
-    pass
-
-class UserDB(User, models.BaseUserDB):
-    pass
-
-# Request/Response classes
-class SavePageIn(BaseModel):
-    page_url: str
-
+# Database classes
 class SavePage(BaseModel):
     id: UUID
-    page_url: str
+    page_url: AnyHttpUrl
+
+class UserIn(BaseModel):
+    id: UUID = uuid4()
+    name: str
+    email: EmailStr
+    password_hash: str
+    date_added: datetime = datetime.now()
+
+class UserOut(BaseModel):
+    id: UUID
+    name: str
+    email: EmailStr
+    date_added: datetime
+
+# Response classes
 
 class Message(BaseModel):
+    """Send a response message"""
     message: str
     page_uri: Optional[str]
 
@@ -52,10 +54,15 @@ class Message(BaseModel):
 database = databases.Database(DATABASE_URL)
 base: DeclarativeMeta = declarative_base()
 
-# Define tables
-class UserTable(base, SQLAlchemyBaseUserTable):
-    field_test: str
-    pass
+# User tables
+class UserTable(base):
+    __tablename__ = "users"
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    email = Column(String)
+    password_hash = Column(String)
+    date_added = Column(DateTime)
+    # Need a link to owned pages.
 
 class SavedPages(base):
     __tablename__ = "pages"
@@ -63,43 +70,17 @@ class SavedPages(base):
     url = Column(String)
     date_added = Column(DateTime)
 
-users = UserTable.__table__
-user_db = SQLAlchemyUserDatabase(UserDB, database, User)
-
 # Generating the tables
 # Add in a migration system (alembic)
 engine = sqlalchemy.create_engine(DATABASE_URL)
 base.metadata.create_all(engine)
 
-# ==================== #
-# Authentication setup #
-# ==================== #
-from fastapi_users.authentication import JWTAuthentication
-
-SECRET = os.getenv("SECRET_KEY")
-jwt_auth = JWTAuthentication(SECRET, lifetime_seconds=3600)
-
-# =========== #
-# Users setup #
-# =========== #
-from fastapi_users import FastAPIUsers
-
-fapi_users = FastAPIUsers(
-    user_db,
-    [jwt_auth],
-    User,
-    UserCreate,
-    UserUpdate,
-    UserDB
-)
 
 # App setup
 logging.basicConfig()
 app_log = logging.getLogger("Application Log")
 
 app = FastAPI()
-app.include_router(fapi_users.get_auth_router(jwt_auth), prefix="/auth/jwt", tags=["auth"])
-app.include_router(fapi_users.get_register_router(), prefix="/auth", tags=["auth"])
 
 @app.on_event('startup')
 async def on_startup():
@@ -115,10 +96,6 @@ async def on_shutdown():
 async def root_route():
     return Message(message="Hello World")
 
-
-
-
-
 @app.post('/add_page', response_model=Message)
 async def add_page_route(page_uri: str):
     app_log.info(f"Received page URI {page_uri}")
@@ -126,6 +103,10 @@ async def add_page_route(page_uri: str):
         message="Recieved the page",
         page_uri=page_uri
         )
+
+@app.post('/user/register', response_model=UserOut)
+async def register_route(newUser: UserIn):
+    return newUser
 
 # POST: Add a user
 # DELETE: Delete a user
