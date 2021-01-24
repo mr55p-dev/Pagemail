@@ -1,20 +1,16 @@
 # Imports
-from typing import Optional
-from uuid import UUID, uuid4
-from datetime import datetime
+from uuid import uuid4
 from dotenv import load_dotenv
+from datetime import datetime
 import logging
 import os
-from fastapi.params import Form
-from pydantic.networks import AnyHttpUrl, EmailStr
 
+from sqlalchemy import Column, String, DateTime, Table
+from sqlalchemy.dialects.postgresql import UUID as alchemyUUID
 import sqlalchemy
 import databases
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy import Column, String, DateTime
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
 # Get the environment variables
 load_dotenv(verbose=True)
@@ -26,58 +22,36 @@ SECRET = os.getenv("SECRET_KEY")
 # ============================ #
 
 # Database classes
-class SavePage(BaseModel):
-    id: UUID
-    page_url: AnyHttpUrl
-
-class UserIn(BaseModel):
-    id: UUID = uuid4()
-    name: str
-    email: EmailStr
-    password_hash: str
-    date_added: datetime = datetime.now()
-
-class UserOut(BaseModel):
-    id: UUID
-    name: str
-    email: EmailStr
-    date_added: datetime
-
-# Response classes
-
-class Message(BaseModel):
-    """Send a response message"""
-    message: str
-    page_uri: Optional[str]
 
 # Database setup
 database = databases.Database(DATABASE_URL)
-base: DeclarativeMeta = declarative_base()
+metadata = sqlalchemy.MetaData()
 
-# User tables
-class UserTable(base):
-    __tablename__ = "users"
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    email = Column(String)
-    password_hash = Column(String)
-    date_added = Column(DateTime)
-    # Need a link to owned pages.
+users = Table(
+    "users",
+    metadata,
+    Column("id", alchemyUUID(as_uuid=True), primary_key=True, default=uuid4, unique=True),
+    Column("name", String),
+    Column("email", String),
+    Column("password_hash", String),
+    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now())
+    )
 
-class SavedPages(base):
-    __tablename__ = "pages"
-    id = Column(String, primary_key=True)
-    url = Column(String)
-    date_added = Column(DateTime)
+pages = Table(
+    "pages",
+    metadata,
+    Column("id", alchemyUUID(as_uuid=True), primary_key=True, unique=True),
+    Column("page_url", String),
+    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now())
+)
 
-# Generating the tables
-# Add in a migration system (alembic)
 engine = sqlalchemy.create_engine(DATABASE_URL)
-base.metadata.create_all(engine)
+metadata.create_all(engine)
 
+from db.models import SavePage, UserIn, UserOut, Message
 
 # App setup
-logging.basicConfig()
+logging.basicConfig(filename="logs/application.log")
 app_log = logging.getLogger("Application Log")
 
 app = FastAPI()
@@ -96,17 +70,13 @@ async def on_shutdown():
 async def root_route():
     return Message(message="Hello World")
 
-@app.post('/add_page', response_model=Message)
-async def add_page_route(page_uri: str):
-    app_log.info(f"Received page URI {page_uri}")
-    return Message(
-        message="Recieved the page",
-        page_uri=page_uri
-        )
+@app.post('/add_page', response_model=SavePage)
+async def add_page_route(newPage: SavePage):
+    newPage.id = uuid4()
+    query = pages.insert().values(**newPage.dict())
+    await database.execute(query)
+    return newPage
 
-@app.post('/user/register', response_model=UserOut)
-async def register_route(newUser: UserIn):
-    return newUser
 
 # POST: Add a user
 # DELETE: Delete a user
