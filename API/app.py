@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from datetime import datetime
 import logging
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from sqlalchemy import Column, String, DateTime, Table
 from sqlalchemy.dialects.postgresql import UUID as alchemyUUID
@@ -34,7 +36,7 @@ users = Table(
     Column("name", String),
     Column("email", String),
     Column("password_hash", String),
-    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now())
+    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now()),
     )
 
 pages = Table(
@@ -48,7 +50,7 @@ pages = Table(
 engine = sqlalchemy.create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
-from db.models import SavePage, UserIn, UserOut, Message
+from api.db.models import SavePage, UserIn, UserOut, Message
 
 # App setup
 logging.basicConfig(filename="logs/application.log")
