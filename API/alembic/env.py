@@ -22,7 +22,7 @@ fileConfig(config.config_file_name)
 import sys
 sys.path.append("/Users/ellis/Git/PageSaver/")
 
-from api.app import metadata
+from api.db.connection import metadata
 # target_metadata = mymodel.Base.metadata
 target_metadata = metadata
 

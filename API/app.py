@@ -1,62 +1,32 @@
 # Imports
 from uuid import uuid4
 from dotenv import load_dotenv
-from datetime import datetime
 import logging
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-from sqlalchemy import Column, String, DateTime, Table
-from sqlalchemy.dialects.postgresql import UUID as alchemyUUID
 import sqlalchemy
 import databases
-
 from fastapi import FastAPI
 
-# Get the environment variables
-load_dotenv(verbose=True)
-DATABASE_URL=os.getenv("DATABASE_URI")
-SECRET = os.getenv("SECRET_KEY")
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
-# ============================ #
-#  Set up the database models  #
-# ============================ #
-
-# Database classes
-
-# Database setup
-database = databases.Database(DATABASE_URL)
-metadata = sqlalchemy.MetaData()
-
-users = Table(
-    "users",
-    metadata,
-    Column("id", alchemyUUID(as_uuid=True), primary_key=True, default=uuid4, unique=True),
-    Column("name", String),
-    Column("email", String),
-    Column("password_hash", String),
-    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now()),
-    )
-
-pages = Table(
-    "pages",
-    metadata,
-    Column("id", alchemyUUID(as_uuid=True), primary_key=True, unique=True),
-    Column("page_url", String),
-    Column("date_added", DateTime, server_default=sqlalchemy.sql.func.now())
-)
-
-engine = sqlalchemy.create_engine(DATABASE_URL)
-metadata.create_all(engine)
-
-from api.db.models import SavePage, UserIn, UserOut, Message
-
-# App setup
+# Logging on
 logging.basicConfig(filename="logs/application.log")
 app_log = logging.getLogger("Application Log")
 
+# Get the database connection and models
+from api.db.connection import database, pages, users
+from api.db.models import SavePage, UserIn, UserOut, Message
+
+# Get the routers
+from api.routes.v1.users import router as users_router
+from api.routes.v1.pages import router as pages_router
+
+# Define app and include routers and connection events.
 app = FastAPI()
+app.include_router(users_router)
+app.include_router(pages_router)
 
 @app.on_event('startup')
 async def on_startup():
@@ -65,19 +35,6 @@ async def on_startup():
 @app.on_event('shutdown')
 async def on_shutdown():
     await database.disconnect()
-
-
-# Routes
-@app.get('/', response_model=Message)
-async def root_route():
-    return Message(message="Hello World")
-
-@app.post('/add_page', response_model=SavePage)
-async def add_page_route(newPage: SavePage):
-    newPage.id = uuid4()
-    query = pages.insert().values(**newPage.dict())
-    await database.execute(query)
-    return newPage
 
 
 # POST: Add a user
