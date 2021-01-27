@@ -18,17 +18,18 @@ metadata = MetaData()
 users = Table(
     "users",
     metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True, default=uuid4, unique=True),
+    Column("id", UUID(as_uuid=False), primary_key=True, default=uuid4, unique=True),
     Column("name", String),
     Column("email", String),
-    Column("password_hash", String),
+    Column("password", String),
     Column("date_added", DateTime, server_default=now()),
+    Column("is_active", Boolean, default=True)
     )
 
 pages = Table(
     "pages",
     metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True, unique=True),
+    Column("id", UUID(as_uuid=False), primary_key=True, unique=True),
     Column("page_url", String),
     Column("date_added", DateTime, server_default=now())
 )

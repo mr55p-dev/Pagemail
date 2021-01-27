@@ -9,17 +9,14 @@ class SavePage(BaseModel):
     id: Optional[UUID]
     page_url: AnyHttpUrl
 
-class UserIn(BaseModel):
+class User(BaseModel):
+    id: Optional[UUID]
     name: str
     email: EmailStr
-    password_hash: str
+    password: str
     date_added: datetime
+    is_active: bool
 
-class UserOut(BaseModel):
-    id: UUID
-    name: str
-    email: EmailStr
-    date_added: datetime
 
 # Response classes
 class Message(BaseModel):
