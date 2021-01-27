@@ -24,8 +24,8 @@ from api.db.connection import database, pages, users
 from api.db.models import SavePage, User, Message
 
 # Get the routers
-from api.routes.v1.users import router as users_router
-from api.routes.v1.pages import router as pages_router
+from api.routes.pages import router as pages_router
+from api.routes.users import router as users_router
 
 # Define app and include routers and connection events.
 app = FastAPI()
