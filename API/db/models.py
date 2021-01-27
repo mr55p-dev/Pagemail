@@ -17,6 +17,9 @@ class User(BaseModel):
     date_added: datetime
     is_active: bool
 
+# Token classes
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
 # Response classes
 class Message(BaseModel):

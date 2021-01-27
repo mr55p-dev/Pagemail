@@ -7,9 +7,7 @@ import databases
 import os
 
 # Get environment variables
-load_dotenv(verbose=True)
-DATABASE_URL=os.getenv("DATABASE_URI")
-SECRET = os.getenv("SECRET_KEY")
+DATABASE_URL = os.getenv("DATABASE_URI")
 
 
 metadata = MetaData()
