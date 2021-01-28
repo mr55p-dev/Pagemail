@@ -9,13 +9,15 @@ class SavePage(BaseModel):
     id: Optional[UUID]
     page_url: AnyHttpUrl
 
-class User(BaseModel):
+class UserOut(BaseModel):
     id: Optional[UUID]
-    name: str
+    name: Optional[str]
     email: EmailStr
+    date_added: Optional[datetime]
+    is_active: Optional[bool]
+
+class User(UserOut):
     password: str
-    date_added: datetime
-    is_active: bool
 
 # Token classes
 class TokenData(BaseModel):

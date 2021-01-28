@@ -1,7 +1,7 @@
 from uuid import uuid4
 from fastapi import APIRouter
 from api.db.connection import database, pages
-from api.db.models import SavePage
+from api.helpers.models import SavePage
 
 router = APIRouter(
     prefix="/v1/pages",
