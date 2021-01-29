@@ -2,15 +2,8 @@
 import logging
 import os
 import sys
-
-from uuid import uuid4
-from datetime import datetime, timedelta
-from typing import Optional
 from dotenv import load_dotenv
-
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from starlette.types import Message
+from fastapi import FastAPI
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -21,12 +14,7 @@ logging.basicConfig(filename="logs/application.log")
 app_log = logging.getLogger("Application Log")
 
 # Get the database connection and models
-from api.db.connection import database, users
-from api.helpers.models import TokenData, User
-
-# Verification Tools
-from api.helpers.verification import get_current_active_user,\
-    fetch_user, validate_user, create_new_token, verify_password
+from api.db.connection import database
 
 # Get the routers
 from api.routes.pages import router as pages_router
@@ -47,8 +35,6 @@ async def on_shutdown():
     await database.disconnect()
 
 
-
-# POST: Add a user
 # DELETE: Delete a user
 # UPDATE: Change user info
 

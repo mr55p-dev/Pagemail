@@ -21,7 +21,7 @@ users = Table(
     Column("email", String, nullable=False),
     Column("password", String, nullable=False),
     Column("date_added", DateTime, server_default=now(), nullable=False),
-    Column("is_active", Boolean, nullable=False)
+    Column("is_active", Boolean, nullable=False),
     )
 
 pages = Table(
@@ -29,7 +29,8 @@ pages = Table(
     metadata,
     Column("id", UUID(as_uuid=False), primary_key=True, unique=True),
     Column("page_url", String, nullable=False),
-    Column("date_added", DateTime, server_default=now(), nullable=False)
+    Column("date_added", DateTime, server_default=now(), nullable=False),
+    Column("user_id", UUID(as_uuid=False), ForeignKey("users.id"))
 )
 
 # Create database connection and tables.

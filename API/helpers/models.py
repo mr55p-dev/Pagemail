@@ -5,9 +5,14 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 # Database classes
-class Page(BaseModel):
+
+class PageOut(BaseModel):
     id: Optional[UUID]
     page_url: AnyHttpUrl
+    date_added: Optional[datetime]
+
+class Page(PageOut):
+    user_id: Optional[UUID]
 
 class UserOut(BaseModel):
     name: str
