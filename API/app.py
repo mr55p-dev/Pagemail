@@ -14,7 +14,7 @@ logging.basicConfig()
 app_log = logging.getLogger("Application Log")
 
 # Get the database connection and models
-from api.db.connection import database
+from API.db.connection import database
 
 # Get the routers
 from api.routes.pages import router as pages_router
