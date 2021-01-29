@@ -7,7 +7,7 @@ import databases
 import os
 
 # Get environment variables
-DATABASE_URL = os.getenv("DATABASE_URI")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 metadata = MetaData()

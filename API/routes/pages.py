@@ -1,10 +1,10 @@
-from api.helpers.verification import get_current_active_user
 from uuid import uuid4
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
-from api.db.connection import database, pages
-from api.helpers.models import Page, User, UserOut
-from api.helpers.pages import unwrap_submitted_page
+from API.db.connection import database, pages
+from API.helpers.models import Page, User, UserOut
+from API.helpers.pages import unwrap_submitted_page
+from API.helpers.verification import get_current_active_user
 from datetime import datetime
 
 router = APIRouter(

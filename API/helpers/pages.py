@@ -1,4 +1,4 @@
-from api.helpers.models import Page
+from API.helpers.models import Page
 from fastapi import Form, HTTPException
 from pydantic.error_wrappers import ValidationError
 

@@ -3,9 +3,9 @@ from typing import List
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from api.helpers.models import PageOut, User, UserOut
-from api.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
-from api.db.connection import database, users, pages
+from API.helpers.models import PageOut, User, UserOut
+from API.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
+from API.db.connection import database, users, pages
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import join
 from sqlalchemy.sql import select

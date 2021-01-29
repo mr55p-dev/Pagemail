@@ -17,8 +17,8 @@ app_log = logging.getLogger("Application Log")
 from API.db.connection import database
 
 # Get the routers
-from api.routes.pages import router as pages_router
-from api.routes.users import router as users_router
+from API.routes.pages import router as pages_router
+from API.routes.users import router as users_router
 
 # Define app and include routers and connection events.
 app = FastAPI()
@@ -34,6 +34,9 @@ async def on_startup():
 async def on_shutdown():
     await database.disconnect()
 
+@app.get('/')
+async def welcome():
+    return "THE APP IS WORKING?"
 
 # DELETE: Delete a user
 # UPDATE: Change user info

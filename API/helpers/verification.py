@@ -6,8 +6,8 @@ from jose import JWTError, jwt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from api.helpers.models import User, TokenData
-from api.db.connection import users, database
+from API.helpers.models import User, TokenData
+from API.db.connection import users, database
 from fastapi import HTTPException, status
 
 SECRET = os.getenv("SECRET_KEY")
