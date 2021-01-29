@@ -5,19 +5,21 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 # Database classes
-class SavePage(BaseModel):
+class Page(BaseModel):
     id: Optional[UUID]
     page_url: AnyHttpUrl
 
 class UserOut(BaseModel):
-    id: Optional[UUID]
-    name: Optional[str]
+    name: str
     email: EmailStr
     date_added: Optional[datetime]
-    is_active: Optional[bool]
+
 
 class User(UserOut):
+    id: Optional[UUID]
     password: str
+    is_active: Optional[bool]
+
 
 # Token classes
 class TokenData(BaseModel):

@@ -46,16 +46,7 @@ async def on_startup():
 async def on_shutdown():
     await database.disconnect()
 
-@app.post('/get_token')
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    # Fetch the user
-    user = await fetch_user(form_data.username)
-    # HASHING HERE
-    # auth = verify_password(form_data.password, user.password)
-    # validate_user(user, form_data.password)
-    validate_user(form_data.password, user.password)
-    token = create_new_token({"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+
 
 # POST: Add a user
 # DELETE: Delete a user
