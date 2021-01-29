@@ -1,0 +1,1 @@
+web: gunicorn --chdir=api -k uvicorn.workers.UvicornWorker app:app
