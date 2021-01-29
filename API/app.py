@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 load_dotenv()
 
 # Logging on
-logging.basicConfig(filename="logs/application.log")
+logging.basicConfig()
 app_log = logging.getLogger("Application Log")
 
 # Get the database connection and models
