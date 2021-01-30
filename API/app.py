@@ -4,6 +4,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -22,6 +23,16 @@ from API.routes.users import router as users_router
 
 # Define app and include routers and connection events.
 app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 app.include_router(users_router)
 app.include_router(pages_router)
 
