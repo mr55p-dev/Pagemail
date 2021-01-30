@@ -136,11 +136,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-<<<<<<< HEAD
 .vscode/
 *.code-workspace
 .DS_Store
-=======
-
-.vscode/
->>>>>>> f034b9f43713a17dfc775174224cdac017e8e60c
