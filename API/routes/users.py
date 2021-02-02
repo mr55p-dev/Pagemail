@@ -3,9 +3,11 @@ from typing import List
 from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from API.helpers.models import PageOut, User, UserOut
+from API.helpers.models import PageOut, User, UserOut, BaseEmail
 from API.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
 from API.db.connection import database, users, pages
+from API.helpers.email_tools import send_email
+from API.helpers.scheduling import scheduler
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import join
 from sqlalchemy.sql import select
@@ -40,7 +42,12 @@ async def add_user(new_user: User = Depends(decode_new_user_form)):
             detail="Username already exists."
         )
     # ^Factorise this into a helper function
-    
+    onboarding_email = BaseEmail(
+        recipients=new_user.email,
+        subject="Welcome to Pagemail!",
+        content=f"Hello {new_user.name}, and welcome to Pagemail!"
+    )
+    scheduler.add_job(send_email, kwargs={"mail": onboarding_email})
     return UserOut(**new_user.dict())
 
 @router.get('/self', response_model=UserOut)

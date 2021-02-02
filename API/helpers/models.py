@@ -32,6 +32,13 @@ class TokenData(BaseModel):
 
 # Email classes
 class BaseEmail(BaseModel):
+    """
+    sender: email
+    recipients: email | List[email]
+    subject: str
+    content: str
+    """
+
     sender: EmailStr = "noreply@pagemail.tech"
     subject: str
     content: str

@@ -12,8 +12,9 @@ Hosted on [Heroku](http://page-saver.herokuapp.com), and built on [FastAPI](http
 
 - [ ] Write unit tests
 - [ ] Make the shortcuts display the website title.
-- [ ] Add a worker which sends emails, and marks pages as sent and unsent.
-- [ ] Set up a domain, and a light frontend in pure HTML/CSS/JS.
+- [x] Add a worker which sends emails,
+- [ ] Marks pages as sent and unsent.
+- [x] Set up a domain, and a light frontend in pure HTML/CSS/JS.
 - [ ] Check the ability to set a custom token duration.
 - [ ] Add a worker which gets metadata for each page saved and stores it in a table.
 - [ ] Add user permissions.

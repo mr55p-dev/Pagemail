@@ -27,8 +27,6 @@ from API.helpers.scheduling import scheduler
 from API.routes.pages import router as pages_router
 from API.routes.users import router as users_router
 
-from API.helpers.email_tools import send_test_email
-
 # Define app and include routers and connection events.
 app = FastAPI()
 origins = ["*"]
@@ -43,13 +41,6 @@ app.add_middleware(
 app.include_router(users_router)
 app.include_router(pages_router)
 
-
-
-# ASYNCIO scheduler
-# SQLAlchemyJobStore
-# Postgresql backend
-# cron jobs
-
 # Events
 @app.on_event('startup')
 async def on_startup():
@@ -63,8 +54,7 @@ async def on_shutdown():
 
 @app.get('/')
 async def welcome():
-    job = scheduler.add_job(send_test_email, trigger='interval', seconds=60)
-    return {"job_id": job.id}
+    return "Hello World."
 
 # DELETE: Delete a user
 # UPDATE: Change user info
