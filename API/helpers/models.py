@@ -1,6 +1,6 @@
 from pydantic.types import UUID4
 from pydantic import BaseModel, EmailStr, AnyHttpUrl
-from typing import Any, Optional
+from typing import Any, List, Optional, Union
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -29,6 +29,13 @@ class User(UserOut):
 # Token classes
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+# Email classes
+class BaseEmail(BaseModel):
+    sender: EmailStr = "noreply@pagemail.tech"
+    subject: str
+    content: str
+    recipients: Union[EmailStr, List[EmailStr]]
 
 # Response classes
 class Message(BaseModel):

@@ -40,6 +40,7 @@ async def add_user(new_user: User = Depends(decode_new_user_form)):
             detail="Username already exists."
         )
     # ^Factorise this into a helper function
+    
     return UserOut(**new_user.dict())
 
 @router.get('/self', response_model=UserOut)

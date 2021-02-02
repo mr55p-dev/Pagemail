@@ -27,6 +27,8 @@ from API.helpers.scheduling import scheduler
 from API.routes.pages import router as pages_router
 from API.routes.users import router as users_router
 
+from API.helpers.email_tools import send_test_email
+
 # Define app and include routers and connection events.
 app = FastAPI()
 origins = ["*"]
@@ -61,7 +63,7 @@ async def on_shutdown():
 
 @app.get('/')
 async def welcome():
-    job = scheduler.add_job(lambda: print("hello"), 'interval', seconds=5, id="exampleid")
+    job = scheduler.add_job(send_test_email, trigger='interval', seconds=60)
     return {"job_id": job.id}
 
 # DELETE: Delete a user
