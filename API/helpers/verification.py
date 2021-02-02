@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from API.helpers.models import User, TokenData
+from API.helpers.models import UserIn, TokenData
 from API.db.connection import users, database
 from fastapi import HTTPException, status
 
@@ -25,7 +25,7 @@ def verify_password(plain: str, hash: str):
     return password_context.verify(plain, hash)
 
 # User functions
-async def fetch_user(email: str) -> Optional[User]:
+async def fetch_user(email: str) -> Optional[UserIn]:
     query = users.select().where(users.c.email == email)
     user = await database.fetch_one(query=query)
     if not user:
@@ -33,7 +33,7 @@ async def fetch_user(email: str) -> Optional[User]:
             status_code=400,
             detail="Incorrect user name."
             )
-    return User(**user)
+    return UserIn(**user)
 
 def validate_user(submitted_password: str, hashed_password: str) -> bool:
     if not verify_password(submitted_password, hashed_password):
@@ -83,9 +83,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    return User(**user.dict())
+    return UserIn(**user.dict())
 
-async def get_current_active_user(user: User = Depends(get_current_user)):
+async def get_current_active_user(user: UserIn = Depends(get_current_user)):
     if not user.is_active:
         raise HTTPException(
             status_code=400,

@@ -14,15 +14,20 @@ class PageOut(BaseModel):
 class Page(PageOut):
     user_id: Optional[UUID]
 
+# These user classes need to be rewritten to be explicit with userin and userout classes only.
+
 class UserOut(BaseModel):
+    id: UUID
     name: str
     email: EmailStr
     date_added: Optional[datetime]
 
-
-class User(UserOut):
+class UserIn(BaseModel):
     id: Optional[UUID]
+    name: Optional[str]
+    email: EmailStr
     password: str
+    date_added: Optional[datetime]
     is_active: Optional[bool]
 
 

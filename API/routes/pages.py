@@ -2,7 +2,7 @@ from uuid import uuid4
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
 from API.db.connection import database, pages
-from API.helpers.models import Page, User, UserOut
+from API.helpers.models import Page, UserIn, UserOut
 from API.helpers.utils import unwrap_submitted_page
 from API.helpers.verification import get_current_active_user
 from datetime import datetime
@@ -15,7 +15,7 @@ router = APIRouter(
 @router.post('/add_page', response_model=Page)
 async def save_new_page(
     new_page: Page = Depends(unwrap_submitted_page),
-    current_user: User = Depends(get_current_active_user)
+    current_user: UserIn = Depends(get_current_active_user)
     ):
     new_page.id = uuid4()
     new_page.user_id = current_user.id
