@@ -13,9 +13,15 @@ load_dotenv()
 # Logging on
 logging.basicConfig()
 app_log = logging.getLogger("Application Log")
+# Change in production
+logging.getLogger('uvicorn').setLevel(logging.ERROR)
+logging.getLogger('apscheduler').setLevel(logging.INFO)
 
 # Get the database connection and models
 from API.db.connection import database
+
+# Get the task scheduler and start it on app launch
+from API.helpers.scheduling import scheduler
 
 # Get the routers
 from API.routes.pages import router as pages_router
@@ -35,18 +41,28 @@ app.add_middleware(
 app.include_router(users_router)
 app.include_router(pages_router)
 
+
+
+# ASYNCIO scheduler
+# SQLAlchemyJobStore
+# Postgresql backend
+# cron jobs
+
 # Events
 @app.on_event('startup')
 async def on_startup():
+    scheduler.start()
     await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
+    scheduler.shutdown()
     await database.disconnect()
 
 @app.get('/')
 async def welcome():
-    return "THE APP IS WORKING?"
+    job = scheduler.add_job(lambda: print("hello"), 'interval', seconds=5, id="exampleid")
+    return {"job_id": job.id}
 
 # DELETE: Delete a user
 # UPDATE: Change user info

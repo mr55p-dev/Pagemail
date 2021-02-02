@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from fastapi.param_functions import Depends
 from API.db.connection import database, pages
 from API.helpers.models import Page, User, UserOut
-from API.helpers.pages import unwrap_submitted_page
+from API.helpers.utils import unwrap_submitted_page
 from API.helpers.verification import get_current_active_user
 from datetime import datetime
 

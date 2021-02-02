@@ -11,7 +11,7 @@ from alembic import context
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-load_dotenv()
+load_dotenv(dotenv_path="../.env")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -65,7 +65,7 @@ def run_migrations_online():
     """
     connectable = engine_from_config(
         # config.get_section(config.config_ini_section),
-        {"sqlalchemy.url": os.getenv("DATABASE_URI")},
+        {"sqlalchemy.url": os.getenv("DATABASE_URL")},
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

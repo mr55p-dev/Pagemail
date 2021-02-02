@@ -9,7 +9,6 @@ import os
 # Get environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-
 metadata = MetaData()
 
 # Define tables
@@ -27,10 +26,18 @@ users = Table(
 pages = Table(
     "pages",
     metadata,
-    Column("id", UUID(as_uuid=False), primary_key=True, unique=True),
+    Column("id", UUID(as_uuid=False), primary_key=True, unique=True, default=uuid4),
     Column("page_url", String, nullable=False),
     Column("date_added", DateTime, server_default=now(), nullable=False),
     Column("user_id", UUID(as_uuid=False), ForeignKey("users.id"))
+)
+
+jobs = Table(
+    "jobs", metadata,
+    Column('id', Unicode(191, _warn_on_bytestring=False), primary_key=True),
+    Column('next_run_time', Float(25), index=True),
+    Column('job_state', LargeBinary, nullable=False),
+    Column('user_id', UUID(as_uuid=False), ForeignKey('users.id'))
 )
 
 # Create database connection and tables.
