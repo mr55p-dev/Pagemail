@@ -23,12 +23,6 @@ def decode_new_user_form(email: str = Form(...), name: str = Form(...), password
 def decode_user_form(email: str = Form(...), password: str = Form(...)):
     return UserIn(email=email, password=password)
 
-async def fetch_users_pages(user_id):
-    q = users.join(pages)
-    query = select([pages]).select_from(q).where(users.c.id == user_id)
-    results = await database.fetch_all(query=query)
-    return [PageOut(**i) for i in results]
-
 @router.post('/register', response_model=UserOut)
 async def add_user(new_user: UserIn = Depends(decode_new_user_form)):
     new_user.id = uuid4()
@@ -65,16 +59,10 @@ async def delete_user(to_delete: UserIn = Depends(decode_user_form)):
 async def read_self(current_user: UserIn = Depends(get_current_active_user)):
     return current_user
 
-@router.post('/get_token')
+@router.post('/token')
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await fetch_user(form_data.username)
     validate_user(form_data.password, user.password)
     # ^ This should be one function, gets recycled above in the delete method too.
     token = create_new_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
-
-@router.get('/pages', response_model=List[PageOut])
-async def get_all_pages(current_user: UserIn = Depends(get_current_active_user)):
-    results = await fetch_users_pages(current_user.id)
-    return results
-

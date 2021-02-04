@@ -1,10 +1,12 @@
+from typing import List
 from uuid import uuid4
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
-from API.db.connection import database, pages
-from API.helpers.models import Page, UserIn, UserOut
+from API.db.connection import database, pages, users
+from API.helpers.models import Page, PageOut, UserIn, UserOut
 from API.helpers.utils import unwrap_submitted_page
 from API.helpers.verification import get_current_active_user
+from sqlalchemy.sql import select
 from datetime import datetime
 
 router = APIRouter(
@@ -12,7 +14,7 @@ router = APIRouter(
     tags=["Pages"]
 )
 
-@router.post('/add_page', response_model=Page)
+@router.post('/save', response_model=Page)
 async def save_new_page(
     new_page: Page = Depends(unwrap_submitted_page),
     current_user: UserIn = Depends(get_current_active_user)
@@ -25,3 +27,9 @@ async def save_new_page(
     await database.execute(query=query)
     return new_page
 
+@router.get('/mypages', response_model=List[PageOut])
+async def fetch_saved_pages(current_user: UserIn = Depends(get_current_active_user)):
+    query = users.join(pages)
+    query = select([pages]).select_from(query).where(users.c.id == current_user.id)
+    results = await database.fetch_all(query=query)
+    return [PageOut(**i) for i in results]
