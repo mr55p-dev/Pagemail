@@ -44,3 +44,6 @@ jobs = Table(
 database = databases.Database(DATABASE_URL)
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
+
+def get_db():
+    yield database
