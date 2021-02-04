@@ -13,10 +13,7 @@ mock_user = {"username": "mock@username.com", "password": "mock_password"}
 
 @pytest.mark.depends(on=['register'])
 def test_save():
-    response = client.post(
-        "/page/save",
-
-    )
+    pass
 
 def test_mypages():
     pass
