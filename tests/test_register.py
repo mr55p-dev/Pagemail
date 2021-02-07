@@ -28,12 +28,12 @@ def test_register_good():
     assert response.status_code == 200, response.text
     data = response.json()
     try:
-        UUID(data["id"])
+        UUID(data["user"]["id"])
     except ValueError as e:
         raise e
-    assert data["name"] == new_user["name"]
-    assert data["email"] == new_user["email"]
-    assert data["date_added"]
+    assert data["user"]["name"] == new_user["name"]
+    assert data["user"]["email"] == new_user["email"]
+    assert data["user"]["date_added"]
 
 @pytest.mark.depends(on=['register'])
 def test_register_duplicate_email():

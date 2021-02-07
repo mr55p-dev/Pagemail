@@ -1,17 +1,14 @@
 from datetime import datetime
-from typing import List
 from uuid import uuid4
 from databases.core import Database
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from API.helpers.models import PageOut, UserIn, UserOut, BaseEmail
+from API.helpers.models import UserIn, UserOut, BaseEmail
 from API.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
-from API.db.connection import get_db, users, pages
+from API.db.connection import get_db, users
 from API.helpers.email_tools import send_email
 from API.helpers.scheduling import scheduler
 from asyncpg.exceptions import UniqueViolationError
-from sqlalchemy import join
-from sqlalchemy.sql import select
 
 router = APIRouter(
     prefix="/user",
@@ -24,7 +21,8 @@ def decode_new_user_form(email: str = Form(...), name: str = Form(...), password
 def decode_user_form(email: str = Form(...), password: str = Form(...)):
     return UserIn(email=email, password=password)
 
-@router.post('/register', response_model=UserOut)
+# , response_model=UserOut <= Change it to a dictionary of an api key response and user.
+@router.post('/register')
 async def add_user(new_user: UserIn = Depends(decode_new_user_form),
         database: Database = Depends(get_db)):
 
@@ -42,13 +40,22 @@ async def add_user(new_user: UserIn = Depends(decode_new_user_form),
             detail="Username already exists."
         )
     # ^Factorise this into a helper function
+    # Queue the email
     onboarding_email = BaseEmail(
         recipients=new_user.email,
         subject="Welcome to Pagemail!",
         content=f"Hello {new_user.name}, and welcome to Pagemail!"
     )
     scheduler.add_job(send_email, kwargs={"mail": onboarding_email})
-    return UserOut(**new_user.dict())
+    # Collect a token
+    token = create_new_token({"sub": new_user.email})
+    return {
+        "user": UserOut(**new_user.dict()),
+        "token": {
+            "access_token": token,
+            "token_type": "bearer"
+        }
+    }
 
 @router.delete('/remove', response_model=UserOut)
 async def delete_user(to_delete: UserIn = Depends(decode_user_form),
