@@ -23,7 +23,7 @@ async def fetch_metadata(id: UUID, url: str):
     # Get page title
     soup = BS(resp.text)
     title = soup.title.text
-    
+
     # 
 
 
