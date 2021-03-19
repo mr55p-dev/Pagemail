@@ -76,4 +76,4 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = await fetch_user(form_data.username)
     validate_user(form_data.password, user.password)
     token = create_new_token({"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "user": UserOut(**user.dict())}
