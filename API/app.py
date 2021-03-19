@@ -23,6 +23,9 @@ from API.db.connection import database
 # Get the task scheduler and start it on app launch
 from API.helpers.scheduling import scheduler
 
+# Get the jobs which are to be scheduled on startup
+from API.helpers.utils import update_metadata
+
 # Get the routers
 from API.routes.pages import router as pages_router
 from API.routes.users import router as users_router
@@ -45,7 +48,12 @@ app.include_router(pages_router)
 @app.on_event('startup')
 async def on_startup():
     scheduler.start()
-    await database.connect()
+    try:
+        metadata_job = scheduler.add_job(update_metadata, 'interval', minutes=1, id="1")
+    except Exception:
+        pass
+    finally:
+        await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
@@ -56,7 +64,6 @@ async def on_shutdown():
 async def welcome():
     return "Hello World."
 
-# DELETE: Delete a user
 # UPDATE: Change user info
 
 # GET: Get all pages for a user

@@ -27,9 +27,17 @@ pages = Table(
     "pages",
     metadata,
     Column("id", UUID(as_uuid=False), primary_key=True, unique=True, default=uuid4),
-    Column("page_url", String, nullable=False),
+    Column("url", String, nullable=False),
     Column("date_added", DateTime, server_default=now(), nullable=False),
     Column("user_id", UUID(as_uuid=False), ForeignKey("users.id"))
+)
+
+page_metadata = Table(
+    'page_metadata',
+    metadata,
+    Column('id', UUID(as_uuid=False), ForeignKey("pages.id"), primary_key=True, unique=True),
+    Column('title', String),
+    Column('description', String)
 )
 
 jobs = Table(
