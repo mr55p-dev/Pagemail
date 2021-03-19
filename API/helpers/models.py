@@ -8,13 +8,19 @@ from uuid import UUID, uuid4
 
 class PageOut(BaseModel):
     id: Optional[UUID]
-    page_url: AnyHttpUrl
+    url: AnyHttpUrl
     date_added: Optional[datetime]
+    title: Optional[str]
+    description: Optional[str]
 
 class Page(PageOut):
     user_id: Optional[UUID]
 
-# These user classes need to be rewritten to be explicit with userin and userout classes only.
+class PageMetadata(BaseModel):
+    id: Optional[UUID]
+    title: str
+    description: str
+
 
 class UserOut(BaseModel):
     id: UUID

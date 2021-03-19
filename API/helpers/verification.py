@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 from datetime import datetime, timedelta
+from jose.exceptions import ExpiredSignatureError
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import Depends
@@ -51,6 +52,13 @@ async def decode_token(token: str):
         detail="Could not validate token credientials.",
         headers={"WWW-Authenticate": "Bearer"}
     )
+
+    expired_token_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token expired",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+
     try:
         payload = jwt.decode(token, SECRET, ALGORITHM)
         username: str = payload.get("sub")
@@ -59,6 +67,8 @@ async def decode_token(token: str):
         token = TokenData(email=username)
     except JWTError:
         raise cred_exception
+    except ExpiredSignatureError:
+        raise expired_token_exception
 
     return token
 
