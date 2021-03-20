@@ -8,6 +8,8 @@ import os
 
 # Get environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_USE_SSL = False if os.getenv("DATABASE_USE_SSL") == "0" else True
+
 
 metadata = MetaData()
 
@@ -49,7 +51,7 @@ jobs = Table(
 )
 
 # Create database connection and tables.
-database = databases.Database(DATABASE_URL)
+database = databases.Database(DATABASE_URL, ssl=DATABASE_USE_SSL)
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
