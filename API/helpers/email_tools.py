@@ -1,11 +1,10 @@
 from email.message import EmailMessage
 import aiosmtplib as sm
 import os
-import ssl
 from API.helpers.models import BaseEmail
+from API.db.connection import context as ssl_context
 
 # Create an application level ssl context
-ssl_context = ssl.create_default_context()
 config = {
     "hostname": os.getenv('MAIL_HOSTNAME'),
     "username": os.getenv('MAIL_USERNAME'),

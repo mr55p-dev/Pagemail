@@ -5,9 +5,18 @@ from uuid import uuid4
 from dotenv import load_dotenv
 import databases
 import os
+import ssl
+
+# Set SSL options to enable postgres connection
+context = ssl.create_default_context()
+context.check_hostname = False
+context.verify_mode = ssl.CERT_NONE
+
 
 # Get environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_USE_SSL = False if os.getenv("DATABASE_USE_SSL") == "0" else context
+
 
 metadata = MetaData()
 
@@ -49,7 +58,7 @@ jobs = Table(
 )
 
 # Create database connection and tables.
-database = databases.Database(DATABASE_URL)
+database = databases.Database(DATABASE_URL, ssl=DATABASE_USE_SSL)
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
