@@ -16,6 +16,8 @@ context.verify_mode = ssl.CERT_NONE
 # Get environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASE_USE_SSL = False if os.getenv("DATABASE_USE_SSL") == "0" else context
+DATABASE_MIN_CONNECTIONS = int(os.getenv("DATABASE_MIN_CONNECTIONS"))
+DATABASE_MAX_CONNECTIONS = int(os.getenv("DATABASE_MAX_CONNECTIONS"))
 
 
 metadata = MetaData()
@@ -58,7 +60,7 @@ jobs = Table(
 )
 
 # Create database connection and tables.
-database = databases.Database(DATABASE_URL, ssl=DATABASE_USE_SSL)
+database = databases.Database(DATABASE_URL, ssl=DATABASE_USE_SSL, min_size=DATABASE_MIN_CONNECTIONS, max_size=DATABASE_MAX_CONNECTIONS)
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
