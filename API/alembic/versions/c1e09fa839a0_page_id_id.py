@@ -21,7 +21,7 @@ def upgrade():
     op.add_column('page_metadata', sa.Column('id', postgresql.UUID(), nullable=False))
     op.drop_constraint('page_metadata_page_id_key', 'page_metadata', type_='unique')
     op.create_unique_constraint(None, 'page_metadata', ['id'])
-    op.drop_constraint('page_metadata_page_id_fkey', 'page_metadata', type_='foreignkey')
+    # op.drop_constraint('page_metadata_page_id_fkey', 'page_metadata', type_='foreignkey')
     op.create_foreign_key(None, 'page_metadata', 'pages', ['id'], ['id'])
     op.drop_column('page_metadata', 'page_id')
     # ### end Alembic commands ###
