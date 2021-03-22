@@ -42,7 +42,8 @@ class UserIn(BaseModel):
 
 # Token classes
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    email: str
+    scope: str
 
 # Email classes
 class BaseEmail(BaseModel):

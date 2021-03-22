@@ -1,3 +1,4 @@
+from typing import Optional
 from API.helpers.utils import set_page_metadata
 from datetime import datetime
 from uuid import uuid4
@@ -5,7 +6,7 @@ from databases.core import Database
 from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from API.helpers.models import UserIn, UserOut, BaseEmail
-from API.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
+from API.helpers.verification import create_new_token, fetch_user, get_validated_user, hash_password, validate_user
 from API.db.connection import get_db, users, pages, page_metadata
 from API.helpers.email_tools import send_email
 from API.helpers.scheduling import scheduler
@@ -80,12 +81,22 @@ async def delete_user(to_delete: UserIn = Depends(decode_user_form),
     return UserOut(**user.dict())
 
 @router.get('/self', response_model=UserOut)
-async def read_self(current_user: UserIn = Depends(get_current_active_user)):
+async def read_self(current_user: UserIn = Depends(get_validated_user)):
     return current_user
 
 @router.post('/token')
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), page_only: int = Form(0)):
     user = await fetch_user(form_data.username)
     validate_user(form_data.password, user.password)
-    token = create_new_token({"sub": user.email})
+    if page_only == 1:
+        delta = -1
+    else:
+        delta = None
+
+    token = create_new_token({
+        "sub": user.email,
+        "scope": "userauth:full" if page_only == 0 else "userauth:none"
+        }, expires_delta=delta)
     return {"access_token": token, "token_type": "bearer", "user": UserOut(**user.dict())}
+
+

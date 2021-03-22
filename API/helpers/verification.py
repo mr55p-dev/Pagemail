@@ -49,22 +49,23 @@ async def decode_token(token: str):
     # This will actually do something important one day.
     cred_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate token credientials.",
+        detail="the login token could not be validated.",
         headers={"WWW-Authenticate": "Bearer"}
     )
 
     expired_token_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Token expired",
+        detail="the login token has expired.",
         headers={"WWW-Authenticate": "Bearer"}
     )
 
     try:
         payload = jwt.decode(token, SECRET, ALGORITHM)
         username: str = payload.get("sub")
-        if username is None:
+        scope: str = payload.get("scope")
+        if (username or scope) is None:
             raise cred_exception
-        token = TokenData(email=username)
+        token = TokenData(email=username, scope=scope)
     except JWTError:
         raise cred_exception
     except ExpiredSignatureError:
@@ -74,10 +75,12 @@ async def decode_token(token: str):
 
 def create_new_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    if expires_delta:
+    if not expires_delta:
+        expires = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
+    elif expires_delta > 0:
         expires = datetime.utcnow() + expires_delta
     else:
-        expires = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
+        expires = datetime.max
     to_encode.update({"exp": expires})
     encoded = jwt.encode(to_encode, SECRET, ALGORITHM)
     return encoded
@@ -92,13 +95,47 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             detail="Invalid crediantials",
             headers={"WWW-Authenticate": "Bearer"}
         )
+    try:
+        if token.scope == "userauth:full":
+            auth = 1
+        elif token.scope == "userauth:none":
+            auth = 0
+        else:
+            raise AttributeError
+    except AttributeError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="an invalid token was submitted, please refresh your login."
+        )
 
-    return UserIn(**user.dict())
+    return (UserIn(**user.dict()), auth)
 
-async def get_current_active_user(user: UserIn = Depends(get_current_user)):
+async def get_current_active_user(userauth = Depends(get_current_user)):
+    user, auth = userauth
     if not user.is_active:
         raise HTTPException(
             status_code=400,
-            detail="User is not active"
+            detail="this user is not marked active currently, please contact the site"
         )
-    return user
+    return (user, auth)
+
+
+async def get_validated_user(userauth = Depends(get_current_active_user)):
+    user, auth = userauth
+    if auth != 1:
+        raise HTTPException(
+            status_code=401,
+            detail="the login credentials are not sufficent, please sign in from a browser."
+        )
+    else:
+        return user
+
+async def get_partially_validated_user(userauth = Depends(get_current_active_user)):
+    user, auth = userauth
+    if auth >= 0:
+        return user
+    else:
+        raise HTTPException(
+            status=403,
+            detail="the permissions of your login could not be verified."
+        )

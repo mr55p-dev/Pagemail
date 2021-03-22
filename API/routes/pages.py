@@ -9,7 +9,7 @@ from API.db.connection import get_db, pages, users, page_metadata
 from API.helpers.models import Page, PageFilled, PageMetadata, PageOut, UserIn, UserOut
 from API.helpers.scheduling import scheduler
 from API.helpers.utils import fetch_page, fetch_pages, set_page_metadata, unwrap_submitted_page, fetch_metadata, update_metadata, verify_ownership
-from API.helpers.verification import get_current_active_user
+from API.helpers.verification import get_current_active_user, get_partially_validated_user, get_validated_user
 from sqlalchemy.sql import select
 from datetime import datetime
 
@@ -29,7 +29,7 @@ def page_saved(response):
 async def save_new_page(
     background: BackgroundTasks,
     new_page: Page = Depends(unwrap_submitted_page),
-    current_user: UserIn = Depends(get_current_active_user),
+    current_user: UserIn = Depends(get_partially_validated_user),
     database: Database = Depends(get_db)
     ):
     
@@ -45,7 +45,7 @@ async def save_new_page(
 
 @router.get('/mypages')
 async def fetch_saved_pages(
-    current_user: UserIn = Depends(get_current_active_user),
+    current_user: UserIn = Depends(get_validated_user),
     database: Database = Depends(get_db)):
 
     query = users.join(pages)
@@ -65,7 +65,7 @@ async def fetch_saved_pages(
 # Maybe just a veryify function...
 @router.delete('/delete', response_model=None)
 async def delete_page(
-    current_user: UserIn = Depends(get_current_active_user),
+    current_user: UserIn = Depends(get_validated_user),
     id: str = Form(None, title="id"),
     db: Database = Depends(get_db)):
 
@@ -83,8 +83,8 @@ async def delete_page(
             detail="the requested page does not belong to this user"
         )
 
-@router.get('/fetchall')
-async def fetch_all_metadata(db: Database = Depends(get_db)):
-    scheduler.add_job(update_metadata)
-    # pages = await update_metadata(db)
-    return "Scheduled job"
+# @router.get('/fetchall')
+# async def fetch_all_metadata(db: Database = Depends(get_db)):
+#     scheduler.add_job(update_metadata)
+#     # pages = await update_metadata(db)
+#     return "Scheduled job"
