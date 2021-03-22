@@ -1,3 +1,4 @@
+from API.helpers.utils import set_page_metadata
 from datetime import datetime
 from uuid import uuid4
 from databases.core import Database
@@ -5,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from API.helpers.models import UserIn, UserOut, BaseEmail
 from API.helpers.verification import create_new_token, fetch_user, get_current_active_user, hash_password, validate_user
-from API.db.connection import get_db, users
+from API.db.connection import get_db, users, pages, page_metadata
 from API.helpers.email_tools import send_email
 from API.helpers.scheduling import scheduler
 from asyncpg.exceptions import UniqueViolationError
+from sqlalchemy import select
 
 router = APIRouter(
     prefix="/user",
@@ -63,8 +65,18 @@ async def delete_user(to_delete: UserIn = Depends(decode_user_form),
 
     user = await fetch_user(to_delete.email)
     validate_user(to_delete.password, user.password)
-    query = users.delete().where(users.c.id == user.id)
-    await database.execute(query)
+    query = select([pages.c.id]).select_from(users.join(pages)).where(users.c.id == user.id)
+    pages_owned = await database.fetch_all(query)
+    page_ids = [i["id"] for i in pages_owned]
+
+    query1 = page_metadata.delete().where(page_metadata.c.id.in_(page_ids))
+    query2 = pages.delete().where(pages.c.id.in_(page_ids))
+    query3 = users.delete().where(users.c.id == user.id)
+
+    await database.execute(query1)
+    await database.execute(query2)
+    await database.execute(query3)
+
     return UserOut(**user.dict())
 
 @router.get('/self', response_model=UserOut)
