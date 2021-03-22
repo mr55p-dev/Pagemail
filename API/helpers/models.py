@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     name: str
     email: EmailStr
     date_added: Optional[datetime]
+    token: Optional[str]
 
 class UserIn(BaseModel):
     id: Optional[UUID]

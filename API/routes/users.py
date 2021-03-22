@@ -82,21 +82,22 @@ async def delete_user(to_delete: UserIn = Depends(decode_user_form),
 
 @router.get('/self', response_model=UserOut)
 async def read_self(current_user: UserIn = Depends(get_validated_user)):
+    api_token = create_new_token(
+        {
+            "sub": current_user.email
+        },
+        page_only=True)
+    current_user = UserOut(**current_user.dict(), token=api_token)
     return current_user
 
 @router.post('/token')
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), page_only: int = Form(0)):
     user = await fetch_user(form_data.username)
     validate_user(form_data.password, user.password)
-    if page_only == 1:
-        delta = -1
-    else:
-        delta = None
-
-    token = create_new_token({
-        "sub": user.email,
-        "scope": "userauth:full" if page_only == 0 else "userauth:none"
-        }, expires_delta=delta)
+    token = create_new_token(
+        {"sub": user.email},
+        page_only=page_only
+    )
     return {"access_token": token, "token_type": "bearer", "user": UserOut(**user.dict())}
 
 

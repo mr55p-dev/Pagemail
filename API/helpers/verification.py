@@ -73,15 +73,23 @@ async def decode_token(token: str):
 
     return token
 
-def create_new_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_new_token(data: dict, expires_delta: Optional[timedelta] = None, page_only: bool = False):
     to_encode = data.copy()
-    if not expires_delta:
-        expires = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
-    elif expires_delta > 0:
-        expires = datetime.utcnow() + expires_delta
-    else:
+    # if not expires_delta:
+    #     expires = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
+    # elif expires_delta > 0:
+    #     expires = datetime.utcnow() + expires_delta
+    # else:
+    #     expires = datetime.max
+    if page_only:
         expires = datetime.max
+    elif expires_delta:
+        expires = datetime.utcnow() + timedelta(minutes=expires_delta)
+    else:
+        expires = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
+
     to_encode.update({"exp": expires})
+    to_encode.update({"scope": "userauth:none" if page_only else "userauth:full"})
     encoded = jwt.encode(to_encode, SECRET, ALGORITHM)
     return encoded
 
