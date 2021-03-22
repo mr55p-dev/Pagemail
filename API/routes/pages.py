@@ -69,7 +69,7 @@ async def delete_page(
     id: str = Form(None, title="id"),
     db: Database = Depends(get_db)):
 
-    if await verify_ownership(current_user.id, id):
+    if await verify_ownership(current_user.id, id, db):
         # Delete metadata
         query = page_metadata.delete().where(page_metadata.c.id == id)
         response = await db.execute(query)
