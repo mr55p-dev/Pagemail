@@ -1,12 +1,14 @@
 from typing import List
 from uuid import uuid4
 from databases.core import Database
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Form
+from fastapi.exceptions import HTTPException
+from fastapi.openapi.models import HTTPBase
 from fastapi.param_functions import Depends
 from API.db.connection import get_db, pages, users, page_metadata
 from API.helpers.models import Page, PageFilled, PageMetadata, PageOut, UserIn, UserOut
 from API.helpers.scheduling import scheduler
-from API.helpers.utils import set_page_metadata, unwrap_submitted_page, fetch_metadata, update_metadata
+from API.helpers.utils import fetch_page, fetch_pages, set_page_metadata, unwrap_submitted_page, fetch_metadata, update_metadata, verify_ownership
 from API.helpers.verification import get_current_active_user
 from sqlalchemy.sql import select
 from datetime import datetime
@@ -59,6 +61,27 @@ async def fetch_saved_pages(
 
     return await set_page_metadata(user_pages, pages_meta)
 
+# NEed to change this to a way that we can get the user, the page and also if the user owns the page...
+# Maybe just a veryify function...
+@router.delete('/delete', response_model=None)
+async def delete_page(
+    current_user: UserIn = Depends(get_current_active_user),
+    id: str = Form(None, title="id"),
+    db: Database = Depends(get_db)):
+
+    if await verify_ownership(current_user.id, id):
+        # Delete metadata
+        query = page_metadata.delete().where(page_metadata.c.id == id)
+        response = await db.execute(query)
+        # Delete page
+        query = pages.delete().where(pages.c.id == id)
+        response = await db.execute(query)
+        return 200
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="the requested page does not belong to this user"
+        )
 
 @router.get('/fetchall')
 async def fetch_all_metadata(db: Database = Depends(get_db)):

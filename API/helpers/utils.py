@@ -21,12 +21,35 @@ async def update_metadata():
         await fetch_metadata(id=page["id"], url=page["url"], db=db)
     return unannotated_pages
 
-
+# This should be redundent
 async def fetch_pages(id, db = Depends(get_db)):
     query = pages.select().where(id == pages.c.id)
     result = await db.fetch_all(query)
-    return result if result else []
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="the page could not be found."
+        )
+    return result
 
+async def fetch_page(id: int = Form(...), db = Depends(get_db)):
+    query = pages.select().where(id == pages.c.id)
+    result = await db.fetch_one(query)
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="the page could not be found."
+        )
+    return Page(**result)
+
+# Can merge all these page db requests into one or two
+async def verify_ownership(user_id, page_id, db = Depends(get_db)):
+        query = select([pages.c.user_id]).select_from(pages).where(page_id == pages.c.id)
+        result = await db.fetch_one(query)
+        if result == user_id:
+            return True
+        else:
+            return False
 
 async def unwrap_submitted_page(url: str = Form("")):
     try:
