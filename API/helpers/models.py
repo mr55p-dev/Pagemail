@@ -10,8 +10,8 @@ class PageOut(BaseModel):
     id: Optional[UUID]
     url: AnyHttpUrl
     date_added: Optional[datetime]
-    title: Optional[str]
-    description: Optional[str]
+    # title: Optional[str]
+    # description: Optional[str]
 
 class Page(PageOut):
     user_id: Optional[UUID]
@@ -21,6 +21,9 @@ class PageMetadata(BaseModel):
     title: str
     description: str
 
+class PageFilled(PageOut):
+    title: Optional[str]
+    description: Optional[str]
 
 class UserOut(BaseModel):
     id: UUID

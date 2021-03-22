@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 load_dotenv()
 
@@ -50,10 +49,9 @@ async def on_startup():
     scheduler.start()
     try:
         metadata_job = scheduler.add_job(update_metadata, 'interval', minutes=1, id="1")
-    except Exception:
-        pass
-    finally:
-        await database.connect()
+    except:
+        print("metadata job already exists")
+    await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():

@@ -4,7 +4,7 @@ from databases.core import Database
 from fastapi import APIRouter, BackgroundTasks
 from fastapi.param_functions import Depends
 from API.db.connection import get_db, pages, users, page_metadata
-from API.helpers.models import Page, PageMetadata, PageOut, UserIn, UserOut
+from API.helpers.models import Page, PageFilled, PageMetadata, PageOut, UserIn, UserOut
 from API.helpers.scheduling import scheduler
 from API.helpers.utils import set_page_metadata, unwrap_submitted_page, fetch_metadata, update_metadata
 from API.helpers.verification import get_current_active_user
@@ -17,10 +17,11 @@ router = APIRouter(
 )
 
 def page_saved(response):
-    if not response:
-        print("Something went wrong")
-    else:
-        print(f"Apparently all good: {response}")
+    # if not response:
+    #     print("Something went wrong")
+    # else:
+    #     print(f"Apparently all good: {response}")
+    pass
 
 @router.post('/save', response_model=Page)
 async def save_new_page(
@@ -48,7 +49,7 @@ async def fetch_saved_pages(
     query = users.join(pages)
     query = select([pages]).select_from(query).where(users.c.id == current_user.id)
     results = await database.fetch_all(query=query)
-    user_pages = [PageOut(**i) for i in results]
+    user_pages = [PageFilled(**i) for i in results]
     page_ids = [i.id for i in user_pages]
 
     query = pages.join(page_metadata)

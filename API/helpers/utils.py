@@ -34,25 +34,30 @@ async def unwrap_submitted_page(url: str = Form("")):
     except ValidationError as e:
         raise HTTPException(
         status_code=400,
-        detail=f"Malformed request. {e}",
+        detail="the submitted URL was not valid.",
     )
     return page
 
 async def fetch_metadata(id: UUID, url: str, db: Database, callback: callable = print):
-    resp = requests.get(url)
+    try:
+        resp = requests.get(url)
+    except:
+        title = ""
+        desc = ""
+    else:
+        # Validate response
+        query = pages.select().where(id == pages.c.id)
+        page = await db.fetch_one(query=query)
+        if not page:
+            callback(ValidationError('The requested page does not exist.'))
+            return None
 
-    # Validate response
-    query = pages.select().where(id == pages.c.id)
-    page = await db.fetch_one(query=query)
-    if not page:
-        callback(ValidationError('The requested page does not exist.'))
-        return None
+        # Get page title
+        soup = BS(resp.text, features="html.parser")
 
-    # Get page title
-    soup = BS(resp.text, features="html.parser")
+        title = soup.title.text
+        desc = soup.get_text()[len(title):500]
 
-    title = soup.title.text
-    desc = soup.get_text()[len(title):50+len(title)] + "..."
     meta = PageMetadata(
         id=id,
         title=title,
@@ -60,7 +65,7 @@ async def fetch_metadata(id: UUID, url: str, db: Database, callback: callable = 
     )
     query = page_metadata.insert().values(**meta.dict())
     result = await db.execute(query)
-    callback(result)
+    # callback(result)
 
 async def set_page_metadata(pages, metadata):
     from itertools import product
