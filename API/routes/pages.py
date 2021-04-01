@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Form
 from fastapi.exceptions import HTTPException
 from fastapi.openapi.models import HTTPBase
 from fastapi.param_functions import Depends
+from starlette.background import BackgroundTask
 from API.db.connection import get_db, pages, users, page_metadata
 from API.helpers.models import Page, PageFilled, PageMetadata, PageOut, UserIn, UserOut
 from API.helpers.scheduling import scheduler
@@ -68,7 +69,7 @@ async def delete_page(
     current_user: UserIn = Depends(get_validated_user),
     id: str = Form(None, title="id"),
     db: Database = Depends(get_db)):
-
+    BackgroundTask
     if await verify_ownership(current_user.id, id, db):
         # Delete metadata
         query = page_metadata.delete().where(page_metadata.c.id == id)

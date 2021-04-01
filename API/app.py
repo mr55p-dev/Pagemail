@@ -10,11 +10,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 load_dotenv()
 
 # Logging on
+# log_format_str = r"%(name)s: %(lineno)d: %(msg)s"
 logging.basicConfig()
-app_log = logging.getLogger("Application Log")
+
 # Change in production
-logging.getLogger('uvicorn').setLevel(logging.ERROR)
-logging.getLogger('apscheduler').setLevel(logging.INFO)
+# logging.getLogger('uvicorn').setLevel(logging.ERROR)
+# logging.getLogger('apscheduler').setLevel(logging.INFO)
+logging.getLogger('').setLevel(logging.DEBUG)
 
 # Get the database connection and models
 from API.db.connection import database
@@ -43,27 +45,22 @@ app.add_middleware(
 app.include_router(users_router)
 app.include_router(pages_router)
 
+from API.helpers.scheduling import sch
+
 # Events
 @app.on_event('startup')
 async def on_startup():
+    sch.start()
     scheduler.start()
-    try:
-        metadata_job = scheduler.add_job(update_metadata, 'interval', minutes=1, id="1")
-    except:
-        print("metadata job already exists")
+    METADATA_UPDATE_INTERVAL = int(os.getenv("METADATA_UPDATE_INTERVAL")) if os.getenv("METADATA_UPDATE_INTERVAL") else 60
+    scheduler.add_job(update_metadata, 'interval', minutes=METADATA_UPDATE_INTERVAL, id="1", jobstore="local")
     await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
-    scheduler.shutdown()
+    # scheduler.shutdown()
     await database.disconnect()
 
 @app.get('/')
 async def welcome():
     return "Hello World."
-
-# UPDATE: Change user info
-
-# GET: Get all pages for a user
-# UPDATE: User preferences
-# DELETE: Delete a post for a user

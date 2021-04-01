@@ -1,5 +1,3 @@
-from typing import Optional
-from API.helpers.utils import set_page_metadata
 from datetime import datetime
 from uuid import uuid4
 from databases.core import Database
@@ -9,7 +7,7 @@ from API.helpers.models import UserIn, UserOut, BaseEmail
 from API.helpers.verification import create_new_token, fetch_user, get_validated_user, hash_password, validate_user
 from API.db.connection import get_db, users, pages, page_metadata
 from API.helpers.email_tools import send_email
-from API.helpers.scheduling import scheduler
+from API.helpers.scheduling import DuplicateUserError, scheduler, sch, Job
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import select
 
@@ -100,4 +98,35 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), page_only: int
     )
     return {"access_token": token, "token_type": "bearer", "user": UserOut(**user.dict())}
 
+@router.get('/subscribe')
+async def test_send_email(current_user: UserIn = Depends(get_validated_user), db = Depends(get_db)):
+    from datetime import timedelta
+    message = BaseEmail(
+        subject="Test mail!",
+        content="This is a test email. Please disregard it.",
+        recipients=current_user.email
+    )
+    # await send_email(message)
+    # message.content = "This is a test email sent with the scheduler. Please disregard it."
+    # # scheduler.add_job(send_email, args=[message])
+    # return 200
+    job = Job(current_user.id, timedelta(seconds=5))
+    try:
+        sch.add(job)
+    except DuplicateUserError:
+        raise HTTPException(
+            status_code=400,
+            detail="the user is already subscribed to emails."
+        )
+    return 200
 
+@router.get('/unsubscribe')
+async def dont_email_me(current_user: UserIn = Depends(get_validated_user)):
+    try:
+        job = sch.pop_user(current_user.id)
+    except ValueError:
+        raise HTTPException(
+            status=400,
+            detail="the user is not subscribed to emails."
+        )
+    return job

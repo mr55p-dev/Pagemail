@@ -127,7 +127,6 @@ async def get_current_active_user(userauth = Depends(get_current_user)):
         )
     return (user, auth)
 
-
 async def get_validated_user(userauth = Depends(get_current_active_user)):
     user, auth = userauth
     if auth != 1:

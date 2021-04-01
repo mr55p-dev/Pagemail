@@ -62,18 +62,28 @@ async def unwrap_submitted_page(url: str = Form("")):
     return page
 
 async def fetch_metadata(id: UUID, url: str, db: Database, callback: callable = print):
+    with requests.Session() as se:
+        se.headers = {
+            "User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "en-GB,en;q=0.5",
+            "Connection": "close",
+            "DNT": 1
+        },
+
     try:
-        resp = requests.get(url)
+        resp = se.get(url)
     except:
         title = ""
         desc = ""
     else:
         # Validate response
-        query = pages.select().where(id == pages.c.id)
-        page = await db.fetch_one(query=query)
-        if not page:
-            callback(ValidationError('The requested page does not exist.'))
-            return None
+        # query = pages.select().where(id == pages.c.id)
+        # page = await db.fetch_one(query=query)
+        # if not page:
+        #     callback(ValidationError('The requested page does not exist.'))
+        #     return None
 
         # Get page title
         soup = BS(resp.text, features="html.parser")
