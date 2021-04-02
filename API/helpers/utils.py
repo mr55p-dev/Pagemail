@@ -44,12 +44,9 @@ async def fetch_page(id: int = Form(...), db = Depends(get_db)):
 
 # Can merge all these page db requests into one or two
 async def verify_ownership(user_id, page_id, db):
-        query = select([pages.c.user_id]).select_from(pages).where(page_id == pages.c.id)
-        result = await db.fetch_one(query)
-        if result["user_id"] == user_id:
-            return True
-        else:
-            return False
+    query = select([pages.c.user_id]).select_from(pages).where(page_id == pages.c.id)
+    result = await db.fetch_one(query)
+    return result["user_id"] == user_id
 
 async def unwrap_submitted_page(url: str = Form("")):
     try:

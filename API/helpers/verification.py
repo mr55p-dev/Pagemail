@@ -90,8 +90,7 @@ def create_new_token(data: dict, expires_delta: Optional[timedelta] = None, page
 
     to_encode.update({"exp": expires})
     to_encode.update({"scope": "userauth:none" if page_only else "userauth:full"})
-    encoded = jwt.encode(to_encode, SECRET, ALGORITHM)
-    return encoded
+    return jwt.encode(to_encode, SECRET, ALGORITHM)
 
 # User and token functions
 async def get_current_user(token: str = Depends(oauth2_scheme)):
