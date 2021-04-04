@@ -1,3 +1,4 @@
+from API.db.requests import user_read
 import os
 from typing import Optional
 from datetime import datetime, timedelta
@@ -27,14 +28,15 @@ def verify_password(plain: str, hash: str):
 
 # User functions
 async def fetch_user(email: str) -> Optional[UserIn]:
-    query = users.select().where(users.c.email == email)
-    user = await database.fetch_one(query=query)
-    if not user:
-        raise HTTPException(
-            status_code=400,
-            detail="Incorrect user name."
-            )
-    return UserIn(**user)
+    # query = users.select().where(users.c.email == email)
+    # user = await database.fetch_one(query=query)
+    # if not user:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Incorrect user name."
+    #         )
+    # return UserIn(**user)
+    return await user_read(email)
 
 def validate_user(submitted_password: str, hashed_password: str) -> bool:
     if not verify_password(submitted_password, hashed_password):

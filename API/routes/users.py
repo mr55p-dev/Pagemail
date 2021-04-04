@@ -9,7 +9,6 @@ from API.helpers.verification import (create_new_token, fetch_user,
                                       get_validated_user, hash_password,
                                       validate_user)
 from async_scheduler.job import Job
-from asyncpg.exceptions import UniqueViolationError
 from databases.core import Database
 from fastapi import APIRouter, Depends, Form, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
