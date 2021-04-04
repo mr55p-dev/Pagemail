@@ -22,7 +22,8 @@ logging.getLogger('').setLevel(logging.DEBUG)
 from API.db.connection import database
 
 # Get the task scheduler and start it on app launch
-from API.helpers.scheduling import scheduler
+from API.helpers.scheduling import scheduler, my_scheduler
+from API.helpers.email_tools import newsletter
 
 # Get the jobs which are to be scheduled on startup
 from API.helpers.utils import update_metadata
@@ -44,23 +45,53 @@ app.add_middleware(
 
 app.include_router(users_router)
 app.include_router(pages_router)
-
-from API.helpers.scheduling import sch
-
 # Events
 @app.on_event('startup')
 async def on_startup():
-    sch.start()
     scheduler.start()
     METADATA_UPDATE_INTERVAL = int(os.getenv("METADATA_UPDATE_INTERVAL")) if os.getenv("METADATA_UPDATE_INTERVAL") else 60
     scheduler.add_job(update_metadata, 'interval', minutes=METADATA_UPDATE_INTERVAL, id="1", jobstore="local")
+
+    my_scheduler.function = newsletter
+    my_scheduler.start()
     await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
-    # scheduler.shutdown()
+    scheduler.shutdown()
     await database.disconnect()
 
 @app.get('/')
 async def welcome():
     return "Hello World."
+
+"""
+helpers/utils.py -> helpers/server_actions.py:
+            update_metadata()
+            fetch_metadata()
+            fetch_page() MOVE into REQUESTS
+            verify_page_ownership(user_id, page_id)
+            unwrap_page(url: str = Form(""))
+
+helpers/verification.py ->
+            decode_new_user_form,
+            decode_user_form
+
+
+db/requests.py ->
+            create_user(new_user)
+            read_user(user_id)
+            update_user(user_id, fields)
+            delete_user(user_id)
+
+            create_page(new_page)
+            read_page(user_id?page_id, all: bool) -> Union[Page, List[Page]]
+            update_page(user_id, fields)
+            delete_page(user_id, all: bool)
+
+            create_metadata(page_id)
+            read_metadata(page_id)
+            update_metadata(page_id, fields)
+            delete_metadata(page_id)
+
+"""

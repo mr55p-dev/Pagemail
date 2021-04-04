@@ -1,14 +1,18 @@
 from datetime import datetime
 from uuid import uuid4
-from databases.core import Database
-from fastapi import APIRouter, Depends, HTTPException, Form
-from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from API.helpers.models import UserIn, UserOut, BaseEmail
-from API.helpers.verification import create_new_token, fetch_user, get_validated_user, hash_password, validate_user
-from API.db.connection import get_db, users, pages, page_metadata
+
+from API.db.connection import get_db, page_metadata, pages, users
 from API.helpers.email_tools import send_email
-from API.helpers.scheduling import DuplicateUserError, scheduler, sch, Job
+from API.helpers.scheduling import my_scheduler
+from API.helpers.models import BaseEmail, UserIn, UserOut
+from API.helpers.verification import (create_new_token, fetch_user,
+                                      get_validated_user, hash_password,
+                                      validate_user)
+from async_scheduler.job import Job
 from asyncpg.exceptions import UniqueViolationError
+from databases.core import Database
+from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import select
 
 router = APIRouter(
@@ -47,7 +51,7 @@ async def add_user(new_user: UserIn = Depends(decode_new_user_form),
         subject="Welcome to Pagemail!",
         content=f"Hello {new_user.name}, and welcome to Pagemail!"
     )
-    scheduler.add_job(send_email, kwargs={"mail": onboarding_email})
+    send_email(**{"mail": onboarding_email})
     # Collect a token
     token = create_new_token({"sub": new_user.email})
     return {
@@ -110,10 +114,10 @@ async def test_send_email(current_user: UserIn = Depends(get_validated_user), db
     # message.content = "This is a test email sent with the scheduler. Please disregard it."
     # # scheduler.add_job(send_email, args=[message])
     # return 200
-    job = Job(current_user.id, timedelta(seconds=5))
+    job = Job(current_user.id, timedelta(seconds=15))
     try:
-        sch.add(job)
-    except DuplicateUserError:
+        my_scheduler.add(job)
+    except:
         raise HTTPException(
             status_code=400,
             detail="the user is already subscribed to emails."
@@ -123,7 +127,7 @@ async def test_send_email(current_user: UserIn = Depends(get_validated_user), db
 @router.get('/unsubscribe')
 async def dont_email_me(current_user: UserIn = Depends(get_validated_user)):
     try:
-        job = sch.pop_user(current_user.id)
+        job = my_scheduler.pop_user(current_user.id)
     except ValueError:
         raise HTTPException(
             status=400,
