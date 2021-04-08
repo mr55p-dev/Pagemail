@@ -1,11 +1,13 @@
-from sqlalchemy import *
-from sqlalchemy.sql.functions import now
-from sqlalchemy.dialects.postgresql import UUID
-from uuid import uuid4
-from dotenv import load_dotenv
-import databases
 import os
 import ssl
+from uuid import uuid4
+
+import databases
+from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey,
+                        LargeBinary, MetaData, String, Table, Unicode,
+                        create_engine)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.functions import now
 
 # Set SSL options to enable postgres connection
 context = ssl.create_default_context()
@@ -60,9 +62,14 @@ jobs = Table(
 )
 
 # Create database connection and tables.
-database = databases.Database(DATABASE_URL, ssl=DATABASE_USE_SSL, min_size=DATABASE_MIN_CONNECTIONS, max_size=DATABASE_MAX_CONNECTIONS)
+database = databases.Database(
+    DATABASE_URL,
+    ssl=DATABASE_USE_SSL,
+    min_size=DATABASE_MIN_CONNECTIONS,
+    max_size=DATABASE_MAX_CONNECTIONS)
 engine = create_engine(DATABASE_URL)
 metadata.create_all(engine)
 
-def get_db():
+def get_db() -> databases.Database:
+    """Generator which returns a database connection"""
     yield database

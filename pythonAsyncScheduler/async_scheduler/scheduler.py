@@ -7,12 +7,12 @@ from datetime import timedelta as td
 from typing import Any, List
 from uuid import UUID
 
-from sqlalchemy.engine import Engine
+# from sqlalchemy.engine import Engine
 
 from async_scheduler.exceptions import (DuplicateUserError,
                                         PrototypeFunctionError, SchedulerRunningError)
 from async_scheduler.job import Job
-from async_scheduler.utils import *
+from async_scheduler.utils import asynchronise, relu
 
 
 class Scheduler:
@@ -39,16 +39,17 @@ class Scheduler:
         pop_user (Job):
             Remove a job from the scheduler by its ```user_id``` and return it.
 
-    ```func (callable)``` is required to be a callable which can take each of the ```[user_id, job_type]``` of a ```Job``` as ```kwargs```.
+    ```func (callable)``` is required to be a callable which can take each of
+    the ```[user_id, job_type]``` of a ```Job``` as ```kwargs```.
     """
     STOPPED = 0
     RUNNING = 1
     PAUSED = 2
-    NEXT_CALL_DELAY: float = 10.0
+    next_call_delay: float = 10.0
     BASE_CALL_DELAY: float = 10.0
 
     def __init__(self,
-            db_engine: Engine,
+            # db_engine: Engine,
             target_func: callable = None,
             log: logging.Logger = None) -> None:
         """
@@ -104,9 +105,9 @@ class Scheduler:
                 self._log.debug(results)
 
             await self._calculate_sleep()
-            self._log.debug(f"Sleeping for: {self.NEXT_CALL_DELAY} seconds")
+            self._log.debug(f"Sleeping for: {self.next_call_delay} seconds")
 
-            await asyncio.sleep(self.NEXT_CALL_DELAY)
+            await asyncio.sleep(self.next_call_delay)
 
     async def _fetch_due_jobs(self):
         """async generator to fetch only jobs which are due or overdue"""
@@ -120,11 +121,11 @@ class Scheduler:
             next_job: Job = sorted(self._jobs, key=lambda i: i["next_run"])[0]
             due_time: dt = next_job.next_run
             sleep_time: td = due_time - dt.now()
-            self.NEXT_CALL_DELAY = relu(sleep_time.total_seconds())
+            self.next_call_delay = relu(sleep_time.total_seconds())
         else:
-            self.NEXT_CALL_DELAY = self.BASE_CALL_DELAY
+            self.next_call_delay = self.BASE_CALL_DELAY
 
-        return self.NEXT_CALL_DELAY
+        return self.next_call_delay
 
     async def _real_set_func(self, newfunc: callable) -> None:
         async with self._lock:
@@ -169,7 +170,8 @@ class Scheduler:
     @function.setter
     def function(self, newfunc: callable) -> None:
         if self.running:
-            raise SchedulerRunningError("Cannot reassign target function while the scheduler is running.")
+            raise SchedulerRunningError(
+                "Cannot reassign target function while the scheduler is running.")
         else:
             self._loop.create_task(self._real_set_func(newfunc))
 
@@ -230,7 +232,8 @@ class Scheduler:
     def start(self) -> None:
         """The scheduler is running and can now execute jobs."""
         if not self._func:
-            raise PrototypeFunctionError("Cannot start the scheduler without a contextual function.")
+            raise PrototypeFunctionError(
+                "Cannot start the scheduler without a contextual function.")
 
         self._running = self.RUNNING
         self._loop.create_task(self._task_loop())

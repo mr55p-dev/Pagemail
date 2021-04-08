@@ -1,12 +1,13 @@
-from pydantic.types import UUID4
-from pydantic import BaseModel, EmailStr, AnyHttpUrl
-from typing import Any, List, Optional, Union
 from datetime import datetime
-from uuid import UUID, uuid4
+from typing import Any, List, Optional, Union
+from uuid import UUID
+
+from pydantic import AnyHttpUrl, BaseModel, EmailStr
 
 # Database classes
 
 class PageOut(BaseModel):
+    """Pages which are sanitised to not contain user_id information"""
     id: Optional[UUID]
     url: AnyHttpUrl
     date_added: Optional[datetime]
@@ -14,25 +15,31 @@ class PageOut(BaseModel):
     # description: Optional[str]
 
 class Page(PageOut):
+    """Pages for internal use with user_id information"""
     user_id: Optional[UUID]
 
 class PageMetadata(BaseModel):
+    """Metadata object not associated with a page directly"""
     id: Optional[UUID]
     title: str
     description: str
 
 class PageFilled(PageOut):
+    """Page combining all the peoperties of metadata and page"""
     title: Optional[str]
     description: Optional[str]
 
 class UserOut(BaseModel):
+    """User for external use, with no password information"""
     id: UUID
     name: str
     email: EmailStr
     date_added: Optional[datetime]
+    is_active: Optional[bool]
     token: Optional[str]
 
 class UserIn(BaseModel):
+    """User for internal use which carries active and password information"""
     id: Optional[UUID]
     name: Optional[str]
     email: EmailStr
@@ -43,6 +50,7 @@ class UserIn(BaseModel):
 
 # Token classes
 class TokenData(BaseModel):
+    """Class which allows mainpulating token information"""
     email: str
     scope: str
 

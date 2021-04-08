@@ -4,7 +4,6 @@ from email.message import EmailMessage
 from uuid import UUID
 
 import aiosmtplib as sm
-from API.db.connection import context as ssl_context
 from API.helpers.models import BaseEmail
 
 # Create an application level ssl context
@@ -16,7 +15,10 @@ config = {
     "use_tls": True
 }
 
-async def send_email(mail: BaseEmail = None, *args, **kwargs):
+async def send_email(mail: BaseEmail = None):
+    """Configure and send an email over SSL
+    Args:
+        mail (BaseEmail): The recipient(s), subject and contents of the message."""
     # Set up an EmailMessage object
     if not mail:
         return None
@@ -32,11 +34,13 @@ async def send_email(mail: BaseEmail = None, *args, **kwargs):
         **config
     )
 
-async def newsletter(*args, user_id: UUID = None, job_type: str = None):
+async def newsletter(user_id: UUID = None, job_type: str = None, **kwargs):
+    """Newsletter sending function (to be used with a scheduler"""
+    del kwargs
     log = logging.getLogger(__name__)
     log.setLevel(logging.DEBUG)
 
-    log.debug(f"Sending newsletter for user: {user_id} with job_type: {job_type}")
+    log.debug("Sending newsletter for user: %s with job_type: %s", {user_id}, {job_type})
     # Fetch the user
     # Compose the email:
     # - Refactor the "current user" and "pages" stuff into db/requests.py

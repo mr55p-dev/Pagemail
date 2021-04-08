@@ -7,4 +7,4 @@ memory_job = MemoryJobStore()
 scheduler = AsyncIOScheduler()
 scheduler.add_jobstore(memory_job, alias="local")
 
-my_scheduler = asch.Scheduler(None, target_func=lambda x: x)
+my_scheduler = asch.Scheduler(target_func=lambda x: x)

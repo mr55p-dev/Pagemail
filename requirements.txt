@@ -3,7 +3,7 @@ alembic==1.5.2
 appnope==0.1.2
 APScheduler==3.7.0
 astroid==2.4.2
--e git+git@github.com:mr55p-dev/PageMail.git@8bf990a1b3354f88211010991633477d1de5a107#egg=async_scheduler&subdirectory=pythonAsyncScheduler
+-e git+git@github.com:mr55p-dev/PageMail.git@e67eee960cb1c3b26b5be411bf52bde14901b68f#egg=async_scheduler&subdirectory=pythonAsyncScheduler
 asyncpg==0.21.0
 attrs==20.3.0
 backcall==0.2.0
