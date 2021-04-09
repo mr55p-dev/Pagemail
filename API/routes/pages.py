@@ -1,3 +1,5 @@
+import logging
+
 from datetime import datetime
 from uuid import uuid4
 
@@ -17,6 +19,9 @@ router = APIRouter(
     prefix="/page",
     tags=["Pages"]
 )
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 def generate_page(url: str = Form(""),
     current_user = Depends(get_partially_validated_user)):
@@ -40,7 +45,7 @@ async def save_new_page(
     """Save a page for the user submitting it"""
 
     await page_create(new_page)
-    background.add_task(fetch_metadata, id=new_page.id, url=new_page.url)
+    background.add_task(fetch_metadata, page_id=new_page.id, url=new_page.url)
 
     return new_page
 
@@ -52,11 +57,11 @@ async def fetch_saved_pages(current_user: UserIn = Depends(get_validated_user)):
 @router.delete('/', response_model=None)
 async def delete_page_route(
         current_user: UserIn = Depends(get_validated_user),
-        page_id: str = Form(None, title="id")):
+        page_id: str = Form(None, title="page_id")):
     """Remove a page for a given user, provided they own it"""
     if (page := await page_verify(current_user, page_id)):
         # Delete metadata
-        return page_delete(page)
+        return await page_delete(page)
 
     raise HTTPException(
         status_code=403,

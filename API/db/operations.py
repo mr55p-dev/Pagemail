@@ -1,3 +1,5 @@
+import logging
+
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -11,6 +13,9 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from API.db.connection import get_db, page_metadata, pages, users
 from API.helpers.models import (Page, PageFilled, PageMetadata, PageOut,
                                 UserIn, UserOut)
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 def db_connection() -> Database:
     """Returns an instance of the database connection"""
@@ -44,8 +49,11 @@ async def meta_read(metadata_id: UUID) -> PageMetadata:
         PageMetadata"""
     database = db_connection()
     query = page_metadata.select().where(page_metadata.c.id == metadata_id)
-    response = database.fetch_one(query)
-    return PageMetadata(**response)
+    response = await database.fetch_one(query)
+    if response:
+        return PageMetadata(**response)
+    return None
+    # return PageMetadata(**response) if response else None
 
 async def metas_read(page_ids: List[UUID]) -> List[PageMetadata]:
     """Reads multiple rows from the metadata table
@@ -161,10 +169,10 @@ async def page_create(new_page: Page) -> PageOut:
     """
     database = db_connection()
     query = pages.insert(None).values(**new_page.dict())
-    response = await database.execute(query)
-    return PageOut(**response)
+    await database.execute(query)
+    return PageOut(**new_page.dict())
 
-async def page_read(page_id: UUID = None) -> Optional[Union[PageFilled, List[PageOut]]]:
+async def page_read(page_id: UUID) -> PageFilled:
     """Read a page or pages from the table using either the user or page id
     Args:
         user_id (UUID): User id to fetch all pages for
@@ -177,6 +185,7 @@ async def page_read(page_id: UUID = None) -> Optional[Union[PageFilled, List[Pag
         HTTPException (404): The page requested does not exist
     """
     database = db_connection()
+    log.debug("Page_id = %s", page_id)
     query = pages.select().where(pages.c.id == page_id)
     response = await database.fetch_one(query)
     if not response:
@@ -185,7 +194,10 @@ async def page_read(page_id: UUID = None) -> Optional[Union[PageFilled, List[Pag
             detail="The requested page does not exist."
         )
     meta = await meta_read((page := PageFilled(**response)).id)
-    page = set_page_metadata(page, meta) if meta else page
+    if meta:
+        page.title = meta.title
+        page.description = meta.description
+    # page = set_page_metadata(page, meta) if meta else page
     return page
 
 
@@ -231,7 +243,7 @@ async def page_delete(deleted_page: Page) -> PageOut:
         PageOut: The deleted page
     """
     database = db_connection()
-
+    log.debug("Deleting page with id %s", deleted_page.id)
     # Delete the metadata of the page
     # Change to delete_meta in the future
     query = page_metadata.delete(None).where(page_metadata.c.id == deleted_page.id)
@@ -252,9 +264,10 @@ async def page_verify(user: UserIn, page_id: UUID) -> Optional[Page]:
         False: The page is not owned by the user
         Page: The page is owned by the user
     """
-    page = await page_read(page_id=page_id)
+    log.debug("Page_id = %s", page_id)
+    page = await page_read(page_id)
     if page.user_id == user.id:
-        return Page(**page)
+        return Page(**page.dict())
     else:
         return False
 

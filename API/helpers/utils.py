@@ -37,7 +37,7 @@ def fetch_page_information(url: str):
         title, description (tuple): The fetched page information"""
     with requests.Session() as session:
         session.headers = {
-            "User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0",
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-GB,en;q=0.5",
@@ -48,8 +48,8 @@ def fetch_page_information(url: str):
     try:
         resp = session.get(url)
     except RequestException:
-        title = None
-        desc = None
+        title = ""
+        desc = ""
     else:
         soup = BS(resp.text, features="html.parser")
         title = soup.title.text

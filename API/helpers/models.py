@@ -24,7 +24,7 @@ class PageMetadata(BaseModel):
     title: str
     description: str
 
-class PageFilled(PageOut):
+class PageFilled(Page):
     """Page combining all the peoperties of metadata and page"""
     title: Optional[str]
     description: Optional[str]

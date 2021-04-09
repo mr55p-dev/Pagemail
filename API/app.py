@@ -53,45 +53,14 @@ async def on_startup():
     scheduler.add_job(update_metadata, 'interval', minutes=METADATA_UPDATE_INTERVAL, id="1", jobstore="local")
 
     my_scheduler.function = newsletter
-    my_scheduler.start()
+    # my_scheduler.start()
     await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
-    scheduler.shutdown()
+    # scheduler.shutdown()
     await database.disconnect()
 
 @app.get('/')
 async def welcome():
     return "Hello World."
-
-"""
-helpers/utils.py -> helpers/server_actions.py:
-            update_metadata()
-            fetch_metadata()
-            fetch_page() MOVE into REQUESTS
-            verify_page_ownership(user_id, page_id)
-            unwrap_page(url: str = Form(""))
-
-helpers/verification.py ->
-            decode_new_user_form,
-            decode_user_form
-
-
-db/requests.py ->
-            create_user(new_user)
-            read_user(user_id)
-            update_user(user_id, fields)
-            delete_user(user_id)
-
-            create_page(new_page)
-            read_page(user_id?page_id, all: bool) -> Union[Page, List[Page]]
-            update_page(user_id, fields)
-            delete_page(user_id, all: bool)
-
-            create_metadata(page_id)
-            read_metadata(page_id)
-            update_metadata(page_id, fields)
-            delete_metadata(page_id)
-
-"""
