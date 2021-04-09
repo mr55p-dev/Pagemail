@@ -1,18 +1,10 @@
+import async_scheduler as asch
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
-from API.db.connection import engine, jobs
-
-# Use a custom table design which can store an associated user_id along with the
-# normal table id.
-class SQLAlchemyJob(SQLAlchemyJobStore):
-    def override_table(self, table):
-        self.jobs_t = table
-
-
-job_store = SQLAlchemyJob(engine=engine, tablename="dummy_jobs")
-job_store.override_table(jobs)
-# Recreate the table however with ID as a foreign key to the users table.
-
+# Create a scheduler for the metadata update job.
+memory_job = MemoryJobStore()
 scheduler = AsyncIOScheduler()
-scheduler.add_jobstore(job_store)
+scheduler.add_jobstore(memory_job, alias="local")
+
+my_scheduler = asch.Scheduler(target_func=lambda x: x)
