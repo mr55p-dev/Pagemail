@@ -10,7 +10,7 @@ from pydantic.error_wrappers import ValidationError
 
 from API.db.operations import page_create, page_delete, page_verify, pages_read
 from API.helpers.models import Page, UserIn
-from API.helpers.utils import fetch_metadata
+from API.helpers.utils import fetch_metadata, update_metadata
 from API.helpers.verification import (get_partially_validated_user,
                                       get_validated_user)
 
@@ -40,13 +40,13 @@ def generate_page(url: str = Form(""),
 
 @router.post('/', response_model=Page)
 async def save_new_page(
-    background: BackgroundTasks,
+    # background: BackgroundTasks,
     new_page: Page = Depends(generate_page)):
     """Save a page for the user submitting it"""
 
     await page_create(new_page)
-    background.add_task(fetch_metadata, page_id=new_page.id, url=new_page.url)
-
+    # Figure out why this makes everything SO SLOW and then patch it back in
+    # background.add_task(fetch_metadata, page_id=new_page.id, url=new_page.url)
     return new_page
 
 @router.get('/')
@@ -68,8 +68,7 @@ async def delete_page_route(
         detail="The requested page does not belong to this user"
     )
 
-# @router.get('/fetchall')
-# async def fetch_all_metadata(db: Database = Depends(get_db)):
-#     scheduler.add_job(update_metadata)
-#     # pages = await update_metadata(db)
-#     return "Scheduled job"
+@router.get('/fetchall')
+async def fetch_all_metadata():
+    await update_metadata()
+    return 200
