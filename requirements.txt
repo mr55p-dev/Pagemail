@@ -36,7 +36,7 @@ jedi==0.18.0
 jupyter-client==6.1.12
 jupyter-core==4.7.1
 lazy-object-proxy==1.4.3
-light-async-scheduler==0.0.1
+light-async-scheduler==0.0.2
 makefun==1.9.5
 Mako==1.1.4
 MarkupSafe==1.1.1
