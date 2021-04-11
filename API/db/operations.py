@@ -279,6 +279,6 @@ async def pages_no_meta() -> Optional[List[Page]]:
     """
     database = db_connection()
     query = pages.join(page_metadata, full=True)
-    query = select([pages]).select_from(query).where(page_metadata.c.id is None)
+    query = select([pages]).select_from(query).where(page_metadata.c.id == None)
     response = await database.fetch_all(query)
-    return response
+    return [PageFilled(**i) for i in response] if response else []

@@ -3,8 +3,8 @@ import logging
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from async_scheduler import Job
-from async_scheduler.exceptions import DuplicateUserError
+from async_scheduler.job import UserJob
+from async_scheduler.exceptions import DuplicateJobError
 
 from fastapi import APIRouter, Depends, Form, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
@@ -12,7 +12,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from API.db.operations import user_create, user_delete, user_read
 from API.helpers.email_tools import send_email
 from API.helpers.models import BaseEmail, UserIn, UserOut
-from API.helpers.scheduling import my_scheduler
+from API.helpers.scheduling import sch_news
 from API.helpers.verification import (create_new_token, get_validated_user,
                                       hash_password, validate_user)
 
@@ -114,10 +114,10 @@ async def test_send_email(current_user: UserIn = Depends(get_validated_user)):
     # message.content = "This is a test email sent with the scheduler. Please disregard it."
     # # scheduler.add_job(send_email, args=[message])
     # return 200
-    job = Job(current_user.id, timedelta(seconds=15))
+    job = UserJob(timedelta(seconds=15), current_user.id)
     try:
-        my_scheduler.add(job)
-    except DuplicateUserError as exception:
+        sch_news.add(job)
+    except DuplicateJobError as exception:
         raise HTTPException(
             status_code=400,
             detail="the user is already subscribed to emails."
@@ -128,7 +128,7 @@ async def test_send_email(current_user: UserIn = Depends(get_validated_user)):
 async def dont_email_me(current_user: UserIn = Depends(get_validated_user)):
     """Unsubscribe a user from the newsletter"""
     try:
-        job = my_scheduler.pop_user(current_user.id)
+        job = sch_news.pop_user(current_user.id)
     except ValueError as exception:
         raise HTTPException(
             status_code=400,

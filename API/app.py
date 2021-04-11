@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from dotenv import load_dotenv
+from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
@@ -22,7 +23,8 @@ logging.getLogger('').setLevel(logging.DEBUG)
 from API.db.connection import database
 
 # Get the task scheduler and start it on app launch
-from API.helpers.scheduling import scheduler, my_scheduler
+from async_scheduler.job import BaseJob
+from API.helpers.scheduling import scheduler, sch_news, sch_meta
 from API.helpers.email_tools import newsletter
 
 # Get the jobs which are to be scheduled on startup
@@ -49,16 +51,26 @@ app.include_router(pages_router)
 @app.on_event('startup')
 async def on_startup():
     scheduler.start()
-    METADATA_UPDATE_INTERVAL = int(os.getenv("METADATA_UPDATE_INTERVAL")) if os.getenv("METADATA_UPDATE_INTERVAL") else 60
-    scheduler.add_job(update_metadata, 'interval', minutes=METADATA_UPDATE_INTERVAL, id="1", jobstore="local")
+    METADATA_UPDATE_INTERVAL = int(os.getenv("METADATA_UPDATE_INTERVAL")) or 60
+    # scheduler.add_job(update_metadata, 'interval', minutes=METADATA_UPDATE_INTERVAL, id="1", jobstore="local")
 
-    my_scheduler.function = newsletter
+    sch_meta.function = update_metadata
+    sch_news.function = newsletter
+
+    interval = timedelta(minutes=METADATA_UPDATE_INTERVAL)
+    update_job = BaseJob(interval, name="update metadata", id=1)
+    sch_meta.add(update_job)
+
+    sch_meta.start()
     # my_scheduler.start()
+
     await database.connect()
 
 @app.on_event('shutdown')
 async def on_shutdown():
     # scheduler.shutdown()
+    sch_news.stop()
+    sch_meta.stop()
     await database.disconnect()
 
 @app.get('/')

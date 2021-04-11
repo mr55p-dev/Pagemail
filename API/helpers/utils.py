@@ -3,7 +3,7 @@ from uuid import UUID
 
 import requests
 from bs4 import BeautifulSoup as BS
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError, RequestException
 from API.db.operations import meta_create, page_read, pages_no_meta, user_read
 from API.helpers.models import Page, PageMetadata, UserIn
 
@@ -16,7 +16,6 @@ async def update_metadata():
     for page in unannotated_pages:
         await fetch_metadata(page_id=page.id, url=page.url)
     log.debug("%d page(s) have had their metadata updated.", len(unannotated_pages))
-    return unannotated_pages
 
 async def verify_ownership(user_id, page_id) -> bool:
     """Verify that the given user_id owns the page_id
@@ -42,18 +41,24 @@ def fetch_page_information(url: str):
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-GB,en;q=0.5",
             "Connection": "close",
-            "DNT": 1
-        },
+            "DNT": "1"
+        }
 
-    try:
-        resp = session.get(url)
-    except RequestException:
-        title = ""
-        desc = ""
-    else:
-        soup = BS(resp.text, features="html.parser")
-        title = soup.title.text
-        desc = soup.get_text()[len(title):500]
+        try:
+            resp = session.get(url)
+            if not resp.ok:
+                raise HTTPError("The server did not return a 200 response code")
+        except HTTPError:
+            title = ""
+            desc = ""
+        except RequestException:
+            title = ""
+            desc = ""
+        else:
+            soup = BS(resp.text, features="html.parser")
+            title = soup.title.text
+            wordlist = soup.get_text().split()
+            desc = " ".join(wordlist[:30] if len(wordlist) >= 30 else wordlist)
     return (title, desc)
 
 
