@@ -21,7 +21,6 @@ export function useUserData() {
       } else {
         setUsername(null);
       }
-      console.log(user)
       return unsubscribe;
     }, [user])
 

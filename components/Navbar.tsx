@@ -8,6 +8,7 @@ export default function Navbar() {
     return(
         <nav>
             <p>{username}</p>
+            <img className="nav-profile-img" src={user?.photoURL}></img>
         </nav>
     )
 }

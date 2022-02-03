@@ -39,10 +39,7 @@ export default function Enter({ }) {
     };
 
     function SignOutButton() {
-        const SignOut = () => {
-            console.log("Called signout")
-            signOut(auth)
-        };
+        const SignOut = () => signOut(auth);
 
         return(
             <button className="signout-btn" onClick={SignOut}>
@@ -53,8 +50,19 @@ export default function Enter({ }) {
 
     return(
         <main>
-            <h1>Registration</h1>
-            {user ? <SignOutButton /> : <SignInButton />}
+            {
+            user
+            ?
+            <>
+                <h1>Signed in as {username}</h1>
+                <SignOutButton />
+            </>
+            :
+            <>
+                <h1>Sign in or register</h1>
+                <SignInButton />
+            </>
+            }
         </main>
     )
 }

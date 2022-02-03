@@ -14,3 +14,8 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.nav-profile-img {
+  height: 50px;
+  width: auto;
+}
