@@ -9,25 +9,21 @@ export default function Enter({ }) {
     const { user, username } = useContext(UserContext);
 
     function SignInButton() {
-        // const signInWithGoogle = async () => {
-        //     const result = await signInWithPopup(auth, googleAuth)
-
-        // };
         const signInWithGoogle = () => {
             signInWithPopup(auth, googleAuth)
             .then((result) => {
                 const credential = GoogleAuthProvider.credentialFromResult(result);
-                const token = credential.accessToken;
+                // const token = credential.accessToken;
 
-                const user = result.user
-                const username = user.displayName
+                // const user = result.user
+                // const username = user.displayName
             })
             .catch((err) => {
                 const errorCode = err.code;
-                const errorMessage = err.message;
-    
-                const email = err.email;
-                const credential = GoogleAuthProvider.credentialFromError(err);
+                // const errorMessage = err.message;
+
+                // const email = err.email;
+                // const credential = GoogleAuthProvider.credentialFromError(err);
             })
         }
 
@@ -54,12 +50,12 @@ export default function Enter({ }) {
             user
             ?
             <>
-                <h1>Signed in as {username}</h1>
+                <h1 className="text-3xl font-bold underline">Signed in as {username}</h1>
                 <SignOutButton />
             </>
             :
             <>
-                <h1>Sign in or register</h1>
+                <h1 className="text-3xl font-bold underline">Sign in or register</h1>
                 <SignInButton />
             </>
             }

@@ -36,3 +36,4 @@ connectAuthEmulator(auth, "http://localhost:9099");
 
 export const firestore = getFirestore(app);
 connectFirestoreEmulator(firestore, "localhost", 8080);
+
