@@ -26,8 +26,7 @@ metadata = MetaData()
 
 # Define tables
 users = Table(
-    "users",
-    metadata,
+    "users", metadata,
     Column("id", UUID(as_uuid=False), primary_key=True, default=uuid4, unique=True),
     Column("name", String, nullable=False, unique=False),
     Column("email", String, nullable=False, unique=True),
