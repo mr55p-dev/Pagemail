@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 load_dotenv()
@@ -36,6 +37,7 @@ from API.routes.users import router as users_router
 
 # Define app and include routers and connection events.
 app = FastAPI()
+
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
