@@ -9,18 +9,13 @@ export function useUserData() {
     const [username, setUsername] = useState(null);
 
     useEffect(() => {
-      let unsubscribe;
-
-      if (user) {
-        // const ref = doc(getFirestore(), "users", "uid")
-        // unsubscribe = onSnapshot(ref, (doc) => {
-        //   setUsername(doc.data()?.username);
-        // })
-
-        setUsername(user.displayName)
-      } else {
-        setUsername(null);
-      }
+        let unsubscribe;
+        setUsername(user?.displayName);
+    //   if (user) {
+    //     setUsername(user.displayName)
+    //   } else {
+    //     setUsername(null);
+    //   }
       return unsubscribe;
     }, [user])
 
