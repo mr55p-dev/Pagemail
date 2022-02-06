@@ -1,25 +1,105 @@
-/* html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-.nav-profile-img {
-  height: 50px;
-  width: auto;
-} */
-
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.navbar-link {
+  @apply block lg:inline-block text-neutral-300 hover:text-white mx-1 mt-2
+}
+
+.nav-user-profile {
+  @apply object-cover w-12 h-12 mr-2 rounded-full
+}
+
+/* h1 {
+  @apply text-3xl font-bold underline
+} */
+
+nav {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: space-between;
+}
+
+.nav-brand {
+  font-size: xx-large;
+  color: black;
+  text-decoration: underline;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: grey;
+  padding: 10px;
+  display: inline;
+  margin-top: auto;
+}
+
+.nav-left {
+  display: flex;
+}
+
+.nav-right {
+  flex-grow: 0;
+  display: flex;
+}
+
+.nav-user-profile {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+
+  padding: 0 15px 0 0;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.nav-btn {
+  width: 100px;
+  height: 64px;
+  margin: auto 0 auto 0;
+  color: black;;
+}
+
+
+main {
+  margin-left: auto;
+  margin-right: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heading {
+  text-align: center;
+}
+
+.form-container {
+  border-color: black;
+  border-width: 5px;
+  padding: 20px;
+  width: 75%;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.form-input {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.form-button {
+  width: 30%;
+}
+
+.signin-google-img {
+  height: auto;
+  width: 100%;
+}

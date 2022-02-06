@@ -3,7 +3,9 @@ import { initializeApp, getApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 import { getAuth, GoogleAuthProvider, EmailAuthProvider, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, setDoc, addDoc, doc, collection, serverTimestamp } from 'firebase/firestore';
+import { useContext } from "react";
+import { UserContext } from "./context";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -37,3 +39,31 @@ connectAuthEmulator(auth, "http://localhost:9099");
 export const firestore = getFirestore(app);
 connectFirestoreEmulator(firestore, "localhost", 8080);
 
+export function storeUserData(user) {
+    const writableValues = {
+        username: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        anonymous: user.isAnonymous,
+        // Add in newsletter preferences
+        newsletter: false
+    }
+
+    // Add the user to the users collection
+    setDoc(doc(firestore, "users", user.uid), writableValues)
+    .then(() => console.log("Sucseffully written user doc."))
+    .catch(() => console.error("Failed to write user doc"))
+}
+
+export function storeUserURL(userid, url) {
+    const writableValues = {
+        url: url,
+        timeAdded: serverTimestamp()
+    }
+    const PageDoc = collection(firestore, "users", userid, "pages")
+    addDoc(PageDoc, writableValues)
+    .then(() => console.log("Written document!"))
+    .catch(() => console.error("Failed to write document!"));
+
+
+}
