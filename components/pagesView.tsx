@@ -17,13 +17,16 @@ export default function PagesView() {
 
     const unwrapCard = (card) => {
         const data = card.data();
+        const dateCreated = new Date(1000 * data.timeAdded.seconds)
+
         return(
             <PageCard
                 title="Hello, Card!"
                 url={data.url}
                 documentID={card.id}
-                key={card.id}
                 deleteCallback={deleteCallback}
+                dateCreated={dateCreated.toISOString()}
+                key={card.id}
                 />
         )
     }
@@ -37,7 +40,7 @@ export default function PagesView() {
                 if (!docs.empty) {
                     setPages(docs.docs.map(unwrapCard));
                 } else {
-                    setPages("You have no saved pages")
+                    setPages()
                 }
             })
         }
@@ -46,7 +49,7 @@ export default function PagesView() {
 
     return(
         <div className="pages-container">
-            { pages }
+            { pages ? pages : "You have no saved pages." }
         </div>
     )
 }
