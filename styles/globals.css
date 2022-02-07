@@ -19,6 +19,7 @@ nav {
   flex-direction: row;
 
   justify-content: space-between;
+  background-color: azure;
 }
 
 .nav-brand {
@@ -102,4 +103,19 @@ main {
 .signin-google-img {
   height: auto;
   width: 100%;
+}
+
+.pages-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.pages-item {
+  border: 2px solid black;
+  background: rgb(246, 255, 230);
+  width: 300px;
+  margin: 2%;
+  overflow-x: hidden;
 }
