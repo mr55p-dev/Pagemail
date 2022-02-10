@@ -3,7 +3,8 @@ import { AuthCheck } from "../components/AuthCheck";
 import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
 import { scrapePageMetadata } from "../lib/scraping";
-import { PageMetadata } from '../../lib/typeAliases';
+import { toast } from "react-toastify";
+import Modal from "../components/modal";
 
 
 export default function UploadPage() {
@@ -12,8 +13,10 @@ export default function UploadPage() {
 
     const [pageMetadata, setPageMetadata] = useState({});
     const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     const { user } = useContext(UserContext);
+
 
     useEffect(() => {
         if (user) {
@@ -24,6 +27,10 @@ export default function UploadPage() {
             setUserIdToken("");
         }
     }, [user])
+
+    useEffect(() => {
+        console.log(pageMetadata);
+    }, [pageMetadata])
 
     const onSubmit = (e): void => {
         // Break if the user is not valid
@@ -49,6 +56,7 @@ export default function UploadPage() {
 
         // Unset loading
         setLoading(false);
+        setShowModal(true);
     }
 
     const onChange = (e): void => {
@@ -67,8 +75,6 @@ export default function UploadPage() {
             <AuthCheck>
                 <div className="heading sidebar">
                     <h1 className="heading">{loading ? "Loading..." : "Loaded"}</h1>
-                    <h4>{pageMetadata?.title}</h4>
-                    <p>{pageMetadata?.description}</p>
                 </div>
                 <div className="form-container">
                     <form onSubmit={onSubmit} className="form">
@@ -76,6 +82,11 @@ export default function UploadPage() {
                         <button type="submit" className="form-button">Submit</button>
                     </form>
                 </div>
+                <Modal show={showModal} onClose={() => setShowModal(false)}>
+                    <h4>{pageMetadata?.title}</h4>
+                    <p>{pageMetadata?.description}</p>
+                    <img src={pageMetadata?.image} className="modal-image" ></img>
+                </Modal>
             </AuthCheck>
         </main>
     )

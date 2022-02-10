@@ -1,5 +1,5 @@
 import Navbar from '../components/Navbar'
-import { UserContext } from '../lib/context'
+import { UserContext } from '../lib/context';
 import { useUserData } from '../lib/hooks';
 import '../styles/globals.css'
 
