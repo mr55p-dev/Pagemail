@@ -55,15 +55,13 @@ export function storeUserData(user) {
     .catch(() => console.error("Failed to write user doc"))
 }
 
-export function storeUserURL(userid, url) {
+export function storeUserURL(userid: string, url: URL) {
     const writableValues = {
-        url: url,
+        url: url.toString(),
         timeAdded: serverTimestamp()
     }
     const PageDoc = collection(firestore, "users", userid, "pages")
     addDoc(PageDoc, writableValues)
     .then(() => console.log("Written document!"))
     .catch(() => console.error("Failed to write document!"));
-
-
 }
