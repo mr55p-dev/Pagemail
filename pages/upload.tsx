@@ -1,20 +1,35 @@
-import { doc, getFirestore } from "@firebase/firestore";
 import { useState, useEffect, useContext } from "react";
 import { AuthCheck } from "../components/AuthCheck";
 import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
 import { scrapePageMetadata } from "../lib/scraping";
+import { PageMetadata } from '../../lib/typeAliases';
+
 
 export default function UploadPage() {
     const [userURL, setUserURL] = useState(null);
+    const [userIdToken, setUserIdToken] = useState("");
+
     const [pageMetadata, setPageMetadata] = useState({});
     const [loading, setLoading] = useState(false);
 
     const { user } = useContext(UserContext);
 
+    useEffect(() => {
+        if (user) {
+            user.getIdToken()
+            .then(token => setUserIdToken(token))
+            .catch(err => console.error(err))
+        } else {
+            setUserIdToken("");
+        }
+    }, [user])
+
     const onSubmit = (e): void => {
         // Break if the user is not valid
-        if (!user) { return }
+        if (!user) {
+            throw ("User not signed in")
+        }
 
         // Set loading
         setLoading(true);
@@ -22,14 +37,12 @@ export default function UploadPage() {
         // Prevent the default redirection
         e.preventDefault();
 
-        let userToken;
-        user.getIdToken()
-        .then((token) => { userToken = token; })
-
         // Fetch the page metadata
-        scrapePageMetadata(userURL, user?.getIdToken())
-            .then((meta) => { setPageMetadata(meta) })
-            .catch(() => {})
+        scrapePageMetadata(userURL, userIdToken)
+            .then(meta => setPageMetadata(meta))
+            .catch(() => {
+                throw "Failed to scrape the page metadata";
+            })
 
         // Store the URL in firebase
         storeUserURL(user.uid, userURL);
@@ -39,37 +52,14 @@ export default function UploadPage() {
     }
 
     const onChange = (e): void => {
-        setLoading(true);
-        // Coerce the entered value to a URL (if possible)
-        let inputURL: URL;
-
-        // Try to create the URL
-        try { inputURL = new URL(e.target.value) }
-        catch { console.log("Invalid URL"); return }
-
-        // Set the local URL state
-        setUserURL(inputURL);
-
-        if (!user) {
-            console.error("User not signed in?")
-            return
+        try {
+            const inputURL = new URL(e.target.value)
+            setUserURL(inputURL);
         }
-
-        // Save the token
-        user.getIdToken()
-        .then((token: string) => {
-            return scrapePageMetadata(userURL, token)
-        })
-        .then((meta) => {
-            setPageMetadata(meta)
-        })
-        .then(() => setLoading(false))
-        .catch((err) => {
-            console.log("hiya")
-            // console.error(err)
-            setPageMetadata({})
-            setLoading(false)
-        })
+        catch {
+            console.error("Invalid URL");
+            setUserURL("")
+        }
     }
 
     return(

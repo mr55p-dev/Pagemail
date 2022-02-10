@@ -1,16 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
-import { CheerioAPI, load } from 'cheerio';
+import { load } from 'cheerio';
 import { getAuth } from 'firebase-admin/auth';
 import { applicationDefault, getApps } from 'firebase-admin/app';
-import { decode } from 'punycode';
-
-interface PageMetadata {
-  title: string;
-  description?: string;
-  author?: string;
-  image?: string;
-}
+import { PageMetadata } from '../../lib/typeAliases';
 
 
 // Error handler
@@ -27,7 +20,7 @@ function catchErrorsFrom(handler) {
           return res.status(200).json({})
         }
         console.error(error);
-        return res.status(506).send(error.message || error);
+        return res.status(500).send(error.message || error);
       });
   }
 }
