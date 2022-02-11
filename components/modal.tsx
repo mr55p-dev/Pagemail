@@ -1,14 +1,11 @@
 import ReactDOM from "react-dom";
 import { useEffect, useState } from "react";
+import { useRendered } from "../lib/hooks";
 
 export default function Modal({ children, show, onClose }) {
-    const [isBrowser, setIsBrowser] = useState(false);
+    const rendered = useRendered();
 
-    useEffect(() => {
-        setIsBrowser(true);
-    }, []);
-
-    const handleClose = (e) => {
+    const handleClose: React.UIEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
         onClose();
     }
@@ -21,7 +18,7 @@ export default function Modal({ children, show, onClose }) {
         </div>
     ) : null;
 
-    if (isBrowser) {
+    if (rendered) {
         return ReactDOM.createPortal(
             modalContent,
             document.getElementById("modal-root")

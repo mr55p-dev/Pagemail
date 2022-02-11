@@ -3,7 +3,7 @@
 import { load } from 'cheerio';
 import { getAuth } from 'firebase-admin/auth';
 import { applicationDefault, getApps } from 'firebase-admin/app';
-import { PageMetadata } from '../../lib/typeAliases';
+import { IPageMetadata } from '../../lib/typeAliases';
 
 
 // Error handler
@@ -68,7 +68,7 @@ async function verifyUser(token: string): Promise<string> {
   return decodedToken.uid
 }
 
-async function scrapeMeta(url: URL): Promise<PageMetadata> {
+async function scrapeMeta(url: URL): Promise<IPageMetadata> {
   // Make the request and check the response
   const pageResponse = await fetch(url.toString());
   if (!pageResponse.ok) { throw "badGateway" }
@@ -83,7 +83,7 @@ async function scrapeMeta(url: URL): Promise<PageMetadata> {
     $(`meta[property="twitter:${name}"]`).attr('content');
 
   // Scrape!
-  const scrapedDoc: PageMetadata = {
+  const scrapedDoc: IPageMetadata = {
     title: $("title").first().text(),
     description: getMetatag("description"),
     author: getMetatag("author"),

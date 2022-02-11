@@ -1,65 +1,85 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthCheck } from "../components/AuthCheck";
-import { UserContext } from "../lib/context";
+import { NotifContext, UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
 import { scrapePageMetadata } from "../lib/scraping";
 import { toast } from "react-toastify";
 import Modal from "../components/modal";
+import { INotifState, IPageMetadata } from "../lib/typeAliases";
+import { useNotif, useUserToken } from "../lib/hooks";
+import Notif from "../components/notif";
 
 
 export default function UploadPage() {
-    const [userURL, setUserURL] = useState(null);
-    const [userIdToken, setUserIdToken] = useState("");
-
-    const [pageMetadata, setPageMetadata] = useState({});
-    const [loading, setLoading] = useState(false);
-    const [showModal, setShowModal] = useState(false);
+    const [userURL, setUserURL] = useState<URL>(undefined);
+    const [pageMetadata, setPageMetadata] = useState<IPageMetadata>(undefined);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [showModal, setShowModal] = useState<boolean>(false);
 
     const { user } = useContext(UserContext);
+    const token = useUserToken()
+
+    const [showNotif, setShowNotif] = useState<boolean>(false);
+    const [stateNotif, setStateNotif] = useState<INotifState>(undefined);
+
+    const [error, setError] = useState<string>("")
 
 
-    useEffect(() => {
-        if (user) {
-            user.getIdToken()
-            .then(token => setUserIdToken(token))
-            .catch(err => console.error(err))
-        } else {
-            setUserIdToken("");
-        }
-    }, [user])
+    const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+        // Prevent the default redirection
+        e.preventDefault();
 
-    useEffect(() => {
-        console.log(pageMetadata);
-    }, [pageMetadata])
-
-    const onSubmit = (e): void => {
         // Break if the user is not valid
-        if (!user) {
+        if (!token) {
             throw ("User not signed in")
         }
 
         // Set loading
         setLoading(true);
 
-        // Prevent the default redirection
-        e.preventDefault();
-
         // Fetch the page metadata
-        scrapePageMetadata(userURL, userIdToken)
-            .then(meta => setPageMetadata(meta))
+        scrapePageMetadata(userURL, token)
+            .then(meta => {
+                if (meta) {
+                    setPageMetadata(meta)
+                    setError("")
+                } else {
+                    setPageMetadata(undefined)
+                }
+            })
+            .then(() => {
+                storeUserURL(user.uid, userURL);
+                setShowModal(true);
+            })
             .catch(() => {
-                throw "Failed to scrape the page metadata";
+                setPageMetadata(undefined)
+                setError("Failed to scrape the page metadata!")
+            })
+            .then(() => {
+                setLoading(false);
             })
 
-        // Store the URL in firebase
-        storeUserURL(user.uid, userURL);
-
-        // Unset loading
-        setLoading(false);
-        setShowModal(true);
     }
 
-    const onChange = (e): void => {
+    // Side effect to render the notification for 5 seconds
+    useEffect(() => {
+        if (!loading) {
+            setShowNotif(true);
+            setStateNotif({
+                title:  error ? error   : "Success!",
+                text:   error ? ""      : pageMetadata?.title,
+                style:  error ? "error" : "success"
+            })
+            const timer = setTimeout(() => {
+                setShowNotif(false);
+                setStateNotif(undefined);
+            }, 5000)
+            return () => clearTimeout(timer);
+        }
+    }, [loading, pageMetadata])
+
+    const onChange: React.FormEventHandler<HTMLInputElement> = (e) => {
+        setShowModal(false);
         try {
             const inputURL = new URL(e.target.value)
             setUserURL(inputURL);
@@ -87,6 +107,7 @@ export default function UploadPage() {
                     <p>{pageMetadata?.description}</p>
                     <img src={pageMetadata?.image} className="modal-image" ></img>
                 </Modal>
+                <Notif show={showNotif} state={stateNotif}/>
             </AuthCheck>
         </main>
     )
