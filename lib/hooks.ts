@@ -1,10 +1,10 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useState, useEffect } from "react";
 import { getAuth } from "@firebase/auth";
-import { INotifState } from "./typeAliases";
+import { INotifState, IUserContext } from "./typeAliases";
 
 
-export function useUserData() {
+export function useUserData(): IUserContext {
     const [user] = useAuthState(getAuth());
     const [username, setUsername] = useState<string>(undefined);
 
@@ -12,7 +12,7 @@ export function useUserData() {
         setUsername(user?.displayName);
     }, [user])
 
-    return [user, username];
+    return { user, username };
 }
 
 export function useUserToken() {

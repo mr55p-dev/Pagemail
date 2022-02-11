@@ -8,7 +8,7 @@ import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
 
-  const [user, username] = useUserData();
+  const { user, username } = useUserData();
 
   // Refactor this into a hook?
   const [notifShow, setNotifShow] = useState<boolean>(false)
