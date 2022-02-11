@@ -78,7 +78,7 @@ export default function UploadPage() {
         }
     }, [loading, pageMetadata])
 
-    const onChange: React.FormEventHandler<HTMLInputElement> = (e) => {
+    const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         setShowModal(false);
         try {
             const inputURL = new URL(e.target.value)
@@ -86,7 +86,7 @@ export default function UploadPage() {
         }
         catch {
             console.error("Invalid URL");
-            setUserURL("")
+            setUserURL(undefined)
         }
     }
 
