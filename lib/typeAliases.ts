@@ -1,4 +1,5 @@
 import { User } from "firebase/auth";
+import { CollectionReference, DocumentData, FieldValue } from "firebase/firestore";
 
 export interface IPageMetadata {
     title: string;
@@ -29,5 +30,22 @@ export interface INotifProp {
 
 export interface IUserContext {
   user: User;
-  username: string;
+}
+
+export interface IUserDoc {
+  username: string
+  email: string;
+  photoURL: string;
+  anonymous: boolean;
+  newsletter: boolean;
+}
+
+export interface IUserData extends IUserDoc {
+  user: User
+  pages: CollectionReference<IPage>;
+}
+
+export interface IPage extends DocumentData {
+  url: string;
+  timeAdded: FieldValue;
 }

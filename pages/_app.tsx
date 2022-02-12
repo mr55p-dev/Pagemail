@@ -8,14 +8,14 @@ import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
 
-  const { user, username } = useUserData();
+  const userData = useUserData();
 
   // Refactor this into a hook?
   const [notifShow, setNotifShow] = useState<boolean>(false)
   const [notifState, setNotifState] = useState<INotifState | undefined>(undefined)
 
   return(
-    <UserContext.Provider value={{ user, username }}>
+    <UserContext.Provider value={ userData }>
         <Navbar />
         <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
           <Component {...pageProps} />

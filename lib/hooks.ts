@@ -1,18 +1,34 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useState, useEffect } from "react";
-import { getAuth } from "@firebase/auth";
-import { INotifState, IUserContext } from "./typeAliases";
+import { getAuth, User } from "@firebase/auth";
+import { INotifState, IPage, IUserContext, IUserData, IUserDoc } from "./typeAliases";
+import { collection, CollectionReference, doc, DocumentReference, getFirestore, onSnapshot } from "firebase/firestore";
 
 
-export function useUserData(): IUserContext {
+export function useUserData(): IUserData {
     const [user] = useAuthState(getAuth());
-    const [username, setUsername] = useState<string>(undefined);
+    const [userData, setUserData] = useState<IUserData>(undefined);
 
     useEffect(() => {
-        setUsername(user?.displayName);
+      if(user) {
+        const userRef = doc(getFirestore(), "users", user.uid) as DocumentReference<IUserDoc>
+        const unsubscribe = onSnapshot(userRef, (userDoc) => {
+          // const userDocData = userDoc.data()
+          setUserData({
+            // email: userDocData.email,
+            // photoURL: userDocData.photoURL,
+            // anonymous: userDocData.anonymous,
+            // newsletter: userDocData.newsletter,
+            ...userDoc.data(),
+            user: user,
+            pages: collection(getFirestore(), "users", user.uid, "pages") as CollectionReference<IPage>
+          })
+        })
+        return () => unsubscribe()
+      }
     }, [user])
 
-    return { user, username };
+    return userData;
 }
 
 export function useUserToken() {
@@ -40,7 +56,7 @@ export function useRendered(): boolean {
 
   useEffect(() => {
       setIsBrowser(true);
-  })
+  }, [])
 
   return isBrowser
 }
