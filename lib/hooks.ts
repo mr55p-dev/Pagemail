@@ -16,30 +16,28 @@ export function useUserData(): IUserData {
     pages: null
   }
 
-    const [user] = useAuthState(getAuth());
-    const [userData, setUserData] = useState<IUserData>(emptyUser);
+  const [user] = useAuthState(getAuth());
+  const [userData, setUserData] = useState<IUserData>(emptyUser);
 
-    useEffect(() => {
-      if(user) {
-        const userRef = doc(getFirestore(), "users", user.uid) as DocumentReference<IUserDoc>
-        const unsubscribe = onSnapshot(userRef, (userDoc) => {
-          console.log(userDoc.get("photoURL"))
-          setUserData({
-            ...userDoc.data(),
-            user: user,
-            pages: collection(
-              getFirestore(),
-              "users", user.uid, "pages"
-            ) as CollectionReference<IPage>
-          })
+  useEffect(() => {
+    if(user) {
+      const userRef = doc(getFirestore(), "users", user.uid) as DocumentReference<IUserDoc>
+      const unsubscribe = onSnapshot(userRef, (userDoc) => {
+        setUserData({
+          ...userDoc.data(),
+          user: user,
+          pages: collection(
+            getFirestore(),
+            "users", user.uid, "pages"
+          ) as CollectionReference<IPage>
         })
-        return () => unsubscribe()
-      } else {
-        setUserData(emptyUser);
-      }
-    }, [user])
-
-    return userData;
+      })
+      return () => unsubscribe()
+    } else {
+      setUserData(emptyUser);
+    }
+  }, [user])
+  return userData;
 }
 
 export function useUserToken() {
