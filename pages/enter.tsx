@@ -3,11 +3,12 @@ import { auth, googleAuth} from "../lib/firebase"
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
 import { storeUserData } from "../lib/firebase";
+import Image from "next/image";
 
 
 export default function Enter({ }) {
 
-    const { user, username } = useContext(UserContext);
+    const { user } = useContext(UserContext);
 
     function SignInForm() {
         const signInWithGoogle = async () => {
@@ -25,7 +26,7 @@ export default function Enter({ }) {
                                 <button className="form-button button-login">Log In</button>
                                 <button className="form-button button-signup">Create new account</button>
                                 <button className="form-button button-google-signup" type="button" onClick={signInWithGoogle}>
-                                    <img className="signin-google-img" src="/google-signin@2x.png" />
+                                    <Image className="signin-google-img" src="/google-signin@2x.png" />
                                 </button>
                             {/* </div> */}
                             <a className="enter-form-passreset-link">Forgot password?</a>
@@ -37,7 +38,7 @@ export default function Enter({ }) {
     return(
         <main>
                 { user ?
-                    <h1 className="heading">Hello, {username}!</h1>
+                    <h1 className="heading">Hello, {user.displayName}!</h1>
                 :
                 <>
                     <h1 className="heading">Sign in or register</h1>

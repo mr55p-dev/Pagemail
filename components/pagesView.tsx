@@ -1,13 +1,15 @@
-import { collection, deleteDoc, doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { collection, deleteDoc, doc, DocumentSnapshot, getFirestore, onSnapshot } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react"
 import { UserContext } from "../lib/context"
 import { firestore } from "../lib/firebase";
+import { IPage, IUserDoc } from "../lib/typeAliases";
+import { AuthCheck } from "./AuthCheck";
 import PageCard from "./pageCard";
 
 export default function PagesView() {
 
     const { user } = useContext(UserContext);
-    const [ pages, setPages ] = useState([]);
+    const [ pages, setPages ] = useState<JSX.Element[]>([]);
 
     const deleteCallback = (pageID) => {
         deleteDoc(doc(firestore, "users", user.uid, "pages", pageID))
@@ -15,8 +17,8 @@ export default function PagesView() {
         .catch((err) => {console.error(err)});
     }
 
-    const unwrapCard = (card) => {
-        const data = card.data();
+    const unwrapCard = (card: DocumentSnapshot) => {
+        const data = card.data() as IPage;
         const dateCreated = new Date(1000 * data.timeAdded.seconds)
 
         return(
@@ -32,24 +34,24 @@ export default function PagesView() {
     }
 
     useEffect(() => {
-        let unsubscribe;
-
         if (user) {
             const pagesRef = collection(firestore, "users", user.uid, "pages");
-            unsubscribe = onSnapshot(pagesRef, (docs) => {
+            const unsubscribe = onSnapshot(pagesRef, (docs) => {
                 if (!docs.empty) {
                     setPages(docs.docs.map(unwrapCard));
                 } else {
-                    setPages()
+                    setPages([])
                 }
             })
+            return unsubscribe;
         }
-        return unsubscribe;
     }, [user])
 
     return(
-        <div className="pages-container">
-            { pages ? pages : "You have no saved pages." }
-        </div>
+        <AuthCheck>
+            <div className="pages-container">
+                { pages ? pages : "You have no saved pages." }
+            </div>
+        </AuthCheck>
     )
 }

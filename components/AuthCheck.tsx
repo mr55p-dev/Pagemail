@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { UserContext } from "../lib/context";
 
 export function AuthCheck(props) {
-    const {user} = useContext(UserContext);
+    const { user } = useContext(UserContext);
 
     return user ?
         props.children :

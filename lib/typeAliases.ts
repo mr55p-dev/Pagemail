@@ -47,5 +47,5 @@ export interface IUserData extends IUserDoc {
 
 export interface IPage extends DocumentData {
   url: string;
-  timeAdded: FieldValue;
+  timeAdded: any;
 }

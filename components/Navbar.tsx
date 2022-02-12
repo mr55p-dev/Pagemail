@@ -1,4 +1,5 @@
 import { signOut } from "@firebase/auth";
+import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
@@ -6,14 +7,14 @@ import { auth } from "../lib/firebase";
 import { AuthCheckQuiet } from "./AuthCheck";
 
 export default function Navbar() {
-    const { user, username } = useContext(UserContext);
+    const { user } = useContext(UserContext);
 
     const SignOut = () => signOut(auth);
 
     const signedOutDisplay = () => {
         return(
             <>
-                <Link href="/enter">
+                <Link href="/enter" passHref>
                     <button className="nav-btn nav-user-signin"><a>Sign in</a></button>
                 </Link>
             </>
@@ -24,7 +25,7 @@ export default function Navbar() {
         const photoURL = user?.photoURL ? user.photoURL : "/empty-avatar.png"
         return(
             <>
-                <img className="nav-user-profile"
+                <Image className="nav-user-profile"
                     src={photoURL} alt="Profile image" />
                 <button className="nav-btn nav-user-signout" onClick={SignOut}>
                         Sign out

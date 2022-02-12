@@ -3,7 +3,7 @@ import { AuthCheck } from "../components/AuthCheck"
 import { UserContext } from "../lib/context"
 import { useUserData } from "../lib/hooks";
 
-export default function ({ }): JSX.Element {
+export default function Account ({ }): JSX.Element {
     const { email, username, newsletter } = useUserData();
 
     return (

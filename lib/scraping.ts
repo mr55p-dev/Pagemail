@@ -1,10 +1,13 @@
 export async function scrapePageMetadata(pageURL: URL, token: string) {
-    let metadata;
 
+    // Set the API to point to the widnwo origin
     const apiAddress = new URL(window.location.origin)
+
+    // Modify the path and query parameters
     apiAddress.pathname = "/api/scrape";
     apiAddress.searchParams.set("url", encodeURIComponent(pageURL.toString()))
 
+    // Get a response
     const resp = await fetch(apiAddress.toString(), {
         method: "GET",
         mode: "same-origin",
@@ -18,8 +21,5 @@ export async function scrapePageMetadata(pageURL: URL, token: string) {
         throw Error(resp.statusText)
     }
 
-    const body = await resp.json()
-    metadata = body;
-
-    return metadata;
+    return await resp.json();
 }

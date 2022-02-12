@@ -1,13 +1,13 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthCheck } from "../components/AuthCheck";
-import { NotifContext, UserContext } from "../lib/context";
+import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
 import { scrapePageMetadata } from "../lib/scraping";
-import { toast } from "react-toastify";
 import Modal from "../components/modal";
 import { INotifState, IPageMetadata } from "../lib/typeAliases";
-import { useNotif, useUserToken } from "../lib/hooks";
+import { useUserToken } from "../lib/hooks";
 import Notif from "../components/notif";
+import Image from "next/image";
 
 
 export default function UploadPage() {
@@ -76,7 +76,7 @@ export default function UploadPage() {
             }, 5000)
             return () => clearTimeout(timer);
         }
-    }, [loading, pageMetadata])
+    }, [loading, pageMetadata, error])
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         setShowModal(false);
@@ -105,7 +105,7 @@ export default function UploadPage() {
                 <Modal show={showModal} onClose={() => setShowModal(false)}>
                     <h4>{pageMetadata?.title}</h4>
                     <p>{pageMetadata?.description}</p>
-                    <img src={pageMetadata?.image} className="modal-image" ></img>
+                    <Image alt="" src={pageMetadata?.image} className="modal-image" ></Image>
                 </Modal>
                 <Notif show={showNotif} state={stateNotif}/>
             </AuthCheck>
