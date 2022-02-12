@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { AuthCheck } from "../components/AuthCheck";
 import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
-import { scrapePageMetadata } from "../lib/scraping";
+import { scrapePageMetadata, validateURL } from "../lib/scraping";
 import Modal from "../components/modal";
 import { INotifState, IPageMetadata } from "../lib/typeAliases";
 import { useUserToken } from "../lib/hooks";
@@ -14,6 +14,7 @@ export default function UploadPage() {
     const [pageMetadata, setPageMetadata] = useState<IPageMetadata>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
     const [showModal, setShowModal] = useState<boolean>(false);
+    const [validURL, setValidURL] = useState<boolean>(true);
 
     const { user } = useContext(UserContext);
     const token = useUserToken()
@@ -78,13 +79,15 @@ export default function UploadPage() {
     }, [loading, pageMetadata, error])
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-        setShowModal(false);
         try {
-            const inputURL = new URL(e.target.value)
-            setUserURL(inputURL);
+            const valid = validateURL(e.target.value);
+            console.log(valid)
+            setUserURL(valid);
+            setValidURL(true)
         }
-        catch {
-            console.error("Invalid URL");
+        catch (error) {
+            console.error(error)
+            setValidURL(false)
             setUserURL(undefined)
         }
     }
@@ -98,6 +101,7 @@ export default function UploadPage() {
                 <div className="form-container">
                     <form onSubmit={onSubmit} className="form">
                         <input name="url" placeholder="URL" onChange={onChange} className="form-input" autoComplete="off"/>
+                        <p>{validURL ? "Valid URL!" : "Invalid URL :("}</p>
                         <button type="submit" className="form-button">Submit</button>
                     </form>
                 </div>
