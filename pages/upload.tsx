@@ -81,12 +81,10 @@ export default function UploadPage() {
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         try {
             const valid = validateURL(e.target.value);
-            console.log(valid)
             setUserURL(valid);
             setValidURL(true)
         }
         catch (error) {
-            console.error(error)
             setValidURL(false)
             setUserURL(undefined)
         }

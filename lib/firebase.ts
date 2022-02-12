@@ -4,8 +4,6 @@ import { getAnalytics } from "firebase/analytics";
 
 import { getAuth, GoogleAuthProvider, EmailAuthProvider, connectAuthEmulator, User } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, setDoc, addDoc, doc, collection, serverTimestamp } from 'firebase/firestore';
-import { useContext } from "react";
-import { UserContext } from "./context";
 import { IPage, IUserDoc } from "./typeAliases";
 
 // Your web app's Firebase configuration

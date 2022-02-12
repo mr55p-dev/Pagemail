@@ -19,7 +19,6 @@ function catchErrorsFrom(handler) {
         } else if (error === "badGateway") {
           return res.status(200).json({})
         }
-        console.error(error);
         return res.status(500).send(error.message || error);
       });
   }
