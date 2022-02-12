@@ -7,7 +7,6 @@ import Modal from "../components/modal";
 import { INotifState, IPageMetadata } from "../lib/typeAliases";
 import { useUserToken } from "../lib/hooks";
 import Notif from "../components/notif";
-import Image from "next/image";
 
 
 export default function UploadPage() {
@@ -105,7 +104,7 @@ export default function UploadPage() {
                 <Modal show={showModal} onClose={() => setShowModal(false)}>
                     <h4>{pageMetadata?.title}</h4>
                     <p>{pageMetadata?.description}</p>
-                    <Image alt="" src={pageMetadata?.image} className="modal-image" ></Image>
+                    <img alt="" src={pageMetadata?.image} className="modal-image" />
                 </Modal>
                 <Notif show={showNotif} state={stateNotif}/>
             </AuthCheck>

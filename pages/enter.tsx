@@ -3,7 +3,6 @@ import { auth, googleAuth} from "../lib/firebase"
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
 import { storeUserData } from "../lib/firebase";
-import Image from "next/image";
 
 
 export default function Enter({ }) {
@@ -26,7 +25,7 @@ export default function Enter({ }) {
                                 <button className="form-button button-login">Log In</button>
                                 <button className="form-button button-signup">Create new account</button>
                                 <button className="form-button button-google-signup" type="button" onClick={signInWithGoogle}>
-                                    <Image className="signin-google-img" src="/google-signin@2x.png" />
+                                    <img className="signin-google-img" src="/google-signin@2x.png" />
                                 </button>
                             {/* </div> */}
                             <a className="enter-form-passreset-link">Forgot password?</a>

@@ -1,5 +1,4 @@
 import { signOut } from "@firebase/auth";
-import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
@@ -25,8 +24,9 @@ export default function Navbar() {
         const photoURL = user?.photoURL ? user.photoURL : "/empty-avatar.png"
         return(
             <>
-                <Image className="nav-user-profile"
-                    src={photoURL} alt="Profile image" />
+                <img className="nav-user-profile"
+                    src={photoURL} alt="Profile image"
+                    />
                 <button className="nav-btn nav-user-signout" onClick={SignOut}>
                         Sign out
                 </button>

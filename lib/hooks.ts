@@ -1,30 +1,41 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useState, useEffect } from "react";
-import { getAuth, User } from "@firebase/auth";
-import { INotifState, IPage, IUserContext, IUserData, IUserDoc } from "./typeAliases";
+import { getAuth } from "@firebase/auth";
+import { INotifState, IPage, IUserData, IUserDoc } from "./typeAliases";
 import { collection, CollectionReference, doc, DocumentReference, getFirestore, onSnapshot } from "firebase/firestore";
 
 
 export function useUserData(): IUserData {
+  const emptyUser: IUserData = {
+    user: null,
+    username: null,
+    photoURL: null,
+    email: null,
+    newsletter: null,
+    anonymous: null,
+    pages: null
+  }
+
     const [user] = useAuthState(getAuth());
-    const [userData, setUserData] = useState<IUserData>(undefined);
+    const [userData, setUserData] = useState<IUserData>(emptyUser);
 
     useEffect(() => {
       if(user) {
         const userRef = doc(getFirestore(), "users", user.uid) as DocumentReference<IUserDoc>
         const unsubscribe = onSnapshot(userRef, (userDoc) => {
-          // const userDocData = userDoc.data()
+          console.log(userDoc.get("photoURL"))
           setUserData({
-            // email: userDocData.email,
-            // photoURL: userDocData.photoURL,
-            // anonymous: userDocData.anonymous,
-            // newsletter: userDocData.newsletter,
             ...userDoc.data(),
             user: user,
-            pages: collection(getFirestore(), "users", user.uid, "pages") as CollectionReference<IPage>
+            pages: collection(
+              getFirestore(),
+              "users", user.uid, "pages"
+            ) as CollectionReference<IPage>
           })
         })
         return () => unsubscribe()
+      } else {
+        setUserData(emptyUser);
       }
     }, [user])
 
