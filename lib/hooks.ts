@@ -1,7 +1,7 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useState, useEffect } from "react";
 import { getAuth } from "@firebase/auth";
-import { INotifState, IPage, IUserData, IUserDoc } from "./typeAliases";
+import { INotifState, IPage, IPageMetadata, IUserData, IUserDoc } from "./typeAliases";
 import { collection, CollectionReference, doc, DocumentReference, getFirestore, onSnapshot } from "firebase/firestore";
 
 
@@ -72,4 +72,71 @@ export function useRendered(): boolean {
 
 export function useNotif(contents: INotifState) {
   
+}
+
+
+export function usePageMetadata(url: URL, token: string) {
+
+  // process.env.PAGEMAIL_API_ORIGIN ||
+
+  const [pData, setPData] = useState<IPageMetadata>(undefined);
+  const emptyMetadata: IPageMetadata = {
+    title: "",
+    author: "",
+    description: "",
+    image: ""
+  }
+
+  useEffect(() => {
+    // If the URL is bad then bin it off
+    if (!url || !token) {
+      setPData(undefined);
+    } else {
+      // Allow the request to be cancelled if the side effect is refreshed
+      const controller = new AbortController()
+      const { signal } = controller;
+
+      // Get the API address
+      const apiAddress = new URL(window.location.origin)
+  
+      // Modify the path and query parameters
+      apiAddress.pathname = "/api/scrape";
+      apiAddress.searchParams.set("url", encodeURIComponent(url.toString()))
+  
+      // Get a response
+      fetch(apiAddress.toString(), {
+        method: "GET",
+        mode: "same-origin",
+        credentials: "same-origin",
+        headers: {
+            token: token
+        },
+        signal: signal
+      })
+      .then((resp) => {
+        if (!resp.ok) {
+            return {} as IPageMetadata
+        }
+        return resp.json()
+      })
+      .then((body) => {
+        setPData({
+          title: body.title,
+          author: body.author,
+          description: body.description,
+          image: body.image
+        })
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setPData(emptyMetadata)
+        }
+      })
+      return () => controller.abort()
+    }
+
+  }, [url])
+
+  return pData
 }

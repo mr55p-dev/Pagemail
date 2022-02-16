@@ -4,29 +4,15 @@
     "indexes": "firestore.indexes.json"
   },
   "emulators": {
+    "auth": {
+      "port": 9099
+    },
     "firestore": {
-      "host": "127.0.0.1",
       "port": 8080
     },
     "ui": {
       "enabled": true,
-      "host": "127.0.0.1",
       "port": 4000
-    },
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
-      "port": 5001
-    },
-    "pubsub": {
-      "port": 8085
     }
-  },
-  "functions": {
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run lint",
-      "npm --prefix \"$RESOURCE_DIR\" run build"
-    ]
   }
 }

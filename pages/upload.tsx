@@ -5,25 +5,20 @@ import { storeUserURL } from "../lib/firebase";
 import { scrapePageMetadata, validateURL } from "../lib/scraping";
 import Modal from "../components/modal";
 import { INotifState, IPageMetadata } from "../lib/typeAliases";
-import { useUserToken } from "../lib/hooks";
+import { usePageMetadata, useUserToken } from "../lib/hooks";
 import Notif from "../components/notif";
 
 
 export default function UploadPage() {
     const [userURL, setUserURL] = useState<URL>(undefined);
-    const [pageMetadata, setPageMetadata] = useState<IPageMetadata>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
-    const [showModal, setShowModal] = useState<boolean>(false);
-    const [validURL, setValidURL] = useState<boolean>(true);
 
     const { user } = useContext(UserContext);
-    const token = useUserToken()
 
-    const [showNotif, setShowNotif] = useState<boolean>(false);
-    const [stateNotif, setStateNotif] = useState<INotifState>(undefined);
+    const [showModal, setShowModal] = useState<boolean>(false);
 
-    const [error, setError] = useState<string>("")
-
+    const token = useUserToken();
+    const pageMetadata = usePageMetadata(userURL, token);
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         // Prevent the default redirection
@@ -34,58 +29,37 @@ export default function UploadPage() {
             throw ("User not signed in")
         }
 
+        // Check that the user URL is not undefined
+        if (userURL === undefined) {
+            console.error("Provide a valid URL")
+            return
+        }
+
         // Set loading
         setLoading(true);
 
-        // Fetch the page metadata
-        scrapePageMetadata(userURL, token)
-            .then(meta => {
-                if (meta) {
-                    setPageMetadata(meta)
-                    setError("")
-                } else {
-                    setPageMetadata(undefined)
-                }
-            })
-            .then(() => {
-                storeUserURL(user.uid, userURL);
-                setShowModal(true);
-            })
-            .catch(() => {
-                setPageMetadata(undefined)
-                setError("Failed to scrape the page metadata!")
-            })
-            .then(() => {
-                setLoading(false);
-            })
+        // Only do this if everything works fine
+        e.currentTarget.reset()
 
+        // Save the URL
+        storeUserURL(user.uid, userURL)
+
+        // Enable the modal
+        setShowModal(true);
+
+        // Done!
+        setLoading(false)
     }
 
-    // Side effect to render the notification for 5 seconds
-    useEffect(() => {
-        if (!loading) {
-            setShowNotif(true);
-            setStateNotif({
-                title:  error ? error   : "Success!",
-                text:   error ? ""      : pageMetadata?.title,
-                style:  error ? "error" : "success"
-            })
-            const timer = setTimeout(() => {
-                setShowNotif(false);
-                setStateNotif(undefined);
-            }, 5000)
-            return () => clearTimeout(timer);
-        }
-    }, [loading, pageMetadata, error])
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        setShowModal(false);
         try {
             const valid = validateURL(e.target.value);
             setUserURL(valid);
-            setValidURL(true)
         }
         catch (error) {
-            setValidURL(false)
+            console.error("invalid url")
             setUserURL(undefined)
         }
     }
@@ -99,16 +73,28 @@ export default function UploadPage() {
                 <div className="form-container">
                     <form onSubmit={onSubmit} className="form">
                         <input name="url" placeholder="URL" onChange={onChange} className="form-input" autoComplete="off"/>
-                        <p>{validURL ? "Valid URL!" : "Invalid URL :("}</p>
+                        <p>{userURL !== undefined ? "Valid URL!" : "Invalid URL :("}</p>
                         <button type="submit" className="form-button">Submit</button>
                     </form>
                 </div>
-                <Modal show={showModal} onClose={() => setShowModal(false)}>
-                    <h4>{pageMetadata?.title}</h4>
-                    <p>{pageMetadata?.description}</p>
-                    <img alt="" src={pageMetadata?.image} className="modal-image" />
-                </Modal>
-                <Notif show={showNotif} state={stateNotif}/>
+                {pageMetadata !== undefined ?
+                    pageMetadata.title ?
+                        <p>Page Metadata: {pageMetadata.title}</p>
+                        :
+                        null
+                    : null
+                }
+                {pageMetadata !== undefined ?
+                    pageMetadata.title ?
+                        <Modal show={showModal} onClose={() => setShowModal(false)}>
+                            <h4>{pageMetadata?.title}</h4>
+                            <p>{pageMetadata?.description}</p>
+                            <img alt="" src={pageMetadata?.image} className="modal-image" />
+                        </Modal>
+                        : <p>No metadata</p>
+                    :
+                    <p>Loading...</p>
+                }
             </AuthCheck>
         </main>
     )

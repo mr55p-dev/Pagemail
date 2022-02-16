@@ -37,4 +37,4 @@ yarn-error.log*
 .vercel
 
 # Secrets
-firebase-admin.json
+firebase-admin-secret.json

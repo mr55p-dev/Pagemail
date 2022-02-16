@@ -5,6 +5,23 @@ import { getAuth } from 'firebase-admin/auth';
 import { applicationDefault, getApps } from 'firebase-admin/app';
 import { IPageMetadata } from '../../lib/typeAliases';
 
+// Must be done this way due to library import requirements
+const admin = require('firebase-admin');
+
+
+// Route logic
+export default catchErrorsFrom(async (req, res) => {
+  // Verify the user
+  const uid = await verifyUser(req.headers?.token)
+
+  // Verify the url
+  const url = await verifyURL(req.query?.url)
+
+  // Fetch the page metadata
+  const meta = await scrapeMeta(url);
+  return res.status(200).json(meta);
+})
+
 
 // Error handler
 function catchErrorsFrom(handler) {
@@ -24,21 +41,8 @@ function catchErrorsFrom(handler) {
   }
 }
 
-// Must be done this way due to library import requirements
-const admin = require('firebase-admin');
 
-export default catchErrorsFrom(async (req, res) => {
-  // Verify the user
-  const uid = await verifyUser(req.headers?.token)
-
-  // Verify the url
-  const url = await verifyURL(req.query?.url)
-
-  // Fetch the page metadata
-  const meta = await scrapeMeta(url);
-  return res.status(200).json(meta);
-})
-
+// URL verification
 async function verifyURL(encodedURL: string): Promise<URL> {
   let url: URL;
   try {
@@ -48,6 +52,8 @@ async function verifyURL(encodedURL: string): Promise<URL> {
   }
 }
 
+
+// User verification
 async function verifyUser(token: string): Promise<string> {
   // Initialise firebase
   if (getApps().length === 0) {
@@ -67,6 +73,9 @@ async function verifyUser(token: string): Promise<string> {
   return decodedToken.uid
 }
 
+
+
+// Metadata extraction
 async function scrapeMeta(url: URL): Promise<IPageMetadata> {
   // Make the request and check the response
   const pageResponse = await fetch(url.toString());
