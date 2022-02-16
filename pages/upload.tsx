@@ -1,13 +1,27 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useContext } from "react";
 import { AuthCheck } from "../components/AuthCheck";
 import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
-import { scrapePageMetadata, validateURL } from "../lib/scraping";
 import Modal from "../components/modal";
-import { INotifState, IPageMetadata } from "../lib/typeAliases";
 import { usePageMetadata, useUserToken } from "../lib/hooks";
-import Notif from "../components/notif";
 
+function validateURL(inputString: string): URL {
+    // First coerce the input into a URL
+    if (!(inputString.startsWith("https://") || inputString.startsWith("http://"))) {
+        console.log("Prepending https://")
+        inputString = `https://${inputString}`;
+    }
+    const inputURL = new URL(inputString)
+
+    // Allow only http or https
+    if (!["http:", "https:"].includes(inputURL.protocol)) {
+        throw "Invalid URL protocol"
+    }
+    if (!(/^\S+\.\S+$/.test(inputURL.hostname))) {
+        throw "Invalid URL hostname"
+    }
+    return inputURL
+}
 
 export default function UploadPage() {
     const [userURL, setUserURL] = useState<URL>(undefined);

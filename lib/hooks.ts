@@ -1,7 +1,7 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useState, useEffect } from "react";
 import { getAuth } from "@firebase/auth";
-import { INotifState, IPage, IPageMetadata, IUserData, IUserDoc } from "./typeAliases";
+import { IPage, IPageMetadata, IUserData, IUserDoc } from "./typeAliases";
 import { collection, CollectionReference, doc, DocumentReference, getFirestore, onSnapshot } from "firebase/firestore";
 
 
@@ -70,10 +70,6 @@ export function useRendered(): boolean {
   return isBrowser
 }
 
-export function useNotif(contents: INotifState) {
-  
-}
-
 
 export function usePageMetadata(url: URL, token: string) {
 
@@ -88,7 +84,7 @@ export function usePageMetadata(url: URL, token: string) {
   }
 
   useEffect(() => {
-    // If the URL is bad then bin it off
+    // If the URL is bad then dont try and request
     if (!url || !token) {
       setPData(undefined);
     } else {

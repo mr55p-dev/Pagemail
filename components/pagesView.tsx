@@ -2,7 +2,8 @@ import { collection, deleteDoc, doc, DocumentSnapshot, getFirestore, onSnapshot 
 import { useContext, useEffect, useState } from "react"
 import { UserContext } from "../lib/context"
 import { firestore } from "../lib/firebase";
-import { IPage, IUserDoc } from "../lib/typeAliases";
+import { useUserToken } from "../lib/hooks";
+import { IPage } from "../lib/typeAliases";
 import { AuthCheck } from "./AuthCheck";
 import PageCard from "./pageCard";
 
@@ -10,6 +11,7 @@ export default function PagesView() {
 
     const { user } = useContext(UserContext);
     const [ pages, setPages ] = useState<JSX.Element[]>([]);
+    const token = useUserToken()
 
     const deleteCallback = (pageID) => {
         deleteDoc(doc(firestore, "users", user.uid, "pages", pageID))
@@ -28,6 +30,7 @@ export default function PagesView() {
                 documentID={card.id}
                 deleteCallback={deleteCallback}
                 dateCreated={dateCreated.toISOString()}
+                token={token}
                 key={card.id}
                 />
         )
@@ -45,7 +48,7 @@ export default function PagesView() {
             })
             return unsubscribe;
         }
-    }, [user])
+    })
 
     return(
         <AuthCheck>
