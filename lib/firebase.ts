@@ -9,13 +9,13 @@ import { IPage, IUserDoc } from "./typeAliases";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCt4lpPzhe_UKbvlOcE7g_HSrz4stQbDjQ",
-  authDomain: "pagemail-2bc26.firebaseapp.com",
-  projectId: "pagemail-2bc26",
-  storageBucket: "pagemail-2bc26.appspot.com",
-  messagingSenderId: "556909502728",
-  appId: "1:556909502728:web:9392f6243b38ceef2c8cbd",
-  measurementId: "G-Q62RYYT55K"
+    apiKey: process.env.FIREBASE_APIKEY,
+    authDomain: process.env.FIREBASE_AUTHDOMAIN,
+    projectId: process.env.FIREBASE_PROJECTID,
+    storageBucket: process.env.FIREBASE_STORAGEBUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGINGSENDERID,
+    appId: process.env.FIREBASE_APPID,
+    measurementId: process.env.FIREBASE_MEASUREMENTID
 };
 
 function createFirebaseApp(cfg) {
