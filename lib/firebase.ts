@@ -33,10 +33,12 @@ const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const googleAuth = new GoogleAuthProvider();
 export const emailAuth = new EmailAuthProvider();
-connectAuthEmulator(auth, "http://localhost:9099");
-
 export const firestore = getFirestore(app);
-connectFirestoreEmulator(firestore, "localhost", 8080);
+
+if (process.env.NEXT_DEV) {
+    connectAuthEmulator(auth, "http://localhost:9099");
+    connectFirestoreEmulator(firestore, "localhost", 8080);
+}
 
 export function storeUserData(user: User) {
     const writableValues: IUserDoc = {
