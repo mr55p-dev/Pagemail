@@ -40,7 +40,6 @@ export default function Navbar() {
                 <Link href="/">
                     <a className="nav-link"><span className="nav-brand">PageMail</span></a>
                 </Link>
-                <Link href="/blog"><a className="nav-link">Blog</a></Link>
                 <AuthCheckQuiet>
                     <Link href="/upload"><a className="nav-link">Upload</a></Link>
                     <Link href="/pages"><a className="nav-link">My Pages</a></Link>
