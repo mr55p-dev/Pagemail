@@ -34,8 +34,12 @@ export const emailAuth = new EmailAuthProvider();
 export const firestore = getFirestore(app);
 
 if (process.env.USE_EMULATOR == "1") {
+    console.log("USING EMULATOR")
     connectAuthEmulator(auth, "http://localhost:9099");
     connectFirestoreEmulator(firestore, "localhost", 8080);
+} else {
+    console.error("NO EMULATOR")
+    console.log(process.env)
 }
 
 export function storeUserData(user: User) {
