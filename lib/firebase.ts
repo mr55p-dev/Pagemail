@@ -33,11 +33,10 @@ export const googleAuth = new GoogleAuthProvider();
 export const emailAuth = new EmailAuthProvider();
 export const firestore = getFirestore(app);
 
-if (process.env.VERCEL_ENV !== "production") {
-    console.log("USING EMULATOR")
-    connectAuthEmulator(auth, "http://localhost:9099");
-    connectFirestoreEmulator(firestore, "localhost", 8080);
-}
+// if (process.env.VERCEL_ENV == "development") {
+//     connectAuthEmulator(auth, "http://localhost:9099");
+//     connectFirestoreEmulator(firestore, "localhost", 8080);
+// }
 
 export function storeUserData(user: User) {
     const writableValues: IUserDoc = {
