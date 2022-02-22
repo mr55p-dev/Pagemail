@@ -13,6 +13,8 @@ export default function PagesView() {
     const [ pages, setPages ] = useState<JSX.Element[]>([]);
     const token = useUserToken()
 
+    console.log("Component rendered")
+
     const deleteCallback = (pageID) => {
         deleteDoc(doc(firestore, "users", user.uid, "pages", pageID))
         .then((stat) => {console.log(stat)})
@@ -48,7 +50,7 @@ export default function PagesView() {
             })
             return unsubscribe;
         }
-    })
+    }, [user])
 
     return(
         <AuthCheck>
