@@ -95,18 +95,6 @@ async function triggerMailFunction() {
   await Promise.allSettled(mails);
 }
 
-// exports.hellomail = functions.runWith({
-//   secrets: ["MAIL_HOST", "MAIL_PORT", "MAIL_USER", "MAIL_PASS"],
-// })
-//     .https.onRequest((req, res) => {
-//       triggerMailFunction()
-//           .then(() => functions.logger.info("Sucessful run"))
-//           .catch((e) => {
-//             functions.logger.error("Unsucessful run");
-//             functions.logger.error(e);
-//           });
-//     });
-
 exports.triggerMail = functions.runWith({
   secrets: ["MAIL_HOST", "MAIL_PORT", "MAIL_USER", "MAIL_PASS"],
 })
@@ -120,7 +108,3 @@ exports.triggerMail = functions.runWith({
             functions.logger.error(e);
           });
     });
-
-exports.hello = functions.https.onRequest(async (req, res) => {
-  res.json({message: "Hello, world!"});
-});
