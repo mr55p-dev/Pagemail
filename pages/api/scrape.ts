@@ -52,13 +52,18 @@ async function verifyURL(encodedURL: string): Promise<URL> {
   }
 }
 
-
 // User verification
 async function verifyUser(token: string): Promise<string> {
   // Initialise firebase
   if (getApps().length === 0) {
+    console.log("Hello")
+    console.log(JSON.parse(process.env.FIREBASE_ADMIN_ACCOUNT_KEY))
+    const serviceAccount = JSON.parse(
+      process.env.FIREBASE_ADMIN_ACCOUNT_KEY
+    );
+
     admin.initializeApp({
-      credential: applicationDefault()
+      credential: admin.credential.cert(serviceAccount)
     });
   }
 
@@ -72,8 +77,6 @@ async function verifyUser(token: string): Promise<string> {
   const decodedToken = await auth.verifyIdToken(token)
   return decodedToken.uid
 }
-
-
 
 // Metadata extraction
 async function scrapeMeta(url: URL): Promise<IPageMetadata> {
