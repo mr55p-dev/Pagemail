@@ -15,15 +15,15 @@ async function sendMail({email, content}) {
   });
 
   // send mail with defined transport object
-  const info = await transporter.sendMail({
+  const today = new Date().getDay();
+  return await transporter.sendMail({
     from: `"PageMail Roundup" <${process.env.MAIL_USER}>`, // sender address
     to: email, // list of receivers
-    subject: "Your daily roundup for $today$", // Subject line
+    subject: `Your daily roundup for ${today}`, // Subject line
     text: "You need HTML to display this email", // plain text body
     html: `<div>${content}</div>`, // html body
   });
-  functions.logger.info("Message sent: %s", info.messageId);
-  return email;
+  // functions.logger.info("Message sent: %s", info.messageId);
 }
 
 async function contactUser(document) {
@@ -57,8 +57,6 @@ async function contactUser(document) {
   const listItems = pages.map( (page) => `<li>${page.url}</li>` );
   const listString = listItems.join("\n");
 
-  functions.logger.debug(listString);
-
   // Construct the HTML
   const emailBody = `<body>
         <h1>PageMail daily roundup</h1>
@@ -84,15 +82,15 @@ async function triggerMailFunction() {
       .where("newsletter", "==", true).get();
 
   if (subscribed.empty) {
-    functions.logger.info("No newsletter subscribers.");
-    return;
+    functions.logger.error("No newsletter subscribers.");
+    return Promise.reject(new Error("No subscribers to mail"));
   }
 
   // For every user, contact them!
   const mails = subscribed.docs.map(contactUser);
 
   // Try to settle all these promises
-  await Promise.allSettled(mails);
+  return Promise.allSettled(mails);
 }
 
 exports.triggerMail = functions.runWith({
@@ -101,6 +99,18 @@ exports.triggerMail = functions.runWith({
     .pubsub.schedule("0 7 * * *")
     .timeZone("Europe/London")
     .onRun((context) => {
+      triggerMailFunction()
+          .then(() => functions.logger.info("Sucessful run"))
+          .catch((e) => {
+            functions.logger.error("Unsucessful run");
+            functions.logger.error(e);
+          });
+    });
+
+exports.triggerMailManual = functions.runWith({
+  secrets: ["MAIL_HOST", "MAIL_PORT", "MAIL_USER", "MAIL_PASS"],
+})
+    .https.onRequest((req, res) => {
       triggerMailFunction()
           .then(() => functions.logger.info("Sucessful run"))
           .catch((e) => {
