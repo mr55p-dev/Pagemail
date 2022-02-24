@@ -56,8 +56,6 @@ async function verifyURL(encodedURL: string): Promise<URL> {
 async function verifyUser(token: string): Promise<string> {
   // Initialise firebase
   if (getApps().length === 0) {
-    console.log("Hello")
-    console.log(JSON.parse(process.env.FIREBASE_ADMIN_ACCOUNT_KEY))
     const serviceAccount = JSON.parse(
       process.env.FIREBASE_ADMIN_ACCOUNT_KEY
     );

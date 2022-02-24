@@ -23,7 +23,6 @@ async function sendMail({email, content}) {
     text: "You need HTML to display this email", // plain text body
     html: `<div>${content}</div>`, // html body
   });
-  // functions.logger.info("Message sent: %s", info.messageId);
 }
 
 async function contactUser(document) {
@@ -47,11 +46,13 @@ async function contactUser(document) {
       .limit(10)
       .get();
 
-  // Unwrap all the pages into the page data
-  const pages = pageSnapshot.docs.map((doc) => doc.data());
-  if (pages.empty) {
+  // Abort if no new pages
+  if (pageSnapshot.empty) {
     return Promise.reject(new Error("No pages saved for this user."));
   }
+
+  // Unwrap all the pages into the page data
+  const pages = pageSnapshot.docs.map((doc) => doc.data());
 
   // Make a html list string of the titles
   const listItems = pages.map( (page) => `<li>${page.url}</li>` );
