@@ -39,3 +39,6 @@ yarn-error.log*
 
 # Secrets
 firebase-admin-secret.json
+
+# VSCode
+.vscode/
