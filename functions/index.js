@@ -14,8 +14,10 @@ async function sendMail({email, content}) {
     },
   });
 
+  functions.logger.debug("Sending mail to %s", email);
+
   // send mail with defined transport object
-  const today = new Date().getDay();
+  const today = new Date().toLocaleDateString("default");
   return await transporter.sendMail({
     from: `"PageMail Roundup" <${process.env.MAIL_USER}>`, // sender address
     to: email, // list of receivers
@@ -28,7 +30,7 @@ async function sendMail({email, content}) {
 async function contactUser(document) {
   // Get the user properties
   // const contents = document.data();
-  functions.logger.debug("Contacting user %s", document.id);
+  functions.logger.debug("Checking user %s", document.id);
   const db = admin.firestore();
 
   // Get the user ID and email
@@ -48,6 +50,7 @@ async function contactUser(document) {
 
   // Abort if no new pages
   if (pageSnapshot.empty) {
+    functions.logger.debug("No pages to send for %s", document.id);
     return Promise.reject(new Error("No pages saved for this user."));
   }
 
@@ -91,13 +94,14 @@ async function triggerMailFunction() {
   const mails = subscribed.docs.map(contactUser);
 
   // Try to settle all these promises
-  return Promise.allSettled(mails);
+  const status = await Promise.allSettled(mails);
+  functions.logger.debug(status);
 }
 
 exports.triggerMail = functions.runWith({
   secrets: ["MAIL_HOST", "MAIL_PORT", "MAIL_USER", "MAIL_PASS"],
 })
-    .pubsub.schedule("0 7 * * *")
+    .pubsub.schedule("0,15,30,45 11-12 * * *")
     .timeZone("Europe/London")
     .onRun((context) => {
       triggerMailFunction()
