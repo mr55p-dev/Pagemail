@@ -10,7 +10,9 @@ export default function Navbar() {
 
     // Some resources for the navbar
     const photoURL = user?.photoURL || "empty-avatar.png"
-    const menuIcon = (<svg className="h-8 w-8 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/></svg>)
+    const menuIcon = (<svg className="h-8 w-8 fill-current" viewBox="0 0 24 24">
+        <path fillRule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+    </svg>)
 
     // Components which are conditional on being signed in
     const SignOut = user && (
@@ -29,20 +31,20 @@ export default function Navbar() {
             </div>
         </Link>
         <hr />
-        <Link href="/upload">
+        <Link passHref href="/upload">
             <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                 <a className="nav-link">Upload</a>
             </div>
         </Link>
         <hr />
-        <Link href="/pages">
+        <Link passHref href="/pages">
             <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                 <a className="nav-link">My Pages</a>
             </div>
         </Link>
         </>
     ) : (
-        <Link href="/enter">
+        <Link passHref href="/enter">
             <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                 <a>Sign in</a>
             </div>
@@ -53,7 +55,7 @@ export default function Navbar() {
         <nav className="bg-sky-50 md:flex md:justify-between md:items-center text-sky-800 text-center">
             <div className="flex justify-between items-center px-3 py-6">
                 <div className="text-3xl">
-                    <Link href="/">
+                    <Link passHref href="/">
                         <a className="">
                             <span className="nav-brand">PageMail</span>
                         </a>
@@ -69,13 +71,13 @@ export default function Navbar() {
                 <div className="pb-1 border-t-2 border-sky-100 transition-all md:flex md:items-center md:border-0 md:py-0">
                     { signedInDisplay }
                     <hr className="border-sky-100"/>
-                    <Link href="/about">
+                    <Link passHref href="/about">
                         <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                             <a>About</a>
                         </div>
                     </Link>
                     <hr className="border-sky-100"/>
-                    <Link href="/contact">
+                    <Link passHref href="/contact">
                         <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                             <a>Contact</a>
                         </div>
@@ -85,9 +87,5 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
-                // <AuthCheckQuiet>
-                //     <Link href="/upload"><a className="nav-link">Upload</a></Link>
-                //     <Link href="/pages"><a className="nav-link">My Pages</a></Link>
-                // </AuthCheckQuiet>
     )
 }
