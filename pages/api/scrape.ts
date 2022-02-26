@@ -2,7 +2,7 @@
 
 import { load } from 'cheerio';
 import { getAuth } from 'firebase-admin/auth';
-import { applicationDefault, getApps } from 'firebase-admin/app';
+import { getApps } from 'firebase-admin/app';
 import { IPageMetadata } from '../../lib/typeAliases';
 
 // Must be done this way due to library import requirements
@@ -11,14 +11,19 @@ const admin = require('firebase-admin');
 
 // Route logic
 export default catchErrorsFrom(async (req, res) => {
+  console.debug("Inbound request")
   // Verify the user
   const uid = await verifyUser(req.headers?.token)
 
+  console.debug("Request from UID %s accepted", uid)
   // Verify the url
   const url = await verifyURL(req.query?.url)
 
+  console.debug("URL %s accepted", url.toString())
   // Fetch the page metadata
   const meta = await scrapeMeta(url);
+
+  console.debug("Metadata fetched with title: %s", meta?.title)
   return res.status(200).json(meta);
 })
 
@@ -29,6 +34,7 @@ function catchErrorsFrom(handler) {
     return handler(req, res)
       .catch((error) => {
         // Error handling!
+        console.error(error)
         if (error === "notSignedIn") {
           return res.status(401).end("Unauthorised")
         } else if (error === "invalidURL") {
