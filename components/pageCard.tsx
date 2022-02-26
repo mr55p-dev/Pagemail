@@ -1,20 +1,21 @@
 import { usePageMetadata } from "../lib/hooks"
+import { ICard } from "../lib/typeAliases"
 
-export default function PageCard(props) {
-    const metadata = usePageMetadata(props.url, props.token)
+export default function PageCard({ data, deleteCallback }) {
 
-    const title = metadata?.title || props.url
+    const metadata = true && data?.metadata
+    const title = metadata?.title || data.url
     const desc = metadata?.description || ""
-    const url = new URL(props.url);
-    const date = props.dateCreated;
+    const date = new Date(1000 * data.timeAdded.seconds).toLocaleDateString();
+    const url = new URL(data.url);
 
     return (
-        <div className="pages-item">
-            <h3 className="pages-card-title">{title}</h3>
-            <p className="pages-card-description">{desc}</p>
-            <a className="pages-card-url" href={url.toString()} target="_blank" rel="noreferrer">{url.hostname}</a>
-            <small className="pages-card-date">{date}</small>
-            <button className="btn pages-card-btn" onClick={() => {props.deleteCallback(props.documentID)}}>X</button>
+        <div className="border-2 border-sky-700 bg-sky-50">
+            <h3 className="">{title}</h3>
+            <p className="">{desc}</p>
+            <a className="" href={url.toString()} target="_blank" rel="noreferrer">{url.hostname}</a>
+            <small className="">{date}</small>
+            <button className="" onClick={() => {deleteCallback(data.id)}}>X</button>
         </div>
     )
 }

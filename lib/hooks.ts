@@ -94,11 +94,11 @@ export function usePageMetadata(url: URL, token: string) {
 
       // Get the API address
       const apiAddress = new URL(window.location.origin)
-  
+
       // Modify the path and query parameters
       apiAddress.pathname = "/api/scrape";
       apiAddress.searchParams.set("url", encodeURIComponent(url.toString()))
-  
+
       // Get a response
       fetch(apiAddress.toString(), {
         method: "GET",

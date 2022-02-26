@@ -1,17 +1,10 @@
 import { User } from "firebase/auth";
 import { CollectionReference, DocumentData, FieldValue } from "firebase/firestore";
 
-export interface IPageMetadata {
-    title: string;
-    description: string;
-    author: string;
-    image: string;
-  }
-
 export interface INotifState {
-    title: string;
-    text: string;
-    style: "default" | "error" | "success";
+  title: string;
+  text: string;
+  style: "default" | "error" | "success";
 }
 
 export interface NotifCallback<T> {
@@ -49,3 +42,16 @@ export interface IPage extends DocumentData {
   url: string;
   timeAdded: any;
 }
+
+export interface ICard extends IPage {
+  id: string;
+  metadata?: IPageMetadata
+}
+
+export interface IPageMetadata {
+    url: string;
+    title: string;
+    description: string;
+    author: string;
+    image: string;
+  }
