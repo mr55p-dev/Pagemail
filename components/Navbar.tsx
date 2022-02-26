@@ -30,13 +30,13 @@ export default function Navbar() {
                 <img className="rounded inline w-8 h-8 ml-2" src={photoURL} />
             </div>
         </Link>
-        <hr />
+        <hr className="border-sky-100"/>
         <Link passHref href="/upload">
             <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                 <a className="nav-link">Upload</a>
             </div>
         </Link>
-        <hr />
+        <hr className="border-sky-100"/>
         <Link passHref href="/pages">
             <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
                 <a className="nav-link">My Pages</a>
