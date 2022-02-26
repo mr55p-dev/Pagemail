@@ -67,7 +67,7 @@ export default function Navbar() {
                     </button>
                 </div>
             </div>
-            <div className={mobileShow ? "hidden" : "block"}>
+            <div className={mobileShow ? "block" : "hidden md:block"}>
                 <div className="pb-1 border-t-2 border-sky-100 transition-all md:flex md:items-center md:border-0 md:py-0">
                     { signedInDisplay }
                     <hr className="border-sky-100"/>
