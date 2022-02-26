@@ -27,7 +27,7 @@ export default function Navbar() {
         <Link href="/account">
             <div className="btn-shape btn-colour py-2 hover:cursor-pointer">
                 <a className="inline">{ user.displayName }</a>
-                <img className="rounded inline w-8 ml-2" src={photoURL} />
+                <img className="rounded inline w-8 h-8 ml-2" src={photoURL} />
             </div>
         </Link>
         <hr />
