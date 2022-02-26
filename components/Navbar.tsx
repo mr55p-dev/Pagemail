@@ -27,7 +27,7 @@ export default function Navbar() {
         <Link href="/account">
             <div className="btn-shape btn-colour py-2 hover:cursor-pointer">
                 <a className="inline">{ user.displayName }</a>
-                <img className="ml-2 h-8 w-8 inline" src={photoURL} />
+                <img className="rounded inline w-8 ml-2" src={photoURL} />
             </div>
         </Link>
         <hr />
@@ -62,7 +62,7 @@ export default function Navbar() {
                     </Link>
                 </div>
                 <div className="inline px-1">
-                    <button className="h-8 w-8 sm:hidden" onClick={() => setMobileShow(!mobileShow)}>
+                    <button className="h-8 w-8 md:hidden" onClick={() => setMobileShow(!mobileShow)}>
                         { menuIcon }
                     </button>
                 </div>

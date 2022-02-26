@@ -14,6 +14,7 @@ body {
   @apply hover:bg-sky-700 hover:text-sky-50 transition-colors
 }
 
-/* hr {
-  @apply border-sky-100
-} */
+img.rounded {
+  object-fit: cover;
+  border-radius: 50%;
+}
