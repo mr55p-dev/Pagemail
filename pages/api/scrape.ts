@@ -99,6 +99,7 @@ async function scrapeMeta(url: URL): Promise<IPageMetadata> {
 
   // Scrape!
   const scrapedDoc: IPageMetadata = {
+    url: url.toString(),
     title: $("title").first().text(),
     description: getMetatag("description"),
     author: getMetatag("author"),

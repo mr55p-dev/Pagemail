@@ -77,6 +77,7 @@ export function usePageMetadata(url: URL, token: string) {
 
   const [pData, setPData] = useState<IPageMetadata>(undefined);
   const emptyMetadata: IPageMetadata = {
+    url: "",
     title: "",
     author: "",
     description: "",
@@ -117,6 +118,7 @@ export function usePageMetadata(url: URL, token: string) {
       })
       .then((body) => {
         setPData({
+          url: url.toString(),
           title: body.title,
           author: body.author,
           description: body.description,
