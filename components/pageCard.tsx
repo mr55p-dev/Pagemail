@@ -16,13 +16,13 @@ export default function PageCard({ data, deleteCallback }) {
     }
 
     return (
-        <div className="border-2 rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
+        <div className="border-y-2 md:border-2 md:rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
             <div className="">
                 <h3 className="text-lg font-semibold overflow-hidden whitespace-nowrap break-all">{title}</h3>
                 <p className="mb-2">{desc}</p>
             </div>
             <div className="w-full overflow-hidden">
-                <div className="text-center grid grid-rows-2 gap-1 sm:grid-cols-4 sm:grid-rows-1 sm:space-x-2">
+                <div className="text-center grid grid-rows-2 gap-1">
                     <a className="underline border-2 border-sky-700 btn-colour rounded p-3 text-sky-700 whitespace-nowrap overflow-hidden col-span-2" href={url.toString()} target="_blank" rel="noreferrer">Open {sitename}</a>
                     <button className="hover:bg-red-700 hover:text-sky-50 border-2 border-red-700 text-red-700 transition-colors rounded p-3 col-span-2 md:grow" onClick={() => {deleteCallback(data.id)}}>Remove</button>
                 </div>

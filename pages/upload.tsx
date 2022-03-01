@@ -86,7 +86,7 @@ export default function UploadPage() {
     }
 
     return(
-        <div>
+        <div className="bg-sky-50 md:bg-white">
             <div className={loading === true ? "bg-gray-700 bg-opacity-50 text-white absolute flex justify-around items-center w-screen h-screen top-0" : "hidden"} >
                 <p className="text-3xl">Loading...</p>
             </div>
@@ -95,7 +95,7 @@ export default function UploadPage() {
             </div>
             <AuthCheck>
                 <div className="flex justify-around">
-                    <div className="border-2 rounded m-2 p-3 bg-sky-50 border-sky-700 max-w-screen-md">
+                    <div className="md:border-2 rounded m-2 p-3 bg-sky-50 border-sky-700 max-w-screen-md">
                         <p className="mt-1 mb-3">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
                         <form onSubmit={onSubmit} className="form flex flex-col md:flex-row">
                             <input name="url" placeholder="URL" onChange={onChange} className="w-full bg-sky-50 border-2 rounded border-sky-700 outline-none btn-shape inline p-1" autoComplete="off"/>
