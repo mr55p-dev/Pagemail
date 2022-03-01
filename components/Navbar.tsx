@@ -25,27 +25,27 @@ export default function Navbar() {
     const signedInDisplay = user ? (
         <>
         <Link href="/account">
-            <div className="btn-shape btn-colour py-2 hover:cursor-pointer">
+            <div className="btn-shape btn-colour mx-1 my-2 px-3 py-2 hover:cursor-pointer">
                 <a className="inline">{ user.displayName }</a>
                 <img className="rounded inline w-8 h-8 ml-2" src={photoURL} />
             </div>
         </Link>
         <hr className="border-sky-100"/>
         <Link passHref href="/upload">
-            <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                 <a className="nav-link">Upload</a>
             </div>
         </Link>
         <hr className="border-sky-100"/>
         <Link passHref href="/pages">
-            <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                 <a className="nav-link">My Pages</a>
             </div>
         </Link>
         </>
     ) : (
         <Link passHref href="/enter">
-            <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                 <a>Sign in</a>
             </div>
         </Link>
@@ -72,13 +72,13 @@ export default function Navbar() {
                     { signedInDisplay }
                     <hr className="border-sky-100"/>
                     <Link passHref href="/about">
-                        <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+                        <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                             <a>About</a>
                         </div>
                     </Link>
                     <hr className="border-sky-100"/>
                     <Link passHref href="/contact">
-                        <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+                        <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                             <a>Contact</a>
                         </div>
                     </Link>

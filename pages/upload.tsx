@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { AuthCheck } from "../components/AuthCheck";
 import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
@@ -25,7 +25,8 @@ function validateURL(inputString: string): URL {
 
 export default function UploadPage() {
     const [userURL, setUserURL] = useState<URL>(undefined);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(undefined);
+    const [loadingText, setLoadingText] = useState<string>("");
 
     const { user } = useContext(UserContext);
 
@@ -65,6 +66,11 @@ export default function UploadPage() {
         setLoading(false)
     }
 
+    useEffect(() => {
+        console.log(loading)
+        setLoadingText(loading === undefined ? "" : loading ? "Loading..." : "Loaded")
+    }, [loading])
+
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         setShowModal(false);
@@ -79,37 +85,41 @@ export default function UploadPage() {
     }
 
     return(
-        <main>
+        <div>
+            <div className="">
+                <h1 className="page-heading">Upload</h1>
+                <h3 className="heading">{loadingText}</h3>
+            </div>
             <AuthCheck>
-                <div className="heading sidebar">
-                    <h1 className="heading">{loading ? "Loading..." : "Loaded"}</h1>
-                </div>
-                <div className="form-container">
-                    <form onSubmit={onSubmit} className="form">
-                        <input name="url" placeholder="URL" onChange={onChange} className="form-input" autoComplete="off"/>
-                        <p>{userURL !== undefined ? "Valid URL!" : "Invalid URL :("}</p>
-                        <button type="submit" className="form-button">Submit</button>
-                    </form>
-                </div>
-                {pageMetadata !== undefined ?
-                    pageMetadata.title ?
-                        <p>Page Metadata: {pageMetadata.title}</p>
+                <div className="flex justify-around">
+                    <div className="border-2 rounded m-2 p-3 bg-sky-50 border-sky-700 max-w-screen-md">
+                        <p className="mt-1 mb-3">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
+                        <form onSubmit={onSubmit} className="form flex flex-col md:flex-row">
+                            <input name="url" placeholder="URL" onChange={onChange} className="w-full bg-sky-50 border-2 rounded border-sky-700 outline-none btn-shape inline p-1" autoComplete="off"/>
+                            <button type="submit" className="btn-shape border-2 btn-colour p-2 rounded mt-2 md:mt-0 md:mx-1 md:px-2">Submit</button>
+                        </form>
+                        {/* <p className="">{userURL !== undefined ? "Valid URL!" : "Invalid URL :("}</p> */}
+                    </div>
+                    {/* {pageMetadata !== undefined ?
+                        pageMetadata.title ?
+                            <p>Page Metadata: {pageMetadata.title}</p>
+                            :
+                            null
+                        : null
+                    }
+                    {pageMetadata !== undefined ?
+                        pageMetadata.title ?
+                            <Modal show={showModal} onClose={() => setShowModal(false)}>
+                                <h4>{pageMetadata?.title}</h4>
+                                <p>{pageMetadata?.description}</p>
+                                <img alt="" src={pageMetadata?.image} className="modal-image" />
+                            </Modal>
+                            : <p>No metadata</p>
                         :
-                        null
-                    : null
-                }
-                {pageMetadata !== undefined ?
-                    pageMetadata.title ?
-                        <Modal show={showModal} onClose={() => setShowModal(false)}>
-                            <h4>{pageMetadata?.title}</h4>
-                            <p>{pageMetadata?.description}</p>
-                            <img alt="" src={pageMetadata?.image} className="modal-image" />
-                        </Modal>
-                        : <p>No metadata</p>
-                    :
-                    <p>Loading...</p>
-                }
+                        <p>Loading...</p>
+                    } */}
+                </div>
             </AuthCheck>
-        </main>
+        </div>
     )
 }

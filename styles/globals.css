@@ -7,7 +7,7 @@ body {
 }
 
 .btn-shape {
-  @apply rounded block mx-1 my-2 px-3
+  @apply rounded block
 }
 
 .btn-colour {
@@ -17,4 +17,8 @@ body {
 img.rounded {
   object-fit: cover;
   border-radius: 50%;
+}
+
+.page-heading {
+  @apply text-center text-3xl underline my-3
 }
