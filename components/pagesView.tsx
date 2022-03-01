@@ -111,7 +111,7 @@ export default function PagesView() {
         <AuthCheck>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 m-5">
                 { pages ?
-                scrapedPages.map((d: ICard) => <PageCard data={d} deleteCallback={deleteCallback} key={d.id} />) :
+                scrapedPages.sort((p, q) => q.timeAdded - p.timeAdded).map((d: ICard) => <PageCard data={d} deleteCallback={deleteCallback} key={d.id} />) :
                 "You have no saved pages." }
             </div>
         </AuthCheck>
