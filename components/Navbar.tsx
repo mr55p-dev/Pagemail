@@ -57,7 +57,7 @@ export default function Navbar() {
                 <div className="text-3xl">
                     <Link passHref href="/">
                         <a className="">
-                            <span className="nav-brand">PageMail</span>
+                            <span className="nav-brand font-serif">PageMail</span>
                         </a>
                     </Link>
                 </div>
