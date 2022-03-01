@@ -16,11 +16,13 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <UserContext.Provider value={ userData }>
-        <Navbar />
-        <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
-          <Component {...pageProps} />
-        <Notif show={notifShow} state={notifState} />
-      </NotifContext.Provider>
+        <div className="bg-sky-50 md:bg-white">
+          <Navbar />
+          <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
+            <Component {...pageProps} />
+          <Notif show={notifShow} state={notifState} />
+                </NotifContext.Provider>
+        </div>
     </UserContext.Provider>
 
   )
