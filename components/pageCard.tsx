@@ -16,7 +16,7 @@ export default function PageCard({ data, deleteCallback }) {
     }
 
     return (
-        <div className="border-2 rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
+        <div className="border-y-2 md:border-2 md:rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
             <div className="">
                 <h3 className="text-lg font-semibold overflow-hidden whitespace-nowrap break-all">{title}</h3>
                 <p className="mb-2">{desc}</p>
