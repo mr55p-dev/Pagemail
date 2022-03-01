@@ -16,7 +16,7 @@ export default function Navbar() {
 
     // Components which are conditional on being signed in
     const SignOut = user && (
-        <div className="btn-shape btn-colour my-2 py-3 hover:cursor-pointer">
+        <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
             <button onClick={() => signOut(auth)}>
                 <a>Sign Out</a>
             </button>
