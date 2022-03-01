@@ -16,7 +16,7 @@ export default function Navbar() {
 
     // Components which are conditional on being signed in
     const SignOut = user && (
-        <div className="btn-shape btn-colour py-3 hover:cursor-pointer">
+        <div className="btn-shape btn-colour my-2 py-3 hover:cursor-pointer">
             <button onClick={() => signOut(auth)}>
                 <a>Sign Out</a>
             </button>
@@ -52,7 +52,7 @@ export default function Navbar() {
     )
 
     return(
-        <nav className="bg-sky-50 md:flex md:justify-between md:items-center text-sky-800 text-center">
+        <nav className="bg-sky-50 md:flex md:justify-between md:items-center text-sky-800 text-center border-sky-100 border-b-2">
             <div className="flex justify-between items-center px-3 py-6">
                 <div className="text-3xl">
                     <Link passHref href="/">

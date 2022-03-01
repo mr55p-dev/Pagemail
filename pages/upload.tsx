@@ -39,6 +39,9 @@ export default function UploadPage() {
         // Prevent the default redirection
         e.preventDefault();
 
+        // Set loading
+        setLoading(true);
+
         // Break if the user is not valid
         if (!token) {
             throw ("User not signed in")
@@ -50,8 +53,6 @@ export default function UploadPage() {
             return
         }
 
-        // Set loading
-        setLoading(true);
 
         // Only do this if everything works fine
         e.currentTarget.reset()
@@ -86,9 +87,11 @@ export default function UploadPage() {
 
     return(
         <div>
+            <div className={loading === true ? "bg-gray-700 bg-opacity-50 text-white absolute flex justify-around items-center w-screen h-screen top-0" : "hidden"} >
+                <p className="text-3xl">Loading...</p>
+            </div>
             <div className="">
                 <h1 className="page-heading">Upload</h1>
-                <h3 className="heading">{loadingText}</h3>
             </div>
             <AuthCheck>
                 <div className="flex justify-around">
@@ -96,7 +99,7 @@ export default function UploadPage() {
                         <p className="mt-1 mb-3">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
                         <form onSubmit={onSubmit} className="form flex flex-col md:flex-row">
                             <input name="url" placeholder="URL" onChange={onChange} className="w-full bg-sky-50 border-2 rounded border-sky-700 outline-none btn-shape inline p-1" autoComplete="off"/>
-                            <button type="submit" className="btn-shape border-2 btn-colour p-2 rounded mt-2 md:mt-0 md:mx-1 md:px-2">Submit</button>
+                            <button type="submit" className="btn-shape btn-colour p-2 rounded mt-2 md:mt-0 md:mx-1 md:px-2">Submit</button>
                         </form>
                         {/* <p className="">{userURL !== undefined ? "Valid URL!" : "Invalid URL :("}</p> */}
                     </div>

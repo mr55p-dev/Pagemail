@@ -19,7 +19,7 @@ export default function PageCard({ data, deleteCallback }) {
         <div className="border-2 rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
             <div className="">
                 <h3 className="text-lg font-semibold overflow-hidden whitespace-nowrap break-all">{title}</h3>
-                <p className="">{desc}</p>
+                <p className="mb-2">{desc}</p>
             </div>
             <div className="w-full overflow-hidden">
                 <div className="text-center grid grid-rows-2 gap-1 sm:grid-cols-4 sm:grid-rows-1 sm:space-x-2">
