@@ -16,7 +16,7 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <UserContext.Provider value={ userData }>
-        <div className="bg-sky-50 md:bg-white">
+        <div className="bg-primary min-h-screen w-screen">
           <Navbar />
           <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
             <Component {...pageProps} />

@@ -11,7 +11,7 @@ body {
 }
 
 .btn-colour {
-  @apply hover:bg-sky-700 hover:text-sky-50 transition-colors
+  @apply hover:bg-secondary hover:text-primary transition-colors rounded-none
 }
 
 img.rounded {
