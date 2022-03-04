@@ -16,12 +16,14 @@ function MyApp({ Component, pageProps }) {
 
   return(
     <UserContext.Provider value={ userData }>
-        <div className="bg-primary min-h-screen w-screen">
-          <Navbar />
-          <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
-            <Component {...pageProps} />
-          <Notif show={notifShow} state={notifState} />
-                </NotifContext.Provider>
+        <div className="bg-primary w-screen min-h-screen">
+          <div className="mx-auto max-w-screen-xl">
+            <Navbar />
+            <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
+              <Component {...pageProps} />
+            <Notif show={notifShow} state={notifState} />
+                  </NotifContext.Provider>
+          </div>
         </div>
     </UserContext.Provider>
 

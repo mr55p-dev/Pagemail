@@ -20,5 +20,5 @@ img.rounded {
 }
 
 .page-heading {
-  @apply font-serif text-4xl text-center py-2
+  @apply font-semibold text-4xl text-center py-2 text-secondary
 }
