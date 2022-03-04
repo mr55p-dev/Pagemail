@@ -101,7 +101,7 @@ async function triggerMailFunction() {
 exports.triggerMail = functions.runWith({
   secrets: ["MAIL_HOST", "MAIL_PORT", "MAIL_USER", "MAIL_PASS"],
 })
-    .pubsub.schedule("0,15,30,45 11-12 * * *")
+    .pubsub.schedule("0 8 * * *")
     .timeZone("Europe/London")
     .onRun((context) => {
       triggerMailFunction()
