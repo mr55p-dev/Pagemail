@@ -18,7 +18,7 @@ export default function PageCard({ data, deleteCallback }) {
     return (
         <div className="text-secondary dark:text-secondary-dark bg-primary dark:bg-primary-dark
                         grid grid-rows-6 grid-cols-1 sm:grid-rows-1 sm:grid-cols-12 items-stretch
-                        odd:border-y-2 last:border-b-2 border-tertiary p-2 md:py-4 group">
+                        odd:border-y-2 last:border-b-2 border-secondary dark:border-secondary-dark p-2 md:py-4 group">
             <a href={url.toString()} target="_blank" rel="noreferrer"
                             className="row-span-4 sm:row-span-2 sm:col-span-10 sm:p-2 lg:col-span-11
                             whitespace-nowrap overflow-hidden sm:mr-2 hover:cursor-pointer">

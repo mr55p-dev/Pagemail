@@ -109,7 +109,7 @@ export default function PagesView() {
 
     return(
         <AuthCheck>
-            <div className="grid auto-rows-max py-4">
+            <div className="grid auto-rows-max pb-4">
                 { pages ?
                 scrapedPages.sort((p, q) => q.timeAdded - p.timeAdded).map((d: ICard) => <PageCard data={d} deleteCallback={deleteCallback} key={d.id} />) :
                 "You have no saved pages." }

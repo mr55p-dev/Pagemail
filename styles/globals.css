@@ -21,7 +21,7 @@ img.rounded {
 }
 
 .page-heading {
-  @apply font-semibold text-4xl text-center py-2 text-secondary dark:text-secondary-dark
+  @apply font-semibold text-4xl text-center py-4 text-secondary dark:text-secondary-dark
 }
 
 .submit-enabled {
