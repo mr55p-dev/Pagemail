@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { useContext } from "react";
-import { UserContext } from "../lib/context";
+import { useAuth } from "../lib/context";
 
 export function AuthCheck(props) {
-    const { user } = useContext(UserContext);
+    const { user } = useAuth();
 
     return user ?
         props.children :
@@ -11,6 +11,6 @@ export function AuthCheck(props) {
 }
 
 export function AuthCheckQuiet(props) {
-    const { user } = useContext(UserContext);
+    const { user } = useAuth()
     return user ? props.children : null
 }

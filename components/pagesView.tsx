@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, DocumentSnapshot, getFirestore, onSnapshot } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react"
-import { UserContext } from "../lib/context"
+import { useAuth } from "../lib/context";
 import { firestore } from "../lib/firebase";
 import { usePageMetadata, useUserToken } from "../lib/hooks";
 import { ICard, IPage, IPageMetadata } from "../lib/typeAliases";
@@ -9,7 +9,7 @@ import PageCard from "./pageCard";
 
 export default function PagesView() {
 
-    const { user } = useContext(UserContext);
+    const { user } = useAuth();
     const [ pages, setPages ] = useState<IPage[]>([]);
     const [ metas, setMetas ] = useState<IPageMetadata[]>([]);
     const [ scrapedPages, setScrapedPages ] = useState<IPage[]>([]);

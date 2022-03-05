@@ -1,14 +1,14 @@
 import { signInWithPopup } from "@firebase/auth";
 import { auth, googleAuth} from "../lib/firebase"
 import { useContext } from "react";
-import { UserContext } from "../lib/context";
 import { storeUserData } from "../lib/firebase";
 import Head from "next/head";
+import { useAuth } from "../lib/context";
 
 
 export default function Enter({ }) {
 
-    const { user } = useContext(UserContext);
+    const { user } = useAuth();
 
     function SignInForm() {
         const signInWithGoogle = async () => {

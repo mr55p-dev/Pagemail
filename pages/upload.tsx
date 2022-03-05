@@ -1,10 +1,9 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AuthCheck } from "../components/AuthCheck";
-import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
-import Modal from "../components/modal";
 import { usePageMetadata, useUserToken } from "../lib/hooks";
 import Head from "next/head";
+import { useAuth } from "../lib/context";
 
 function validateURL(inputString: string): URL {
     // First coerce the input into a URL
@@ -27,16 +26,14 @@ function validateURL(inputString: string): URL {
 export default function UploadPage() {
     const [userURL, setUserURL] = useState<URL>(undefined);
     const [loading, setLoading] = useState<boolean>(undefined);
-    const [loadingText, setLoadingText] = useState<string>("");
     const [borderColour, setBorderColour] = useState<string>("border-tertiary")
     const [canSubmit, setCanSubmit] = useState<boolean>(false);
 
-    const { user } = useContext(UserContext);
+    const { user } = useAuth();
 
-    const [showModal, setShowModal] = useState<boolean>(false);
 
     const token = useUserToken();
-    const pageMetadata = usePageMetadata(userURL, token);
+    // const pageMetadata = usePageMetadata(userURL, token);
 
     const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         // Prevent the default redirection
@@ -63,18 +60,10 @@ export default function UploadPage() {
         // Save the URL
         storeUserURL(user.uid, userURL)
 
-        // Enable the modal
-        setShowModal(true);
-
         // Done!
         setLoading(false)
         setUserURL(undefined)
     }
-
-    useEffect(() => {
-        console.log(loading)
-        setLoadingText(loading === undefined ? "" : loading ? "Loading..." : "Loaded")
-    }, [loading])
 
     useEffect(() => {
         if (userURL === undefined) {
@@ -88,7 +77,6 @@ export default function UploadPage() {
 
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-        setShowModal(false);
         try {
             const valid = validateURL(e.target.value);
             setUserURL(valid);

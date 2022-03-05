@@ -45,7 +45,7 @@ export function storeUserData(user: User) {
     }
 
     // Add the user to the users collection
-    setDoc(doc(firestore, "users", user.uid), writableValues)
+    setDoc(doc(firestore, "users", user.uid), writableValues, { merge: true })
         .then(() => console.log("Sucseffully written user doc."))
         .catch(() => console.error("Failed to write user doc"))
 }
