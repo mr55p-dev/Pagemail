@@ -9,16 +9,19 @@ export default function Account ({ }): JSX.Element {
 
     return (
         <AuthCheck>
-            <main>
+            <main className="p-3">
                 <Head>
                     <title>Your account</title>
                 </Head>
-                <h1>Your account information</h1>
+                <h1 className="page-heading">Account information</h1>
                 <div>
-                    <form>
-                        <p>Username: </p><input defaultValue={username} readOnly={true} />
-                        <p>email: </p><input defaultValue={email} readOnly={true} />
-                        <p>Subscribe to emails: </p><input type="checkbox" defaultChecked={newsletter} />
+                    <form className="grid grid-rows-5 grid-cols-12 gap-2">
+                        <p className="col-span-12 md:col-span-4">Username: </p>
+                            <input className="col-span-12 md:col-span-8" defaultValue={username} readOnly={true} />
+                        <p className="col-span-12 md:col-span-4">Email address: </p>
+                            <input className="col-span-12 md:col-span-8" defaultValue={email} readOnly={true} />
+                        <p className="col-span-10 md:col-span-4">Subscribe to emails: </p>
+                            <input className=" col-span-2 md:col-span-8" type="checkbox" defaultChecked={newsletter} />
                     </form>
                 </div>
             </main>
