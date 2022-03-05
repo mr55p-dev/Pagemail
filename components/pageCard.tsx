@@ -19,18 +19,14 @@ export default function PageCard({ data, deleteCallback }) {
         <div className="text-secondary dark:text-secondary-dark bg-primary dark:bg-primary-dark
                         grid grid-rows-6 grid-cols-1 sm:grid-rows-1 sm:grid-cols-12 items-stretch
                         odd:border-y-2 last:border-b-2 border-tertiary p-2 md:py-4 group">
-            <Link href={url.toString()} passHref>
-                <div className="row-span-4 sm:row-span-2 sm:col-span-10 sm:p-2 lg:col-span-11
+            <a href={url.toString()} target="_blank" rel="noreferrer"
+                            className="row-span-4 sm:row-span-2 sm:col-span-10 sm:p-2 lg:col-span-11
                             whitespace-nowrap overflow-hidden sm:mr-2 hover:cursor-pointer">
-
-                            <a target="_blank"><h3 className="transition-all font-semibold group-hover:underline underline-offset-2 text-xl
-                                        group-hover:text-tertiary group-hover:font-bold">{title}</h3></a>
-                        <div className="desc">
-                            <p className="mb-2">{(desc.length > 150) ? desc.substr(0, 150-3) + '...' : desc}</p>
-                        </div>
-                    <small className="font-light">Saved {date}</small>
-                </div>
-            </Link>
+                <h3 className="transition-all font-semibold group-hover:underline underline-offset-2 text-xl
+                    group-hover:text-tertiary group-hover:font-bold">{title}</h3>
+                <p className="mb-2">{(desc.length > 150) ? desc.substr(0, 150-3) + '...' : desc}</p>
+                <small className="font-light">Saved {date}</small>
+            </a>
             <div className="row-span-2 sm:col-span-2 lg:col-span-1 flex items-center justify-around
                         border-tertiary border-2 text-semibold text-md
                         group-hover:bg-tertiary group-hover:text-primary group-hover:dark:text-primary-dark
