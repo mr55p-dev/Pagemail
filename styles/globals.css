@@ -23,3 +23,15 @@ img.rounded {
 .page-heading {
   @apply font-semibold text-4xl text-center py-2 text-secondary dark:text-secondary-dark
 }
+
+.submit-enabled {
+  @apply border-secondary dark:border-secondary-dark
+    hover:bg-secondary hover:dark:bg-secondary-dark
+    hover:dark:text-primary-dark hover:text-primary
+    transition-colors rounded-none
+}
+
+.submit-disabled {
+  @apply disabled:hover:cursor-default disabled:hover:bg-primary disabled:hover:dark:bg-primary-dark
+    disabled:hover:text-secondary disabled:hover:dark:text-secondary-dark
+}

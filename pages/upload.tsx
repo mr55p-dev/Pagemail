@@ -27,6 +27,8 @@ export default function UploadPage() {
     const [userURL, setUserURL] = useState<URL>(undefined);
     const [loading, setLoading] = useState<boolean>(undefined);
     const [loadingText, setLoadingText] = useState<string>("");
+    const [borderColour, setBorderColour] = useState<string>("border-tertiary")
+    const [canSubmit, setCanSubmit] = useState<boolean>(false);
 
     const { user } = useContext(UserContext);
 
@@ -72,6 +74,16 @@ export default function UploadPage() {
         setLoadingText(loading === undefined ? "" : loading ? "Loading..." : "Loaded")
     }, [loading])
 
+    useEffect(() => {
+        if (userURL === undefined) {
+            setBorderColour("border-tertiary")
+            setCanSubmit(false)
+        } else {
+            setBorderColour("border-green-600")
+            setCanSubmit(true)
+        }
+    }, [userURL])
+
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         setShowModal(false);
@@ -86,41 +98,25 @@ export default function UploadPage() {
     }
 
     return(
-        <div className="">
-            <div className={loading === true ? "bg-gray-700 bg-opacity-50 text-white absolute flex justify-around items-center w-screen h-screen top-0" : "hidden"} >
-                <p className="text-3xl">Loading...</p>
-            </div>
+        <div className="text-secondary dark:text-secondary-dark p-3">
             <div className="">
                 <h1 className="page-heading">Upload</h1>
             </div>
             <AuthCheck>
-                <div className="flex justify-around">
-                    <div className="md:border-2 rounded m-2 p-3 bg-sky-50 border-sky-700 max-w-screen-md">
-                        <p className="mt-1 mb-3">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
-                        <form onSubmit={onSubmit} className="form flex flex-col md:flex-row">
-                            <input required name="url" placeholder="URL" onChange={onChange} className={`transition-color w-full bg-sky-50 border-2 rounded border-sky-700 outline-none btn-shape inline p-1 ${userURL !== undefined ? "focus:border-green-500" : "focus:border-red-500"}`} autoComplete="off"/>
-                            <button type="submit" className="btn-shape btn-colour p-2 rounded mt-2 md:mt-0 md:mx-1 md:px-2">Submit</button>
-                        </form>
-                        {/* <p className="">{userURL !== undefined ? "Valid URL!" : "Invalid URL :("}</p> */}
+                <p className="py-2">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
+                <form onSubmit={onSubmit} className="grid grid-rows-3 grid-cols-1
+                    md:grid-rows-2 md:grid-cols-12 md:gap-4">
+                    <input required name="url" placeholder="URL" onChange={onChange}
+                    className={`w-full bg-primary dark:bg-primary-dark border-2 outline-none ${borderColour}
+                    md:col-span-10 my-2 p-2 }`} autoComplete="off"/>
+                    <div className={`border-2 ${borderColour} md:col-span-10 my-2 p-2`}>
+                        <p className="">{userURL !== undefined ? "Valid URL!" : "Invalid URL"}</p>
                     </div>
-                    {/* {pageMetadata !== undefined ?
-                        pageMetadata.title ?
-                            <p>Page Metadata: {pageMetadata.title}</p>
-                            :
-                            null
-                        : null
-                    }
-                    {pageMetadata !== undefined ?
-                        pageMetadata.title ?
-                            <Modal show={showModal} onClose={() => setShowModal(false)}>
-                                <h4>{pageMetadata?.title}</h4>
-                                <p>{pageMetadata?.description}</p>
-                                <img alt="" src={pageMetadata?.image} className="modal-image" />
-                            </Modal>
-                            : <p>No metadata</p>
-                        :
-                        <p>Loading...</p>
-                    } */}
+                    <button type="submit" disabled={!canSubmit} className="border-2 submit-enabled submit-disabled
+                    md:col-span-2 md:row-span-2 md:row-start-1 md:col-start-11 my-2">Submit</button>
+                </form>
+
+                <div className="flex justify-around max-w-screen-xl">
                 </div>
             </AuthCheck>
         </div>
