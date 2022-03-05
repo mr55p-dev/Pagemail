@@ -8,6 +8,8 @@ export default function Navbar() {
     const { user } = useAuth();
     const [ mobileShow, setMobileShow ] = useState(false);
 
+    const navClickHandler = () => setTimeout(() => {setMobileShow(false)}, 100)
+
     // Some resources for the navbar
     const photoURL = user?.photoURL || "empty-avatar.png"
     const menuIcon = (<svg className="h-8 w-8 fill-current" viewBox="0 0 24 24">
@@ -18,27 +20,29 @@ export default function Navbar() {
     const signedInDisplay = user ? (
         <>
         <div className="nav-border" />
-        <Link href="/account">
-            <div className="btn-shape btn-colour mx-1 my-2 px-3 py-2 hover:cursor-pointer">
-                <a className="inline">{ user.displayName }</a>
-                <img className="rounded-full object-cover inline w-8 h-8 ml-2" src={photoURL} />
-            </div>
+        <Link href="/account" passHref>
+            <a className="inline" onClick={navClickHandler}>
+                <div className="btn-shape btn-colour mx-1 my-2 px-3 py-2 hover:cursor-pointer">
+                    <img className="rounded-full object-cover inline w-8 h-8 ml-2" src={photoURL} />
+                    { user.displayName }
+                </div>
+            </a>
         </Link>
         <div className="nav-border" />
-        <Link passHref href="/upload">
-            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
-                <a className="nav-link">Upload</a>
-            </div>
+        <Link href="/upload" passHref>
+            <a className="nav-link" onClick={navClickHandler}>
+                <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">Upload</div>
+            </a>
         </Link>
         <div className="nav-border" />
         <Link passHref href="/pages">
-            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
-                <a className="nav-link">My Pages</a>
-            </div>
+            <a className="nav-link" onClick={navClickHandler}>
+                <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">My Pages</div>
+            </a>
         </Link>
         <div className="nav-border" />
         <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
-            <button onClick={() => signOut(auth)}>
+            <button onClick={() => {navClickHandler(); signOut(auth)}}>
                 <a>Sign Out</a>
             </button>
         </div>
@@ -48,9 +52,11 @@ export default function Navbar() {
         <>
         <div className="nav-border" />
         <Link passHref href="/enter">
-            <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
-                <a>Sign in</a>
-            </div>
+            <a className="nav-link" onClick={navClickHandler}>
+                <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
+                    Sign in
+                </div>
+            </a>
         </Link>
         <div className="nav-border" />
         </>

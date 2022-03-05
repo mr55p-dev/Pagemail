@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { useContext } from "react";
 import { useAuth } from "../lib/context";
 
 export function AuthCheck(props) {

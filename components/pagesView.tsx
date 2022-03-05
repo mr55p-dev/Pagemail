@@ -7,6 +7,8 @@ import { ICard, IPage, IPageMetadata } from "../lib/typeAliases";
 import { AuthCheck } from "./AuthCheck";
 import PageCard from "./pageCard";
 
+// export function getServersideProps
+
 export default function PagesView() {
 
     const { user } = useAuth();
