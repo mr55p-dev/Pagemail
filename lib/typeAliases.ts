@@ -30,7 +30,7 @@ export interface IUserDoc {
   email: string;
   photoURL: string;
   anonymous: boolean;
-  newsletter: boolean;
+  newsletter?: boolean;
 }
 
 export interface IUserData extends IUserDoc {

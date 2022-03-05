@@ -41,8 +41,7 @@ export function storeUserData(user: User) {
         username: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
-        anonymous: user.isAnonymous,
-        newsletter: false
+        anonymous: user.isAnonymous
     }
 
     // Add the user to the users collection
