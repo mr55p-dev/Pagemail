@@ -3,6 +3,7 @@ import { auth, googleAuth} from "../lib/firebase"
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
 import { storeUserData } from "../lib/firebase";
+import Head from "next/head";
 
 
 export default function Enter({ }) {
@@ -36,6 +37,9 @@ export default function Enter({ }) {
 
     return(
         <main>
+            <Head>
+                <title>Sign in</title>
+            </Head>
                 { user ?
                     <h1 className="heading">Hello, {user.displayName}!</h1>
                 :

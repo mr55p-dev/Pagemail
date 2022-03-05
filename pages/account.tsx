@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useContext } from "react"
 import { AuthCheck } from "../components/AuthCheck"
 import { UserContext } from "../lib/context"
@@ -9,6 +10,9 @@ export default function Account ({ }): JSX.Element {
     return (
         <AuthCheck>
             <main>
+                <Head>
+                    <title>Your account</title>
+                </Head>
                 <h1>Your account information</h1>
                 <div>
                     <form>

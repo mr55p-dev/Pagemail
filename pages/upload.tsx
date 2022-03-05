@@ -4,6 +4,7 @@ import { UserContext } from "../lib/context";
 import { storeUserURL } from "../lib/firebase";
 import Modal from "../components/modal";
 import { usePageMetadata, useUserToken } from "../lib/hooks";
+import Head from "next/head";
 
 function validateURL(inputString: string): URL {
     // First coerce the input into a URL
@@ -99,6 +100,9 @@ export default function UploadPage() {
 
     return(
         <div className="text-secondary dark:text-secondary-dark p-3">
+            <Head>
+                <title>Save a new page</title>
+            </Head>
             <div className="">
                 <h1 className="page-heading">Upload</h1>
             </div>
