@@ -6,6 +6,7 @@ export default function Home() {
     <>
     <Head>
       <title>PageMail - a simple Read-it-Later!</title>
+      <meta name="description" content="A simplistic, easy to use and free link-saving service." />
     </Head>
     <div className="w-screen max-w-screen-xl md:pt-12 flex flex-col items-start justify-evenly mx-auto flex-wrap">
       <div className="px-3 md:py-12">
