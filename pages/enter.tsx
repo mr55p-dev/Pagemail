@@ -18,33 +18,26 @@ export default function Enter({ }) {
         }
 
         return(
-                    <div className="form-container">
-                        <form className="form">
-                            {/* <input type="email" id="email" className="form-input" placeholder="Email or phone number"/> */}
-                            {/* <input type="password" id="password-1" className="form-input" placeholder="Password" autoComplete="current-password"/> */}
-                            {/* <div className="enter-form-button-group"> */}
-                                {/* <button className="form-button button-login">Log In</button>
-                                <button className="form-button button-signup">Create new account</button> */}
-                                <button className="form-button button-google-signup" type="button" onClick={signInWithGoogle}>
-                                    <img className="signin-google-img" src="/google-signin@2x.png" />
-                                </button>
-                            {/* </div> */}
-                            {/* <a className="enter-form-passreset-link">Forgot password?</a> */}
-                        </form>
-                    </div>
+            <div className="form-container">
+                <form className="form">
+                        <button className="form-button button-google-signup" type="button" onClick={signInWithGoogle}>
+                            <img className="signin-google-img" src="/google-signin@2x.png" />
+                        </button>
+                </form>
+            </div>
         )
     };
 
     return(
         <main>
             <Head>
-                <title>Sign in</title>
+                <title>Sign in - PageMail</title>
             </Head>
                 { user ?
-                    <h1 className="heading">Hello, {user.displayName}!</h1>
+                    <h1 className="page-heading">Hello, {user.displayName}!</h1>
                 :
                 <>
-                    <h1 className="heading">Sign in or register</h1>
+                    <h1 className="page-heading">Sign in or register</h1>
                     <SignInForm />
                 </>
                 }

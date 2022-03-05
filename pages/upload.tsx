@@ -68,6 +68,7 @@ export default function UploadPage() {
 
         // Done!
         setLoading(false)
+        setUserURL(undefined)
     }
 
     useEffect(() => {
