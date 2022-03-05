@@ -30,13 +30,13 @@ export default function Navbar() {
                 <img className="rounded inline w-8 h-8 ml-2" src={photoURL} />
             </div>
         </Link>
-        <hr className="border-secondary"/>
+        <hr className="border-secondary dark:border-secondary-dark"/>
         <Link passHref href="/upload">
             <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                 <a className="nav-link">Upload</a>
             </div>
         </Link>
-        <hr className="border-secondary"/>
+        <hr className="border-secondary dark:border-secondary-dark"/>
         <Link passHref href="/pages">
             <div className="btn-shape btn-colour mx-1 my-2 p-3 hover:cursor-pointer">
                 <a className="nav-link">My Pages</a>
@@ -52,7 +52,8 @@ export default function Navbar() {
     )
 
     return(
-        <nav className="md:flex md:justify-between md:items-center text-secondary text-center max-w-screen-xl mx-auto border-b-2 border-secondary md:border-0">
+        <nav className="md:flex md:justify-between md:items-center text-secondary dark:text-secondary-dark text-center
+                        max-w-screen-xl mx-auto border-b-2 border-secondary md:border-0">
             <div className="flex justify-between items-center px-3 py-6">
                 <div className="text-3xl">
                     <Link passHref href="/">
@@ -68,7 +69,8 @@ export default function Navbar() {
                 </div>
             </div>
             <div className={mobileShow ? "block" : "hidden md:block"}>
-                <div className="pb-1 border-t-2 border-secondary transition-all md:flex md:items-center md:border-0 md:py-0">
+                <div className="pb-1 border-t-2 border-secondary dark:border-secondary-dark
+                                transition-all md:flex md:items-center md:border-0 md:py-0">
                     { signedInDisplay }
                     {/* <hr className="border-secondary"/> */}
                     {/* <Link passHref href="/about">
@@ -82,7 +84,7 @@ export default function Navbar() {
                             <a>Contact</a>
                         </div>
                     </Link> */}
-                    { user && <hr className="border-secondary"/> }
+                    { user && <hr className="border-secondary dark:border-secondary-dark"/> }
                     { SignOut }
                 </div>
             </div>

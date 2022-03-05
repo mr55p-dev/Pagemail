@@ -16,17 +16,25 @@ export default function PageCard({ data, deleteCallback }) {
     }
 
     return (
-        <div className="border-y-2 md:border-2 md:rounded shadow-sm border-sky-700 bg-sky-50 p-2 flex flex-col justify-between">
-            <div className="">
-                <h3 className="text-lg font-semibold overflow-hidden whitespace-nowrap break-all">{title}</h3>
-                <p className="mb-2">{desc}</p>
-            </div>
-            <div className="w-full overflow-hidden">
-                <div className="text-center grid grid-rows-2 gap-1">
-                    <a className="underline border-2 border-sky-700 btn-colour rounded p-3 text-sky-700 whitespace-nowrap overflow-hidden col-span-2" href={url.toString()} target="_blank" rel="noreferrer">Open {sitename}</a>
-                    <button className="hover:bg-red-700 hover:text-sky-50 border-2 border-red-700 text-red-700 transition-colors rounded p-3 col-span-2 md:grow" onClick={() => {deleteCallback(data.id)}}>Remove</button>
-                </div>
+        <div className="text-secondary dark:text-secondary-dark bg-primary dark:bg-primary-dark
+                        grid grid-rows-6 grid-cols-1 sm:grid-rows-1 sm:grid-cols-12 items-stretch
+                        odd:border-y-2 last:border-b-2 border-tertiary p-2 md:py-4 group">
+            <div className="row-span-4 sm:row-span-2 sm:col-span-10 sm:p-2 lg:col-span-11
+                        whitespace-nowrap overflow-hidden sm:mr-2">
+                    <Link href={url.toString()} passHref>
+                        <a><h3 className="transition-all font-semibold group-hover:underline underline-offset-2 text-xl
+                                    group-hover:text-tertiary group-hover:font-bold">{title}</h3></a>
+                    </Link>
+                    <div className="desc">
+                        <p className="mb-2">{(desc.length > 150) ? desc.substr(0, 150-3) + '...' : desc}</p>
+                    </div>
                 <small className="font-light">Saved {date}</small>
+            </div>
+            <div className="row-span-2 sm:col-span-2 lg:col-span-1 flex items-center justify-around
+                        border-tertiary border-2 text-semibold text-md
+                        group-hover:bg-tertiary group-hover:text-primary group-hover:dark:text-primary-dark
+                        text-secondary dark:text-secondary-dark transition-all">
+                <button className="w-full h-full" onClick={() => {deleteCallback(data.id)}}>Remove</button>
             </div>
         </div>
     )

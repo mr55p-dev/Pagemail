@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { useState } from 'react';
 import Navbar from '../components/Navbar'
 import Notif from '../components/notif';
@@ -15,8 +16,12 @@ function MyApp({ Component, pageProps }) {
   const [notifState, setNotifState] = useState<INotifState | undefined>(undefined)
 
   return(
+    <>
+    <Head>
+      <meta name="theme-color" content="#fff5e0" />
+    </Head>
     <UserContext.Provider value={ userData }>
-        <div className="bg-primary w-screen min-h-screen">
+        <div className="bg-primary dark:bg-primary-dark w-screen min-h-screen">
           <div className="mx-auto max-w-screen-xl">
             <Navbar />
             <NotifContext.Provider value={{ setNotifShow, setNotifState }}>
@@ -26,6 +31,7 @@ function MyApp({ Component, pageProps }) {
           </div>
         </div>
     </UserContext.Provider>
+    </>
 
   )
 
