@@ -15,11 +15,6 @@ body {
           transition-colors rounded-none
 }
 
-img.rounded {
-  object-fit: cover;
-  border-radius: 50%;
-}
-
 .page-heading {
   @apply font-semibold text-4xl text-center py-4 text-secondary dark:text-secondary-dark
 }
@@ -34,4 +29,8 @@ img.rounded {
 .submit-disabled {
   @apply disabled:hover:cursor-default disabled:hover:bg-primary disabled:hover:dark:bg-primary-dark
     disabled:hover:text-secondary disabled:hover:dark:text-secondary-dark
+}
+
+.nav-border {
+  @apply border-t-2 border-secondary dark:border-secondary-dark md:border-t-0
 }
