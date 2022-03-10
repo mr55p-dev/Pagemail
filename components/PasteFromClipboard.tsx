@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-export default function ({ setFieldCallback }) {
+export default function PasteFromClipboard ({ setFieldCallback }) {
     const pasteFromClipboard = () => navigator.clipboard.readText().then(text => setFieldCallback(text))
 
     return (navigator.clipboard) && (
