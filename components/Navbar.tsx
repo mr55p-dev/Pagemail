@@ -23,7 +23,7 @@ export default function Navbar() {
         <Link href="/account" passHref>
             <a className="inline" onClick={navClickHandler}>
                 <div className="btn-shape btn-colour mx-1 my-2 px-3 py-2 hover:cursor-pointer">
-                    <img className="rounded-full object-cover inline w-8 h-8 ml-2" src={photoURL} />
+                    <img className="rounded-full object-cover inline w-8 h-8 mr-2" src={photoURL} />
                     { user.displayName }
                 </div>
             </a>

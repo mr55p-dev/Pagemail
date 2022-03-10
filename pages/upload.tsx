@@ -4,6 +4,7 @@ import { storeUserURL } from "../lib/firebase";
 import { usePageMetadata, useUserToken } from "../lib/hooks";
 import Head from "next/head";
 import { useAuth } from "../lib/context";
+import PasteFromClipboard from "../components/PasteFromClipboard";
 
 function validateURL(inputString: string): URL {
     // First coerce the input into a URL
@@ -28,6 +29,7 @@ export default function UploadPage() {
     const [loading, setLoading] = useState<boolean>(undefined);
     const [borderColour, setBorderColour] = useState<string>("border-tertiary")
     const [canSubmit, setCanSubmit] = useState<boolean>(false);
+    const [fieldText, setFieldText] = useState<string>("");
 
     const { user } = useAuth();
 
@@ -55,7 +57,7 @@ export default function UploadPage() {
 
 
         // Only do this if everything works fine
-        e.currentTarget.reset()
+        setFieldText("")
 
         // Save the URL
         storeUserURL(user.uid, userURL)
@@ -77,13 +79,25 @@ export default function UploadPage() {
 
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        setFieldText(e.target.value)
+        validateWrapper(e.target.value)
+    }
+
+    const validateWrapper = (text: string): boolean => {
         try {
-            const valid = validateURL(e.target.value);
+            const valid = validateURL(text);
             setUserURL(valid);
-        }
-        catch (error) {
-            console.error("invalid url")
+            return true
+        } catch (error) {
+            console.error("Invalid URL");
             setUserURL(undefined)
+            return false
+        }
+    }
+
+    const pasteCallback = (text: string): void => {
+        if (validateWrapper(text)) {
+            setFieldText(text)
         }
     }
 
@@ -99,7 +113,7 @@ export default function UploadPage() {
                 <p className="py-2">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
                 <form onSubmit={onSubmit} className="grid grid-rows-3 grid-cols-1
                     md:grid-rows-2 md:grid-cols-12 md:gap-4">
-                    <input required name="url" placeholder="URL" onChange={onChange}
+                    <input required name="url" placeholder="URL" onChange={onChange} value={fieldText}
                     className={`w-full bg-primary dark:bg-primary-dark border-2 outline-none ${borderColour}
                     md:col-span-10 my-2 p-2 }`} autoComplete="off"/>
                     <div className={`border-2 ${borderColour} md:col-span-10 my-2 p-2`}>
@@ -108,6 +122,7 @@ export default function UploadPage() {
                     <button type="submit" disabled={!canSubmit} className="border-2 submit-enabled submit-disabled
                     md:col-span-2 md:row-span-2 md:row-start-1 md:col-start-11 my-2">Submit</button>
                 </form>
+                <PasteFromClipboard setFieldCallback={pasteCallback}/>
 
                 <div className="flex justify-around max-w-screen-xl">
                 </div>
