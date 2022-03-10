@@ -112,17 +112,17 @@ export default function UploadPage() {
             <AuthCheck>
                 <p className="py-2">Use this form to save new pages to your space. Changes will be reflected instantly under your pages!</p>
                 <form onSubmit={onSubmit} className="grid grid-rows-3 grid-cols-1
-                    md:grid-rows-2 md:grid-cols-12 md:gap-4">
+                    md:grid-rows-2 md:grid-cols-12 md:gap-2">
                     <input required name="url" placeholder="URL" onChange={onChange} value={fieldText}
                     className={`w-full bg-primary dark:bg-primary-dark border-2 outline-none ${borderColour}
-                    md:col-span-10 my-2 p-2 }`} autoComplete="off"/>
-                    <div className={`border-2 ${borderColour} md:col-span-10 my-2 p-2`}>
+                    md:col-span-10 my-1 p-2 }`} autoComplete="off"/>
+                    <div className={`border-2 ${borderColour} md:col-span-10 my-1 p-2`}>
                         <p className="">{userURL !== undefined ? "Valid URL!" : "Invalid URL"}</p>
                     </div>
                     <button type="submit" disabled={!canSubmit} className="border-2 submit-enabled submit-disabled
-                    md:col-span-2 md:row-span-2 md:row-start-1 md:col-start-11 my-2">Submit</button>
+                    md:col-span-2 md:row-span-1 md:row-start-1 md:col-start-11 my-1">Submit</button>
+                    <PasteFromClipboard setFieldCallback={pasteCallback}/>
                 </form>
-                <PasteFromClipboard setFieldCallback={pasteCallback}/>
 
                 <div className="flex justify-around max-w-screen-xl">
                 </div>
