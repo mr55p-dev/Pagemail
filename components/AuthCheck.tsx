@@ -2,14 +2,14 @@ import Link from "next/link";
 import { useAuth } from "../lib/context";
 
 export function AuthCheck(props) {
-    const { user } = useAuth();
+    const { authUser } = useAuth();
 
-    return user ?
+    return authUser ?
         props.children :
         props.fallback || <Link href="/enter">Sign up or Log in here.</Link>
 }
 
 export function AuthCheckQuiet(props) {
-    const { user } = useAuth()
-    return user ? props.children : null
+    const { authUser } = useAuth()
+    return authUser ? props.children : null
 }

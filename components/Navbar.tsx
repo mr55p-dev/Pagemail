@@ -5,26 +5,26 @@ import { useAuth } from "../lib/context";
 import { auth } from "../lib/firebase";
 
 export default function Navbar() {
-    const { user } = useAuth();
+    const { authUser } = useAuth();
     const [ mobileShow, setMobileShow ] = useState(false);
 
     const navClickHandler = () => setTimeout(() => {setMobileShow(false)}, 100)
 
     // Some resources for the navbar
-    const photoURL = user?.photoURL || "empty-avatar.png"
+    const photoURL = authUser?.photoURL || "empty-avatar.png"
     const menuIcon = (<svg className="h-8 w-8 fill-current" viewBox="0 0 24 24">
         <path fillRule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
     </svg>)
 
     // Components which are conditional on being signed in
-    const signedInDisplay = user ? (
+    const signedInDisplay = authUser ? (
         <>
         <div className="nav-border" />
         <Link href="/account" passHref>
             <a className="inline" onClick={navClickHandler}>
                 <div className="btn-shape btn-colour mx-1 my-2 px-3 py-2 hover:cursor-pointer">
                     <img className="rounded-full object-cover inline w-8 h-8 mr-2" src={photoURL} />
-                    { user.displayName }
+                    { authUser.displayName }
                 </div>
             </a>
         </Link>
