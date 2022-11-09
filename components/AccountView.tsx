@@ -7,17 +7,17 @@ import { firestore } from "../lib/firebase";
 import { IUserData } from "../lib/typeAliases";
 
 export function AccountView ({ }): JSX.Element {
-    const { user } = useAuth();
+    const { authUser } = useAuth();
     useEffect(() => {
 
     })
-    const email = user?.email
-    const username = user?.displayName
+    const email = authUser?.email
+    const username = authUser?.displayName
     const [newsletterPref, setNewsletterPref] = useState<boolean>(undefined);
 
     // Subscribe to the user document and listen for changes
     useEffect(() => {
-        const userDoc = doc(firestore, "users", user?.uid);
+        const userDoc = doc(firestore, "users", authUser?.uid);
         const unsubscribe = onSnapshot(userDoc, (userData) => {
             setNewsletterPref((userData.data() as IUserData).newsletter)
         })
@@ -28,7 +28,7 @@ export function AccountView ({ }): JSX.Element {
     const handleNewsletterStateChange = (e) => {
         e.preventDefault()
         console.log("HandlingNewsletter")
-        const userDoc = doc(firestore, "users", user.uid)
+        const userDoc = doc(firestore, "users", authUser.uid)
         setDoc(userDoc, {newsletter: !newsletterPref}, {merge: true})
         .then(() => console.log("Updated preferences."))
     }

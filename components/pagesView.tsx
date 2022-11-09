@@ -11,22 +11,22 @@ import PageCard from "./pageCard";
 
 export default function PagesView() {
 
-    const { user } = useAuth();
+    const { authUser } = useAuth();
     const [ pages, setPages ] = useState<IPage[]>([]);
     const [ metas, setMetas ] = useState<IPageMetadata[]>([]);
     const [ scrapedPages, setScrapedPages ] = useState<IPage[]>([]);
     const token = useUserToken()
 
     const deleteCallback = (pageID: string): void => {
-        deleteDoc(doc(firestore, "users", user.uid, "pages", pageID))
+        deleteDoc(doc(firestore, "users", authUser.uid, "pages", pageID))
         .then((stat) => {console.log(stat)})
         .catch((err) => {console.error(err)});
     }
 
     // Page collector
     useEffect(() => {
-        if (user) {
-            const pagesRef = collection(firestore, "users", user.uid, "pages");
+        if (authUser) {
+            const pagesRef = collection(firestore, "users", authUser.uid, "pages");
             const unsubscribe = onSnapshot(pagesRef, (docs) => {
                 if (!docs.empty) {
                     setPages(docs.docs.map((card) => {
@@ -42,7 +42,7 @@ export default function PagesView() {
             })
             return unsubscribe;
         }
-    }, [user])
+    }, [authUser])
 
 
     const collectMeta = async (page: IPage): Promise<IPageMetadata> => {
