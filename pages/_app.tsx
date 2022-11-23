@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Navbar from '../components/Navbar'
-import { AuthUserProvider } from '../lib/context';
+import { AuthProvider } from '../lib/context';
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }) {
@@ -16,14 +16,14 @@ function MyApp({ Component, pageProps }) {
 
 
     </Head>
-    <AuthUserProvider>
+    <AuthProvider>
         <div className="bg-primary dark:bg-primary-dark w-screen min-h-screen">
           <div className="mx-auto max-w-screen-xl">
             <Navbar />
             <Component {...pageProps} />
           </div>
         </div>
-    </AuthUserProvider>
+    </AuthProvider>
     </>
 
   )

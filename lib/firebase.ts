@@ -15,7 +15,7 @@ const firebaseConfig = {
     messagingSenderId: "556909502728",
     appId: "1:556909502728:web:9392f6243b38ceef2c8cbd",
     measurementId: "G-Q62RYYT55K"
-};
+  };
 
 function createFirebaseApp(cfg) {
     try {
@@ -25,24 +25,13 @@ function createFirebaseApp(cfg) {
     }
 }
 
-function shouldUseEmulation(): boolean {
-    console.log(process.env.NODE_ENV)
-    return process.env.NODE_ENV === 'development'
-}
-
 // Initialise app
 const app = createFirebaseApp(firebaseConfig);
 
-const auth = getAuth(app);
-const firestore = getFirestore(app);
-if (shouldUseEmulation()) {
-    connectAuthEmulator(auth, "http://localhost:9099")
-    connectFirestoreEmulator(firestore, "localhost", 8080)
-    console.log("Loaded dev env")
-}
+export const auth = getAuth(app);
 export const googleAuth = new GoogleAuthProvider();
 export const emailAuth = new EmailAuthProvider();
-export { auth, firestore };
+export const firestore = getFirestore(app);
 
 // connectAuthEmulator(auth, "http://localhost:9099");
 // connectFirestoreEmulator(firestore, "localhost", 8080);
@@ -69,6 +58,6 @@ export function storeUserURL(userid: string, url: URL) {
 
     const PageDoc = collection(firestore, "users", userid, "pages")
     addDoc(PageDoc, writableValues)
-        .then(() => console.log("Written document!"))
-        .catch(() => console.error("Failed to write document!"));
+    .then(() => console.log("Written document!"))
+    .catch(() => console.error("Failed to write document!"));
 }

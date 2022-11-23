@@ -31,7 +31,7 @@ export default function UploadPage() {
     const [canSubmit, setCanSubmit] = useState<boolean>(false);
     const [fieldText, setFieldText] = useState<string>("");
 
-    const { authUser } = useAuth();
+    const { user } = useAuth();
 
 
     const token = useUserToken();
@@ -45,7 +45,7 @@ export default function UploadPage() {
         setLoading(true);
 
         // Break if the user is not valid
-        if (!authUser) {
+        if (!token) {
             throw ("User not signed in")
         }
 
@@ -60,7 +60,7 @@ export default function UploadPage() {
         setFieldText("")
 
         // Save the URL
-        storeUserURL(authUser.uid, userURL)
+        storeUserURL(user.uid, userURL)
 
         // Done!
         setLoading(false)
