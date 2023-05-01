@@ -1,6 +1,5 @@
-import { signInWithPopup } from "@firebase/auth";
-import { auth, googleAuth} from "../lib/firebase"
-import { storeUserData } from "../lib/firebase";
+import { auth, storeUserData } from "../lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "@firebase/auth";
 import Head from "next/head";
 import { useAuth } from "../lib/context";
 
@@ -8,6 +7,7 @@ import { useAuth } from "../lib/context";
 export default function Enter({ }) {
 
     const { user } = useAuth();
+	const googleAuth = new GoogleAuthProvider();
 
     function SignInForm() {
         const signInWithGoogle = async () => {

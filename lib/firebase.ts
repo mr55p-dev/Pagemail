@@ -1,11 +1,12 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApp, FirebaseApp } from "firebase/app";
-
-import { getAuth, GoogleAuthProvider, EmailAuthProvider, connectAuthEmulator, User, Auth } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator, setDoc, addDoc, doc, collection, serverTimestamp, Firestore } from 'firebase/firestore';
+import { initializeApp, getApp } from "firebase/app";
+import { getAuth, connectAuthEmulator, User } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator, setDoc, addDoc, doc, collection, serverTimestamp } from 'firebase/firestore';
 import { IPage, IUserDoc } from "./typeAliases";
 
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 interface IFirebaseConfig {
 	apiKey: string;
 	authDomain: string;
@@ -16,8 +17,6 @@ interface IFirebaseConfig {
 	measurementId?: string;
 };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 function getFirebaseconfig(): IFirebaseConfig {
 	if (process.env.vercel_env === "production") {
 		console.log('Using production firebase environment')
@@ -43,7 +42,7 @@ function getFirebaseconfig(): IFirebaseConfig {
 	}
 }
 
-
+// Create the application
 function createFirebaseApp(cfg: IFirebaseConfig) {
     try {
         return getApp();
@@ -52,36 +51,19 @@ function createFirebaseApp(cfg: IFirebaseConfig) {
     }
 }
 
-// Initialise app
 const firebaseConfig = getFirebaseconfig();
-const app = createFirebaseApp(firebaseConfig);
+export const app = createFirebaseApp(firebaseConfig);
+export const auth = getAuth(app);
+export const firestore = getFirestore(app);
 
-const getAuthLocal = (app: FirebaseApp): Auth => {
-	console.log('Fetching auth');
+// Register auth and firebase, configure emulators if necessary
+if (process.env.NEXT_PUBLIC_USE_EMULATOR === '1') {
+	console.log('Connecting auth, firestore emulator');
 	const auth = getAuth(app);
-	console.log(process.env)
-	if (process.env.EMULATE === '1') {
-		console.log('Connecting auth emulator');
-		connectAuthEmulator(auth, "http://localhost:9099");
-	}
-	else { console.log('nothing') }
-	return auth
-
+	const firestore = getFirestore(app);
+	connectAuthEmulator(auth, "http://localhost:9099");
+	connectFirestoreEmulator(firestore, "localhost", 8080);
 }
-const getFirestoreLocal = (app: FirebaseApp): Firestore => {
-	console.log('Fetching firestore');
-    const firestore = getFirestore(app);
-	if (process.env.EMULATE == '1') {
-		console.log('Connecting firestore emulator');
-		connectFirestoreEmulator(firestore, "localhost", 8080);
-	}
-	return firestore
-}
-
-export const auth = getAuthLocal(app);
-export const googleAuth = new GoogleAuthProvider();
-export const emailAuth = new EmailAuthProvider();
-export const firestore = getFirestoreLocal(app);
 
 export function storeUserData(user: User) {
     const writableValues: IUserDoc = {
@@ -90,6 +72,8 @@ export function storeUserData(user: User) {
         photoURL: user.photoURL,
         anonymous: user.isAnonymous
     }
+	const app = getApp();
+	const firestore = getFirestore(app);
 
     // Add the user to the users collection
     setDoc(doc(firestore, "users", user.uid), writableValues, { merge: true })
@@ -102,9 +86,12 @@ export function storeUserURL(userid: string, url: URL) {
         url: url.toString(),
         timeAdded: serverTimestamp()
     }
+	const app = getApp();
+	const firestore = getFirestore(app);
 
     const PageDoc = collection(firestore, "users", userid, "pages")
     addDoc(PageDoc, writableValues)
     .then(() => console.log("Written document!"))
     .catch(() => console.error("Failed to write document!"));
 }
+
