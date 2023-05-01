@@ -18,7 +18,7 @@ interface IFirebaseConfig {
 };
 
 function getFirebaseconfig(): IFirebaseConfig {
-	if (process.env.vercel_env === "production") {
+	if (process.env.NEXT_PUBLIC_ENVIRONMENT === "production") {
 		console.log('Using production firebase environment')
 		return {
 			apiKey: "AIzaSyCt4lpPzhe_UKbvlOcE7g_HSrz4stQbDjQ",
