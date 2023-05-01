@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "pagemail-2bc26"
-  }
+    "default": "pagemail-2bc26",
+    "preprod": "pagemail-preprod",
+    "prod": "pagemail-2bc26"
+  },
+  "targets": {},
+  "etags": {}
 }
