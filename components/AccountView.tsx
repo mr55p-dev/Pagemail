@@ -1,10 +1,10 @@
-import { doc, setDoc, onSnapshot } from "@firebase/firestore";
-import Head from "next/head";
-import { useEffect, useState } from "react";
+import { firestore } from "../lib/firebase";
 import { AuthCheck } from "../components/AuthCheck"
 import { useAuth } from "../lib/context";
-import { firestore } from "../lib/firebase";
 import { IUserData } from "../lib/typeAliases";
+import { doc, setDoc, onSnapshot } from "@firebase/firestore";
+import { useEffect, useState } from "react";
+import Head from "next/head";
 
 export function AccountView ({ }): JSX.Element {
     const { user } = useAuth();

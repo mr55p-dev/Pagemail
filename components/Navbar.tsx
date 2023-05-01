@@ -1,8 +1,8 @@
+import { auth } from "../lib/firebase";
 import { signOut } from "@firebase/auth";
 import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../lib/context";
-import { auth } from "../lib/firebase";
 
 export default function Navbar() {
     const { user } = useAuth();

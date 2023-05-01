@@ -1,16 +1,14 @@
-import { collection, deleteDoc, doc, DocumentSnapshot, getFirestore, onSnapshot } from "firebase/firestore";
-import { useContext, useEffect, useState } from "react"
+import { firestore } from "../lib/firebase"
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react"
 import { useAuth } from "../lib/context";
-import { firestore } from "../lib/firebase";
-import { usePageMetadata, useUserToken } from "../lib/hooks";
+import { useUserToken } from "../lib/hooks";
 import { ICard, IPage, IPageMetadata } from "../lib/typeAliases";
 import { AuthCheck } from "./AuthCheck";
 import PageCard from "./pageCard";
 
-// export function getServersideProps
 
 export default function PagesView() {
-
     const { user } = useAuth();
     const [ pages, setPages ] = useState<IPage[]>([]);
     const [ metas, setMetas ] = useState<IPageMetadata[]>([]);
