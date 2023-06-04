@@ -3,8 +3,9 @@ import "./App.css";
 import React from "react";
 import { pb } from "./lib/pocketbase";
 import { Record, RecordAuthResponse } from "pocketbase";
-import { DataState } from "./lib/data";
+import { DataState } from "./lib/data";		
 import { PageAdd } from "./components/PageAdd/PageAdd.component";
+import { PageView } from "./PageView/PageView.component";
 
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
             <h3>Welcome, {pb.authStore.model.id}</h3>
             <button onClick={handleSignout}>Sign out</button>
 			<PageAdd user_id={pb.authStore.model.id} />
+			<PageView />
 
           </>
         ) : authState === DataState.PENDING ? (
