@@ -13,25 +13,60 @@ interface PageProps {
   id: string;
 }
 
+interface PageMetadataResponse {
+  title?: string;
+  description?: string;
+}
+
 const Page = ({ url, id }: PageProps) => {
-  const [dataState, setDataState] = React.useState<DataState>(
+  const [deleteState, setDeleteState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
+  const [previewState, setPreviewState] = React.useState<DataState>(
+    DataState.UNKNOWN
+  );
+  const [previewData, setPreviewData] = React.useState<
+    PageMetadataResponse | undefined
+  >(undefined);
+
+  React.useEffect(() => {
+    setPreviewState(DataState.PENDING);
+    const fetchLocal = async () => {
+      console.log("Making request");
+      try {
+        const res = await pb.send<PageMetadataResponse>("api/preview", {
+          body: JSON.stringify({ target_url: url }),
+        });
+        setPreviewData(res);
+        setPreviewState(DataState.SUCCESS);
+      } catch (e) {
+        console.log(e);
+        setPreviewState(DataState.FAILED);
+      }
+    };
+    fetchLocal();
+  }, [url]);
 
   const handleDelete = () => {
     pb.collection("pages")
       .delete(id)
-      .then(() => setDataState(DataState.SUCCESS))
-      .catch(() => setDataState(DataState.FAILED));
+      .then(() => setDeleteState(DataState.SUCCESS))
+      .catch(() => setDeleteState(DataState.FAILED));
   };
+
   return (
     <div>
-      {dataState === DataState.PENDING ? (
+      {deleteState === DataState.PENDING ? (
         <p>Deleting...</p>
-      ) : dataState === DataState.FAILED ? (
+      ) : deleteState === DataState.FAILED ? (
         <>
           <p>Failed to delete!</p>
           <button onClick={handleDelete}>X</button>
+        </>
+      ) : previewState === DataState.SUCCESS && previewData ? (
+        <>
+          <h4>{previewData.title}</h4>
+          <p>{previewData.description}</p>
         </>
       ) : (
         <>

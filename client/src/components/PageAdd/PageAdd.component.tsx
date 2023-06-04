@@ -30,20 +30,24 @@ export const PageAdd = ({ user_id }: { user_id: string }) => {
     <div>
       <h3>Add a page</h3>
       {showSuccess ? <p>Success!</p> : undefined}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="url"
-          id="url-input"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          autoComplete="off"
-        />
-        <label htmlFor="url-input">URL</label>
-        <button type="submit">Submit</button>
-        <button type="reset" onClick={() => setUrl("")}>
-          Clear
-        </button>
-      </form>
+      {dataState === DataState.PENDING ? (
+        <p>Loading...</p>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="url"
+            id="url-input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            autoComplete="off"
+          />
+          <label htmlFor="url-input">URL</label>
+          <button type="submit">Submit</button>
+          <button type="reset" onClick={() => setUrl("")}>
+            Clear
+          </button>
+        </form>
+      )}
     </div>
   );
 };
