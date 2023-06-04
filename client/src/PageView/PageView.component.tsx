@@ -1,6 +1,5 @@
 import React from "react";
 import { pb } from "../lib/pocketbase";
-import { Record } from "pocketbase";
 import { DataState } from "../lib/data";
 
 interface PageRecord {

@@ -2,11 +2,9 @@ import "almond.css/dist/almond.min.css";
 import "./App.css";
 import React from "react";
 import { pb } from "./lib/pocketbase";
-import { Record, RecordAuthResponse } from "pocketbase";
-import { DataState } from "./lib/data";		
+import { DataState } from "./lib/data";
 import { PageAdd } from "./components/PageAdd/PageAdd.component";
 import { PageView } from "./PageView/PageView.component";
-
 
 function App() {
   const [email, setEmail] = React.useState<string>("");
@@ -19,6 +17,7 @@ function App() {
   const handleEmailChange = (e: React.FormEvent<HTMLInputElement>) => {
     setEmail(e.currentTarget.value);
   };
+
   const handlepasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
     setpassword(e.currentTarget.value);
   };
@@ -85,11 +84,15 @@ function App() {
       <div>
         {authState === DataState.SUCCESS && pb.authStore.model ? (
           <>
-            <h3>Welcome, {pb.authStore.model.id}</h3>
+            <h3>
+              Welcome
+              {pb.authStore.model?.username
+                ? " " + pb.authStore.model.username
+                : undefined}
+            </h3>
             <button onClick={handleSignout}>Sign out</button>
-			<PageAdd user_id={pb.authStore.model.id} />
-			<PageView />
-
+            <PageAdd user_id={pb.authStore.model.id} />
+            <PageView />
           </>
         ) : authState === DataState.PENDING ? (
           <h3>Loading...</h3>

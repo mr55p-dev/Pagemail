@@ -36,10 +36,13 @@ export const PageAdd = ({ user_id }: { user_id: string }) => {
           id="url-input"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          autoComplete="off"
         />
         <label htmlFor="url-input">URL</label>
         <button type="submit">Submit</button>
-        <button type="reset" onClick={() => setUrl("")}>Clear</button>
+        <button type="reset" onClick={() => setUrl("")}>
+          Clear
+        </button>
       </form>
     </div>
   );
