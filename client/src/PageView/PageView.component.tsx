@@ -34,8 +34,9 @@ const Page = ({ url, id }: PageProps) => {
     const fetchLocal = async () => {
       console.log("Making request");
       try {
-        const res = await pb.send<PageMetadataResponse>("api/preview", {
-          body: JSON.stringify({ target_url: url }),
+        const res = await pb.send<PageMetadataResponse>("/api/preview", {
+          method: "GET",
+          params: { target: url },
         });
         setPreviewData(res);
         setPreviewState(DataState.SUCCESS);
