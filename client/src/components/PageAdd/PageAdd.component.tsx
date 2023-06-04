@@ -23,7 +23,7 @@ export const PageAdd = ({ user_id }: { user_id: string }) => {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 1000);
       })
-	  .then(() => setUrl("")) 
+      .then(() => setUrl(""))
       .catch(() => setDataState(DataState.FAILED));
   };
   return (
@@ -39,7 +39,7 @@ export const PageAdd = ({ user_id }: { user_id: string }) => {
         />
         <label htmlFor="url-input">URL</label>
         <button type="submit">Submit</button>
-        <button type="reset">Clear</button>
+        <button type="reset" onClick={() => setUrl("")}>Clear</button>
       </form>
     </div>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { pb } from "../lib/pocketbase";
 import { Record } from "pocketbase";
+import { DataState } from "../lib/data";
 
 interface PageRecord {
   id: string;
@@ -8,8 +9,39 @@ interface PageRecord {
   user_id: string;
 }
 
-const Page = ({ url }: { url: string }) => {
-  return <p>{url}</p>;
+interface PageProps {
+  url: string;
+  id: string;
+}
+
+const Page = ({ url, id }: PageProps) => {
+  const [dataState, setDataState] = React.useState<DataState>(
+    DataState.UNKNOWN
+  );
+
+  const handleDelete = () => {
+    pb.collection("pages")
+      .delete(id)
+      .then(() => setDataState(DataState.SUCCESS))
+      .catch(() => setDataState(DataState.FAILED));
+  };
+  return (
+    <div>
+      {dataState === DataState.PENDING ? (
+        <p>Deleting...</p>
+      ) : dataState === DataState.FAILED ? (
+        <>
+          <p>Failed to delete!</p>
+          <button onClick={handleDelete}>X</button>
+        </>
+      ) : (
+        <>
+          <p>{url}</p>
+          <button onClick={handleDelete}>X</button>
+        </>
+      )}
+    </div>
+  );
 };
 
 export const PageView = () => {
@@ -39,7 +71,7 @@ export const PageView = () => {
   return (
     <div>
       {pages.map((e) => (
-        <Page url={e.url} key={e.id} />
+        <Page url={e.url} id={e.id} key={e.id} />
       ))}
     </div>
   );
