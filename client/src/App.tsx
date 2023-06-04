@@ -4,10 +4,11 @@ import React from "react";
 import { pb } from "./lib/pocketbase";
 import { DataState } from "./lib/data";
 import { PageAdd } from "./components/PageAdd/PageAdd.component";
-import { PageView } from "./PageView/PageView.component";
+import { PageView } from "./components/PageView/PageView.component";
 
 function App() {
   const [email, setEmail] = React.useState<string>("");
+  const [username, setUsername] = React.useState<string>("");
   const [password, setpassword] = React.useState<string>("");
   const [errMsg, setErrMsg] = React.useState<string>("");
   const [authState, setAuthState] = React.useState<DataState>(
@@ -16,6 +17,10 @@ function App() {
 
   const handleEmailChange = (e: React.FormEvent<HTMLInputElement>) => {
     setEmail(e.currentTarget.value);
+  };
+
+  const handleUsernameChange = (e: React.FormEvent<HTMLInputElement>) => {
+    setUsername(e.currentTarget.value);
   };
 
   const handlepasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -34,7 +39,7 @@ function App() {
     setAuthState(DataState.PENDING);
     // example create data
     const data = {
-      // username: "test_username",
+      username: username || undefined,
       email: email,
       emailVisibility: true,
       password: password,
@@ -69,6 +74,13 @@ function App() {
               id="email-field"
             />
             <label htmlFor="email-field">Email</label>
+            <input
+              type="text"
+              onChange={handleUsernameChange}
+              value={username}
+              id="username-field"
+            />
+            <label htmlFor="username-field">Username</label>
             <input
               type="password"
               onChange={handlepasswordChange}
