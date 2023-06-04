@@ -8,7 +8,7 @@ build:
 	go build -o $(SERVER_TGT) .
 
 run:
-	go run main.go --dir=pb_data_test
+	go run main.go --debug --dir=pb_data_test serve
 
 serve:
 	dist/server --dir pb_data_test/ serve
