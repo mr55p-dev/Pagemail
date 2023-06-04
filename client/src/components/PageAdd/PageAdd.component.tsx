@@ -1,20 +1,27 @@
 import React from "react";
 import { pb } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
+import UserContext from "../../lib/context";
 
-export const PageAdd = ({ user_id }: { user_id: string }) => {
+export const PageAdd = () => {
   const [url, setUrl] = React.useState<string>("");
   const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
   const [dataState, setDataState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
 
+  // Get our user and do not render anything if not auth'd
+  const { user } = React.useContext(UserContext);
+  if (!user) {
+	return undefined
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDataState(DataState.PENDING);
     const data = {
       url: url,
-      user_id: user_id,
+      user_id: user.id,
     };
     pb.collection("pages")
       .create(data)

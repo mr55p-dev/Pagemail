@@ -1,12 +1,6 @@
 import React from "react";
-import { pb } from "../lib/pocketbase";
-import { DataState } from "../lib/data";
-
-interface PageRecord {
-  id: string;
-  url: string;
-  user_id: string;
-}
+import { pb } from "../../lib/pocketbase";
+import { DataState } from "../../lib/data";
 
 interface PageProps {
   url: string;

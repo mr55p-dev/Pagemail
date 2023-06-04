@@ -1,122 +1,54 @@
 import "almond.css/dist/almond.min.css";
 import "./App.css";
 import React from "react";
-import { pb } from "./lib/pocketbase";
+import { getCurrentUser, pb } from "./lib/pocketbase";
 import { DataState } from "./lib/data";
 import { PageAdd } from "./components/PageAdd/PageAdd.component";
 import { PageView } from "./components/PageView/PageView.component";
+import UserContext from "./lib/context";
+import { AuthForm } from "./components/AuthForm/AuthForm.component";
+import { UserRecord } from "./lib/datamodels";
 
 function App() {
-  const [email, setEmail] = React.useState<string>("");
-  const [username, setUsername] = React.useState<string>("");
-  const [password, setpassword] = React.useState<string>("");
-  const [errMsg, setErrMsg] = React.useState<string>("");
-  const [authState, setAuthState] = React.useState<DataState>(
-    DataState.UNKNOWN
+  const [user, setUser] = React.useState<UserRecord | null>(getCurrentUser());
+  const [authStatus, setAuthStatus] = React.useState<DataState>(
+    user ? DataState.SUCCESS : DataState.FAILED
   );
-
-  const handleEmailChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setEmail(e.currentTarget.value);
-  };
-
-  const handleUsernameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setUsername(e.currentTarget.value);
-  };
-
-  const handlepasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setpassword(e.currentTarget.value);
-  };
-
-  const handleSignin = () => {
-    setAuthState(DataState.PENDING);
-    pb.collection("users")
-      .authWithPassword(email, password)
-      .then(() => setAuthState(DataState.SUCCESS))
-      .catch(() => setAuthState(DataState.FAILED));
-  };
-
-  const handleSignup = () => {
-    setAuthState(DataState.PENDING);
-    // example create data
-    const data = {
-      username: username || undefined,
-      email: email,
-      emailVisibility: true,
-      password: password,
-      passwordConfirm: password,
-      // name: "test",
-    };
-    pb.collection("users")
-      .create(data)
-      .then(() => setAuthState(DataState.SUCCESS))
-      .catch((err) => {
-        setAuthState(DataState.FAILED);
-        setErrMsg(err.data.message);
-      });
-  };
+  pb.authStore.onChange(() => {
+    setUser(getCurrentUser());
+  });
 
   const handleSignout = () => {
     pb.authStore.clear();
-    setAuthState(DataState.UNKNOWN);
+    setAuthStatus(DataState.UNKNOWN);
   };
 
   return (
     <>
       <h1>Pagemail</h1>
-      {authState !== DataState.SUCCESS ? (
-        <>
-          <div>
-            <h3>Login</h3>
-            <input
-              type="email"
-              onChange={handleEmailChange}
-              value={email}
-              id="email-field"
-            />
-            <label htmlFor="email-field">Email</label>
-            <input
-              type="text"
-              onChange={handleUsernameChange}
-              value={username}
-              id="username-field"
-            />
-            <label htmlFor="username-field">Username</label>
-            <input
-              type="password"
-              onChange={handlepasswordChange}
-              value={password}
-              id="password-field"
-            />
-            <label htmlFor="password-field">password</label>
-            <button onClick={handleSignin}>Sign in</button>
-            <button onClick={handleSignup}>Sign up</button>
-          </div>
-        </>
-      ) : undefined}
+      <UserContext.Provider
+        value={{
+          user: user,
+          checkUser: () => setUser(getCurrentUser()),
+          authStatus: authStatus,
+          setAuthStatus: setAuthStatus,
+        }}
+      >
+        {user ? (
+          <button onClick={handleSignout}>Sign out</button>
+        ) : (
+          <AuthForm />
+        )}
       <div>
-        {authState === DataState.SUCCESS && pb.authStore.model ? (
+        {authStatus === DataState.SUCCESS && user ? (
           <>
-            <h3>
-              Welcome
-              {pb.authStore.model?.username
-                ? " " + pb.authStore.model.username
-                : undefined}
-            </h3>
-            <button onClick={handleSignout}>Sign out</button>
-            <PageAdd user_id={pb.authStore.model.id} />
+            <h3>Welcome, {user.username || user.email || "user"}</h3>
+            <PageAdd />
             <PageView />
           </>
-        ) : authState === DataState.PENDING ? (
-          <h3>Loading...</h3>
-        ) : authState === DataState.FAILED ? (
-          <>
-            <h3>Failed to login</h3>
-            <p>{errMsg}</p>
-          </>
-        ) : authState === DataState.UNKNOWN ? (
-          <h3>Please sign in or sign up!</h3>
         ) : undefined}
       </div>
+      </UserContext.Provider>
     </>
   );
 }
