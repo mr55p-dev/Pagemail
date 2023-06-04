@@ -3,13 +3,9 @@ import "./App.css";
 import React from "react";
 import { pb } from "./lib/pocketbase";
 import { Record, RecordAuthResponse } from "pocketbase";
+import { DataState } from "./lib/data";
+import { PageAdd } from "./components/PageAdd/PageAdd.component";
 
-enum DataState {
-  UNKNOWN,
-  SUCCESS,
-  FAILED,
-  PENDING,
-}
 
 function App() {
   const [email, setEmail] = React.useState<string>("");
@@ -86,10 +82,12 @@ function App() {
         </>
       ) : undefined}
       <div>
-        {authState === DataState.SUCCESS ? (
+        {authState === DataState.SUCCESS && pb.authStore.model ? (
           <>
-            <h3>Welcome, {pb.authStore.model?.id}</h3>
+            <h3>Welcome, {pb.authStore.model.id}</h3>
             <button onClick={handleSignout}>Sign out</button>
+			<PageAdd user_id={pb.authStore.model.id} />
+
           </>
         ) : authState === DataState.PENDING ? (
           <h3>Loading...</h3>
