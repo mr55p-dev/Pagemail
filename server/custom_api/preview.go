@@ -53,5 +53,6 @@ func Preview(c echo.Context) error {
 	if err := fetch_url(uri, data); err != nil {
 		return c.String(http.StatusServiceUnavailable, "Failed to fetch the external resource")
 	}
+	c.Response().Header().Set("Cache-Control", "private, max-age=432000")
 	return c.JSON(http.StatusOK, data)
 }

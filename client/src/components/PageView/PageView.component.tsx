@@ -31,6 +31,8 @@ const Page = ({ url, id }: PageProps) => {
         const res = await pb.send<PageMetadataResponse>("/api/preview", {
           method: "GET",
           params: { target: url },
+          // mode: "same-origin",
+          cache: "default",
         });
         if (!res.title && !res.description) {
           throw new Error("Service returned no title or description");
