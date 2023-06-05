@@ -1,6 +1,7 @@
 import React from "react";
 import { pb } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
+import { PageRecord } from "../../lib/datamodels";
 
 interface PageProps {
   url: string;
@@ -26,16 +27,18 @@ const Page = ({ url, id }: PageProps) => {
   React.useEffect(() => {
     setPreviewState(DataState.PENDING);
     const fetchLocal = async () => {
-      console.log("Making request");
       try {
         const res = await pb.send<PageMetadataResponse>("/api/preview", {
           method: "GET",
           params: { target: url },
         });
+        if (!res.title && !res.description) {
+          throw new Error("Service returned no title or description");
+        }
         setPreviewData(res);
         setPreviewState(DataState.SUCCESS);
       } catch (e) {
-        console.log(e);
+        console.error(e);
         setPreviewState(DataState.FAILED);
       }
     };
@@ -49,26 +52,35 @@ const Page = ({ url, id }: PageProps) => {
       .catch(() => setDeleteState(DataState.FAILED));
   };
 
+  switch (deleteState) {
+    case DataState.PENDING:
+      return <p>Deleting...</p>;
+    case DataState.FAILED:
+      return <p>Something went wrong deleting this!</p>;
+  }
+  let body;
+  if (previewData) {
+    body = (
+      <>
+        <h4>{previewData.title}</h4>
+        <p>{previewData.description}</p>
+        <span>{url}</span>
+      </>
+    );
+  } else {
+    body = (
+      <>
+        <p>{url}</p>
+        {previewState === DataState.PENDING ? (
+          <p>Loading preview...</p>
+        ) : undefined}
+      </>
+    );
+  }
   return (
     <div>
-      {deleteState === DataState.PENDING ? (
-        <p>Deleting...</p>
-      ) : deleteState === DataState.FAILED ? (
-        <>
-          <p>Failed to delete!</p>
-          <button onClick={handleDelete}>X</button>
-        </>
-      ) : previewState === DataState.SUCCESS && previewData ? (
-        <>
-          <h4>{previewData.title}</h4>
-          <p>{previewData.description}</p>
-        </>
-      ) : (
-        <>
-          <p>{url}</p>
-          <button onClick={handleDelete}>X</button>
-        </>
-      )}
+      {body}
+      <button onClick={handleDelete}>X</button>
     </div>
   );
 };
