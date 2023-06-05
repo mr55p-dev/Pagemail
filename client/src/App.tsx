@@ -11,9 +11,14 @@ import { UserRecord } from "./lib/datamodels";
 
 function App() {
   const [user, setUser] = React.useState<UserRecord | null>(getCurrentUser());
-  const [authStatus, setAuthStatus] = React.useState<DataState>(
-    user ? DataState.SUCCESS : DataState.FAILED
-  );
+  const [authStatus, setAuthStatus] = React.useState<DataState>(user ? DataState.SUCCESS : DataState.UNKNOWN);
+  React.useEffect(() => {
+	console.log(user)
+  }, [user])
+  React.useEffect(() => {
+	console.log(authStatus)
+  }, [authStatus])
+
   pb.authStore.onChange(() => {
     setUser(getCurrentUser());
   });
@@ -34,6 +39,7 @@ function App() {
           setAuthStatus: setAuthStatus,
         }}
       >
+		{authStatus.valueOf()}
         {user ? (
           <button onClick={handleSignout}>Sign out</button>
         ) : (

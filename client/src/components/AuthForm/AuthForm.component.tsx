@@ -4,11 +4,11 @@ import { DataState } from "../../lib/data";
 import { pb } from "../../lib/pocketbase";
 
 export const AuthForm = () => {
-  const { checkUser, authStatus, setAuthStatus } =
+  const { authStatus, setAuthStatus } =
     React.useContext(UserContext);
 
   const [email, setEmail] = React.useState<string>("");
-  const [username, setUsername] = React.useState<string>("");
+  // const [username, setUsername] = React.useState<string>("");
   const [password, setpassword] = React.useState<string>("");
   const [errMsg, setErrMsg] = React.useState<string>("");
 
@@ -16,9 +16,9 @@ export const AuthForm = () => {
     setEmail(e.currentTarget.value);
   };
 
-  const handleUsernameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setUsername(e.currentTarget.value);
-  };
+  // const handleUsernameChange = (e: React.FormEvent<HTMLInputElement>) => {
+  //   setUsername(e.currentTarget.value);
+  // };
 
   const handlepasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
     setpassword(e.currentTarget.value);
@@ -26,43 +26,48 @@ export const AuthForm = () => {
 
   const handleSignin = () => {
     setAuthStatus(DataState.PENDING);
-    pb.collection("users")
-      .authWithPassword(email, password)
-      .then(() => {
+    const handler = async () => {
+      try {
+        pb.collection("users").authWithPassword(email, password);
         setAuthStatus(DataState.SUCCESS);
-        checkUser();
-      })
-      .catch((err) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
         setAuthStatus(DataState.FAILED);
         setErrMsg(`${err.status}: ${err.data.message}`);
-      });
+      }
+    };
+    handler();
   };
 
   const handleSignup = () => {
     setAuthStatus(DataState.PENDING);
-    // example create data
-    const data = {
-      username: username || undefined,
-      email: email,
-      emailVisibility: true,
-      password: password,
-      passwordConfirm: password,
-      // name: "test",
-    };
-    pb.collection("users")
-      .create(data)
-      .then(() => setAuthStatus(DataState.SUCCESS))
-      .catch((err) => {
+    const handler = async () => {
+      // example create data
+      const data = {
+        email: email,
+        emailVisibility: true,
+        password: password,
+        passwordConfirm: password,
+        // name: "test",
+      };
+      try {
+        await pb.collection("users").create(data);
+        await pb.collection("users").authWithPassword(email, password);
+        setAuthStatus(DataState.SUCCESS);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
         setAuthStatus(DataState.FAILED);
         setErrMsg(`${err.status}: ${err.data.message}`);
-      });
+      }
+    };
+    handler();
   };
 
   switch (authStatus) {
     case DataState.PENDING:
       return <h3>Submitting...</h3>;
     case DataState.SUCCESS:
-      return <p>Authenticated! This does not need to be displayed</p>;
+      return null;
     case DataState.UNKNOWN:
     case DataState.FAILED:
     default:
@@ -78,6 +83,7 @@ export const AuthForm = () => {
               id="email-field"
             />
             <label htmlFor="email-field">Email</label>
+            {/*
             <input
               type="text"
               onChange={handleUsernameChange}
@@ -85,6 +91,7 @@ export const AuthForm = () => {
               id="username-field"
             />
             <label htmlFor="username-field">Username</label>
+			*/}
             <input
               type="password"
               onChange={handlepasswordChange}

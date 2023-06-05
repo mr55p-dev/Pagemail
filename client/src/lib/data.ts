@@ -1,6 +1,6 @@
 export enum DataState {
-  UNKNOWN,
-  SUCCESS,
-  FAILED,
-  PENDING,
+  UNKNOWN = 'UNKNOWN',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  PENDING = 'PENDING',
 }
