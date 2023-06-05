@@ -10,6 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
 )
 
@@ -84,9 +85,9 @@ func main() {
 			Path:   "/api/page/save",
 			Handler: func(c echo.Context) error {
 				// Fetch the page contents
-				uri := c.FormValue("target")
-				user_id := c.FormValue("uid")
-				if uri == "" {
+				url := c.FormValue("url")
+				user_id := c.FormValue("user_id")
+				if url == "" {
 					return c.String(http.StatusBadRequest, "Must include a URL")
 				}
 				if user_id == "" {
@@ -97,10 +98,9 @@ func main() {
 					return c.String(http.StatusInternalServerError, "")
 				}
 				record := models.NewRecord(collection)
-				record.Set("url", uri)
-				record.Set("user_id", user_id)
-
-				if err := app.Dao().SaveRecord(record); err != nil {
+				form := forms.NewRecordUpsert(app, record)
+				form.LoadRequest(c.Request(), "")
+				if err := form.Submit(); err != nil {
 					return c.String(http.StatusBadRequest, "Failed to store this record")
 				}
 				return c.String(http.StatusOK, "Saved")
