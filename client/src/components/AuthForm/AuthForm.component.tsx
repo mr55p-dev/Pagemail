@@ -28,7 +28,7 @@ export const AuthForm = () => {
     setAuthStatus(DataState.PENDING);
     const handler = async () => {
       try {
-        pb.collection("users").authWithPassword(email, password);
+        await pb.collection("users").authWithPassword(email, password);
         setAuthStatus(DataState.SUCCESS);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {

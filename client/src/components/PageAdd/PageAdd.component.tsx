@@ -4,6 +4,7 @@ import { DataState } from "../../lib/data";
 import UserContext from "../../lib/context";
 
 export const PageAdd = () => {
+  const [clipboardEnabled, setClipboardEnabled] = React.useState<boolean>(true);
   const [url, setUrl] = React.useState<string>("");
   const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
   const [dataState, setDataState] = React.useState<DataState>(
@@ -13,8 +14,15 @@ export const PageAdd = () => {
   // Get our user and do not render anything if not auth'd
   const { user } = React.useContext(UserContext);
   if (!user) {
-	return undefined
+    return undefined;
   }
+
+  const handlePaste = () => {
+    navigator.clipboard
+      .readText()
+      .then((txt) => setUrl(txt))
+      .catch(() => setClipboardEnabled(false));
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,6 +58,7 @@ export const PageAdd = () => {
           />
           <label htmlFor="url-input">URL</label>
           <button type="submit">Submit</button>
+          <button type="button" onClick={handlePaste} disabled={!clipboardEnabled}>Paste</button>
           <button type="reset" onClick={() => setUrl("")}>
             Clear
           </button>
