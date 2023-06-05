@@ -10,6 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/models"
 )
 
 type UrlData struct {
@@ -71,6 +72,42 @@ func main() {
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireRecordAuth("users"),
+			},
+		})
+
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		e.Router.AddRoute(echo.Route{
+			Method: http.MethodPost,
+			Path:   "/api/page/save",
+			Handler: func(c echo.Context) error {
+				// Fetch the page contents
+				uri := c.FormValue("target")
+				user_id := c.FormValue("uid")
+				if uri == "" {
+					return c.String(http.StatusBadRequest, "Must include a URL")
+				}
+				if user_id == "" {
+					return c.String(http.StatusBadRequest, "Must include a user id")
+				}
+				collection, err := app.Dao().FindCollectionByNameOrId("pages")
+				if err != nil {
+					return c.String(http.StatusInternalServerError, "")
+				}
+				record := models.NewRecord(collection)
+				record.Set("url", uri)
+				record.Set("user_id", user_id)
+
+				if err := app.Dao().SaveRecord(record); err != nil {
+					return c.String(http.StatusBadRequest, "Failed to store this record")
+				}
+				return c.String(http.StatusOK, "Saved")
+			},
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				// apis.RequireRecordAuth("users"),
 			},
 		})
 
