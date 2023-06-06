@@ -6,8 +6,8 @@ export interface UserRecord {
 	created: string;
 	updated: string;
 	avatar?: string;
+	subscribed: boolean;
 }
-
 
 export interface PageRecord {
   id: string;

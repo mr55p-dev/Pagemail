@@ -4,12 +4,12 @@ import { DataState } from "../../lib/data";
 import { pb } from "../../lib/pocketbase";
 
 export const AuthForm = () => {
-  const { authStatus, setAuthStatus } =
-    React.useContext(UserContext);
+  const { authStatus, setAuthStatus } = React.useContext(UserContext);
 
   const [email, setEmail] = React.useState<string>("");
   // const [username, setUsername] = React.useState<string>("");
   const [password, setpassword] = React.useState<string>("");
+  const [subscribe, setSubscribe] = React.useState<boolean>(true);
   const [errMsg, setErrMsg] = React.useState<string>("");
 
   const handleEmailChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -20,7 +20,7 @@ export const AuthForm = () => {
   //   setUsername(e.currentTarget.value);
   // };
 
-  const handlepasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
     setpassword(e.currentTarget.value);
   };
 
@@ -48,6 +48,7 @@ export const AuthForm = () => {
         emailVisibility: true,
         password: password,
         passwordConfirm: password,
+        subscribed: subscribe,
         // name: "test",
       };
       try {
@@ -94,11 +95,18 @@ export const AuthForm = () => {
 			*/}
             <input
               type="password"
-              onChange={handlepasswordChange}
+              onChange={handlePasswordChange}
               value={password}
               id="password-field"
             />
             <label htmlFor="password-field">password</label>
+            <input
+              type="checkbox"
+              onChange={() => setSubscribe(prev => !prev)}
+              checked={subscribe}
+              id="subscribe-field"
+            />
+            <label htmlFor="subscribe-field">Subscribe</label>
             <button onClick={handleSignin}>Sign in</button>
             <button onClick={handleSignup}>Sign up</button>
           </div>
