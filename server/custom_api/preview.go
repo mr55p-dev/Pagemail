@@ -11,7 +11,7 @@ type UrlData struct {
 	Description string `json:"description"`
 }
 
-func fetch_url(url string, data *UrlData) error {
+func FetchUrl(url string, data *UrlData) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func Preview(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Must include a URL")
 	}
 	data := new(UrlData)
-	if err := fetch_url(uri, data); err != nil {
+	if err := FetchUrl(uri, data); err != nil {
 		return c.String(http.StatusServiceUnavailable, "Failed to fetch the external resource")
 	}
 	c.Response().Header().Set("Cache-Control", "private, max-age=432000")

@@ -8,7 +8,6 @@ import (
 	// "time"
 
 	"github.com/labstack/echo/v5"
-	"github.com/labstack/echo/v5/middleware"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
@@ -35,10 +34,10 @@ func main() {
 
 	// Register the custom routes
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: []string{"*"},
-			// AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		}))
+		// e.Router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		// 	AllowOrigins: []string{"*"},
+		// 	// AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		// }))
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/preview",
