@@ -1,14 +1,15 @@
 package custom_api
 
 import (
-	"github.com/labstack/echo/v5"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/labstack/echo/v5"
 	"net/http"
 )
 
 type UrlData struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Url         string `json:"url"`
 }
 
 func FetchUrl(url string, data *UrlData) error {
@@ -40,6 +41,7 @@ func FetchUrl(url string, data *UrlData) error {
 
 	data.Title = title
 	data.Description = description
+	data.Url = url
 	return nil
 }
 

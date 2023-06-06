@@ -2,20 +2,17 @@
 package main
 
 import (
+	"github.com/labstack/echo/v5"
 	"log"
 	"net/http"
-
-	// "time"
-
-	"github.com/labstack/echo/v5"
+	"pagemail/server/custom_api"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 
 	"github.com/robfig/cron/v3"
-
-	"pagemail/server/custom_api"
+	"pagemail/server/mail"
 )
 
 func main() {
@@ -27,7 +24,6 @@ func main() {
 
 	// Register the app start cron handler
 	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
-		custom_api.Mailer(app)
 		c.Start()
 		return nil
 	})
@@ -60,7 +56,10 @@ func main() {
 	})
 
 	// Register the server cron jobs
-	if _, err := c.AddFunc("* * * * *", func() { log.Print("Cron") }); err != nil {
+	if _, err := c.AddFunc(
+		"0 7 * * *",
+		func() { mail.Mailer(app) },
+	); err != nil {
 		log.Fatal(err)
 	}
 

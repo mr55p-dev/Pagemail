@@ -4,8 +4,14 @@ SERVER_TGT = dist/server
 init:
 	@echo "done"
 
-build:
+build-local:
 	go build -o $(SERVER_TGT) .
+
+build:
+	GOOS=linux GOARCH=amd64 go build -o $(SERVER_TGT) .
+
+deploy:
+	aws 
 
 run:
 	go run main.go --debug --dir=pb_data_test serve
