@@ -24,6 +24,21 @@ export const AuthForm = () => {
     setpassword(e.currentTarget.value);
   };
 
+  const handleGoogle = () => {
+    setAuthStatus(DataState.PENDING);
+    const handler = async () => {
+      try {
+        await pb.collection("users").authWithOAuth2({ provider: "google" });
+        setAuthStatus(DataState.SUCCESS);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        setAuthStatus(DataState.FAILED);
+		console.error(err)
+        setErrMsg(`${err.status}: ${err.data.message}`);
+      }
+    };
+    handler();
+  };
   const handleSignin = () => {
     setAuthStatus(DataState.PENDING);
     const handler = async () => {
@@ -109,6 +124,7 @@ export const AuthForm = () => {
             <label htmlFor="subscribe-field">Subscribe</label>
             <button onClick={handleSignin}>Sign in</button>
             <button onClick={handleSignup}>Sign up</button>
+            <button onClick={handleGoogle}>Sign in with Google</button>
           </div>
         </div>
       );
