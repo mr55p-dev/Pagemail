@@ -11,7 +11,11 @@ build:
 	GOOS=linux GOARCH=amd64 go build -o $(SERVER_TGT) .
 
 deploy:
-	aws 
+	ssh -i ../pagemail-prod-rsa.pem ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com "sudo pkill server; sudo rm -f server"
+	scp -i ../pagemail-prod-rsa.pem -r dist/server ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com:/home/ec2-user/server
+
+	# deploy to s3 (use timestamp for versioning)
+	# Copy from S3 to EC2 /var/www/pagemail
 
 run:
 	go run main.go --debug --dir=pb_data_test serve
