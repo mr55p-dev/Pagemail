@@ -1,8 +1,8 @@
 import PocketBase, { Record } from "pocketbase";
 import { UserRecord } from "./datamodels";
 
-// export const pb = new PocketBase('http://127.0.0.1:8090')
-export const pb = new PocketBase("http://192.168.68.60:8090");
+const pb_url = process.env.NODE_ENV === "development" ? 'http://127.0.0.1:8090' : 'https://v2.pagemail.io'
+export const pb = new PocketBase(pb_url)
 pb.autoCancellation(false);
 
 export const getCurrentUser = (): UserRecord | null => {
