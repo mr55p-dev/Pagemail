@@ -1,5 +1,6 @@
 import React from "react";
 import { DataState } from "./data";
+import { UserRecord } from "./datamodels";
 
 interface UserContextType {
   user: UserRecord | null;
