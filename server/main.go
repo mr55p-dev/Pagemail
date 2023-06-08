@@ -44,11 +44,21 @@ func main() {
 			},
 		})
 		e.Router.AddRoute(echo.Route{
-			Method:  http.MethodPost,
-			Path:    "/api/page/save",
-			Handler: custom_api.SaveFactory(app),
+			Method:  http.MethodGet,
+			Path:    "/api/preview",
+			Handler: custom_api.Preview,
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
+				apis.RequireRecordAuth("users"),
+			},
+		})
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodPost,
+			Path:    "/api/admin/mail/triggerAll",
+			Handler: custom_api.MailTriggerAllFactory(app),
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireAdminAuth(),
 			},
 		})
 

@@ -78,8 +78,6 @@ func Mailer(app *pocketbase.PocketBase) error {
 	start := now.Add(day_duration * -1)
 
 	for _, usr := range users {
-		log.Printf("User ID: %s", usr.Id)
-		log.Print(usr)
 		//// Fetch all records which have created BETWEEN now-24hrs AND now
 		var urls []UrlRecord
 		q_str := fmt.Sprintf("SELECT url FROM pages WHERE user_id = '%s' AND created BETWEEN '%s' AND '%s'", usr.Id, format_time(start), format_time(now))
@@ -90,9 +88,9 @@ func Mailer(app *pocketbase.PocketBase) error {
 			return err
 		}
 		if len(urls) == 0 {
+			log.Printf("Skipping %s", usr.Email)
 			continue
 		}
-		log.Print(urls)
 
 		//// Send an email with the links
 		message := mailer.Message{
@@ -104,7 +102,7 @@ func Mailer(app *pocketbase.PocketBase) error {
 			Subject: "Pagemail briefing",
 			HTML:    get_mail_body(&urls, usr.Email),
 		}
-		log.Printf("Sending test email to %s", message.To[0])
+		log.Printf("Sending email to %s (%d links)", usr.Email, len(urls))
 		if err := mail_client.Send(&message); err != nil {
 			log.Printf("Failed to send email to %s", usr.Email)
 			log.Print(err)
