@@ -1,7 +1,6 @@
-import "almond.css/dist/almond.min.css";
 import "./App.css";
 import React from "react";
-import { getCurrentUser, pb } from "./lib/pocketbase";
+import { getCurrentUser, pb, useUser } from "./lib/pocketbase";
 import { DataState } from "./lib/data";
 import { PageAdd } from "./components/PageAdd/PageAdd.component";
 import { PageView } from "./components/PageView/PageView.component";
@@ -10,25 +9,12 @@ import { AuthForm } from "./components/AuthForm/AuthForm.component";
 import { UserRecord } from "./lib/datamodels";
 
 function App() {
-  const [user, setUser] = React.useState<UserRecord | null>(getCurrentUser());
-  const [authStatus, setAuthStatus] = React.useState<DataState>(
-    user ? DataState.SUCCESS : DataState.UNKNOWN
-  );
-  React.useEffect(() => {
-    console.log(user);
-  }, [user]);
-  React.useEffect(() => {
-    console.log(authStatus);
-  }, [authStatus]);
-
-  pb.authStore.onChange(() => {
-    setUser(getCurrentUser());
-  });
-
-  const handleSignout = () => {
-    pb.authStore.clear();
-    setAuthStatus(DataState.UNKNOWN);
-  };
+  const { user, setUser } = useUser();
+  function handleSignout(
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ): void {
+	pb.authStore.clear()
+  }
 
   return (
     <>
@@ -37,8 +23,8 @@ function App() {
         value={{
           user: user,
           checkUser: () => setUser(getCurrentUser()),
-          authStatus: authStatus,
-          setAuthStatus: setAuthStatus,
+          authStatus: DataState.UNKNOWN,
+          setAuthStatus: () => {},
         }}
       >
         {user ? (

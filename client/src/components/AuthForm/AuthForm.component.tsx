@@ -2,7 +2,7 @@ import React from "react";
 import UserContext from "../../lib/context";
 import { DataState } from "../../lib/data";
 import { pb } from "../../lib/pocketbase";
-import signinUrl from "../../assets/web/1x/btn_google_signin_light_normal_web.png";
+import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
 
 export const AuthForm = () => {
   const { authStatus, setAuthStatus } = React.useContext(UserContext);
