@@ -2,6 +2,7 @@ import React from "react";
 import UserContext from "../../lib/context";
 import { DataState } from "../../lib/data";
 import { pb } from "../../lib/pocketbase";
+import signinUrl from "../../assets/web/1x/btn_google_signin_light_normal_web.png";
 
 export const AuthForm = () => {
   const { authStatus, setAuthStatus } = React.useContext(UserContext);
@@ -33,7 +34,7 @@ export const AuthForm = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setAuthStatus(DataState.FAILED);
-		console.error(err)
+        console.error(err);
         setErrMsg(`${err.status}: ${err.data.message}`);
       }
     };
@@ -117,14 +118,16 @@ export const AuthForm = () => {
             <label htmlFor="password-field">password</label>
             <input
               type="checkbox"
-              onChange={() => setSubscribe(prev => !prev)}
+              onChange={() => setSubscribe((prev) => !prev)}
               checked={subscribe}
               id="subscribe-field"
             />
             <label htmlFor="subscribe-field">Subscribe</label>
             <button onClick={handleSignin}>Sign in</button>
             <button onClick={handleSignup}>Sign up</button>
-            <button onClick={handleGoogle}>Sign in with Google</button>
+            <button onClick={handleGoogle}>
+              <img src={signinUrl} width="200px" />
+            </button>
           </div>
         </div>
       );
