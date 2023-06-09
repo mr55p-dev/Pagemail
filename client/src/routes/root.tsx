@@ -1,9 +1,8 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { pb, useUser } from "../lib/pocketbase";
+import { Outlet } from "react-router-dom";
+import { useUser } from "../lib/pocketbase";
 
 const Root = () => {
   const { user, logout } = useUser();
-  const nav = useNavigate()
   return (
     <>
       <h1>Pagemail</h1>
@@ -13,7 +12,7 @@ const Root = () => {
       <div className="root-content">
         <Outlet />
       </div>
-      {user ? <button onClick={() => logout()} >Log out</button> : undefined}
+      {user ? <button onClick={() => logout()}>Log out</button> : undefined}
     </>
   );
 };
