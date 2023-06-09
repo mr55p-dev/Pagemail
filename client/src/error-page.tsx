@@ -1,7 +1,7 @@
 import { useRouteError } from "react-router";
 
 const ErrorPage = () => {
-  const error = useRouteError();
+  const error = useRouteError() as {statusText?: string, message: string};
   return (
     <>
       <div className="error-wrapper">

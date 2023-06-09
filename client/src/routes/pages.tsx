@@ -6,7 +6,6 @@ const PagesPage = () => {
     <>
       <div className="pages-wrapper">
         <h1>Pages</h1>
-        <p>This is the view which will render user pages</p>
 		<PageAdd />
 		<PageView />
       </div>

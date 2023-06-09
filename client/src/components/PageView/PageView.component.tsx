@@ -108,11 +108,15 @@ export const PageView = () => {
       });
     });
     return () => {
-      pb.collection("pages").unsubscribe("*");
+      try {
+        pb.collection("pages").unsubscribe("*");
+      } catch (e) {
+        console.error(e);
+      }
     };
   }, []);
   return (
-    <div>
+    <div className="pages-wrapper">
       {pages.map((e) => (
         <Page url={e.url} id={e.id} key={e.id} />
       ))}

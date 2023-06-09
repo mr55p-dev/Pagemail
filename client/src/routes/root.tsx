@@ -5,14 +5,13 @@ const Root = () => {
   const { user, logout } = useUser();
   return (
     <>
-      <h1>Pagemail</h1>
       <div className="root">
-        <h1>This is the root page talking</h1>
+        <h1>Pagemail</h1>
+        {user ? <button onClick={() => logout()}>Log out</button> : undefined}
       </div>
-      <div className="root-content">
+      <div className="content">
         <Outlet />
       </div>
-      {user ? <button onClick={() => logout()}>Log out</button> : undefined}
     </>
   );
 };

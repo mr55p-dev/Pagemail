@@ -1,21 +1,15 @@
 import React from "react";
-import { pb } from "../../lib/pocketbase";
+import { pb, useUser } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
-import UserContext from "../../lib/context";
 
 export const PageAdd = () => {
+  const { user } = useUser()
   const [clipboardEnabled, setClipboardEnabled] = React.useState<boolean>(true);
   const [url, setUrl] = React.useState<string>("");
   const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
   const [dataState, setDataState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
-
-  // Get our user and do not render anything if not auth'd
-  const { user } = React.useContext(UserContext);
-  if (!user) {
-    return undefined;
-  }
 
   const handlePaste = () => {
     navigator.clipboard
@@ -42,7 +36,7 @@ export const PageAdd = () => {
       .catch(() => setDataState(DataState.FAILED));
   };
   return (
-    <div>
+    <div className="pageadd-wrapper">
       <h3>Add a page</h3>
       {showSuccess ? <p>Success!</p> : undefined}
       {dataState === DataState.PENDING ? (
