@@ -23,7 +23,7 @@ export const PageAdd = () => {
     setDataState(DataState.PENDING);
     const data = {
       url: url,
-      user_id: user.id,
+      user_id: user?.id,
     };
     pb.collection("pages")
       .create(data)
