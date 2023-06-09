@@ -1,67 +1,34 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Form } from "react-router-dom";
-import { pb } from "../lib/pocketbase";
+import { Login, SignUp } from "../components/AuthForm/AuthForm.component";
 
+enum AuthMethod {
+  LOGIN,
+  SIGNUP,
+}
 const AuthPage = () => {
-  const nav = useNavigate();
-  const [email, setEmail] = React.useState<string>("");
-  // const [username, setUsername] = React.useState<string>("");
-  const [password, setpassword] = React.useState<string>("");
-  const [subscribe, setSubscribe] = React.useState<boolean>(true);
-
-  const handleEmailChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setEmail(e.currentTarget.value);
-  };
-
-  const handlePasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setpassword(e.currentTarget.value);
-  };
-
-  const handleSignin = () => {
-    const handler = async () => {
-      try {
-        await pb.collection("users").authWithPassword(email, password);
-        nav("/pages");
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    handler();
-  };
+  const [method, setMethod] = React.useState<AuthMethod>(AuthMethod.LOGIN);
 
   return (
     <>
-      <div className="auth-wrapper">
+      <div className="auth-wrapper" style={{ margin: "16px"}}>
         <h1>Authenticate</h1>
-        <div>
-          <h4>Sign in</h4>
-          <Form></Form>
-        </div>
-        <div>
-          <input
-            type="email"
-            onChange={handleEmailChange}
-            value={email}
-            id="email-field"
-          />
-          <label htmlFor="email-field">Email</label>
-          <input
-            type="password"
-            onChange={handlePasswordChange}
-            value={password}
-            id="password-field"
-          />
-          <label htmlFor="password-field">password</label>
-          <input
-            type="checkbox"
-            onChange={() => setSubscribe((prev) => !prev)}
-            checked={subscribe}
-            id="subscribe-field"
-          />
-          <label htmlFor="subscribe-field">Subscribe</label>
-          <button onClick={handleSignin}>Sign in</button>
-        </div>
+        {method === AuthMethod.LOGIN ? (
+          <div>
+            <h4>Sign in</h4>
+            <Login />
+            <button onClick={() => setMethod(AuthMethod.SIGNUP)}>
+              Not signed up?
+            </button>
+          </div>
+        ) : (
+          <div>
+            <h4>Sign up</h4>
+            <SignUp />
+            <button onClick={() => setMethod(AuthMethod.LOGIN)}>
+              Already signed up?
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

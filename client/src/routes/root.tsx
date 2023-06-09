@@ -2,11 +2,8 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { pb, useUser } from "../lib/pocketbase";
 
 const Root = () => {
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const nav = useNavigate()
-  const handleSignout = () => {
-    pb.authStore.clear();
-  };
   return (
     <>
       <h1>Pagemail</h1>
@@ -16,7 +13,7 @@ const Root = () => {
       <div className="root-content">
         <Outlet />
       </div>
-      {user ? <button onClick={() => handleSignout()} >Log out</button> : <button onClick={() => nav("/auth")}>Log in</button>}
+      {user ? <button onClick={() => logout()} >Log out</button> : undefined}
     </>
   );
 };

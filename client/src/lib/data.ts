@@ -4,3 +4,9 @@ export enum DataState {
   FAILED = 'FAILED',
   PENDING = 'PENDING',
 }
+
+export enum AuthState {
+  AUTH,
+  PENDING,
+  NOT_AUTH,
+}
