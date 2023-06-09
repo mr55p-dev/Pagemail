@@ -64,7 +64,9 @@ const Page = ({ url, id }: PageProps) => {
   if (previewData) {
     body = (
       <>
-        <h4>{previewData.title}</h4>
+        <a href={url} target="_blank">
+          <h4>{previewData.title || url}</h4>
+        </a>
         <p>{previewData.description}</p>
         <span>{url}</span>
       </>
@@ -72,7 +74,9 @@ const Page = ({ url, id }: PageProps) => {
   } else {
     body = (
       <>
-        <p>{url}</p>
+        <a href={url} target="_blank">
+          <p>{url}</p>
+        </a>
         {previewState === DataState.PENDING ? (
           <p>Loading preview...</p>
         ) : undefined}
