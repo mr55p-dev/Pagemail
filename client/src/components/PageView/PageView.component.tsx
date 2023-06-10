@@ -6,6 +6,7 @@ import { PageRecord } from "../../lib/datamodels";
 interface PageProps {
   url: string;
   id: string;
+  created: string;
 }
 
 interface PageMetadataResponse {
@@ -13,7 +14,7 @@ interface PageMetadataResponse {
   description?: string;
 }
 
-const Page = ({ url, id }: PageProps) => {
+const Page = ({ url, id, created }: PageProps) => {
   const [deleteState, setDeleteState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
@@ -87,6 +88,7 @@ const Page = ({ url, id }: PageProps) => {
     <div>
       {body}
       <button onClick={handleDelete}>X</button>
+	  <p>{created}</p>
     </div>
   );
 };
@@ -96,7 +98,9 @@ export const PageView = () => {
 
   React.useEffect(() => {
     pb.collection("pages")
-      .getList<PageRecord>()
+      .getList<PageRecord>(1, 50, {
+        sort: "-created",
+      })
       .then((records) => setPages(records.items));
 
     pb.collection("pages").subscribe<PageRecord>("*", function (e) {
@@ -122,7 +126,7 @@ export const PageView = () => {
   return (
     <div className="pages-wrapper">
       {pages.map((e) => (
-        <Page url={e.url} id={e.id} key={e.id} />
+        <Page url={e.url} id={e.id} created={e.created} key={e.id} />
       ))}
     </div>
   );

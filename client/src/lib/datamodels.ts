@@ -1,4 +1,9 @@
-export interface UserRecord {
+interface BaseRecord {
+  created: string;
+  updated: string;
+
+}
+export interface UserRecord extends BaseRecord {
 	id: string;
 	username?: string;
 	verified: boolean;
@@ -9,7 +14,7 @@ export interface UserRecord {
 	subscribed: boolean;
 }
 
-export interface PageRecord {
+export interface PageRecord extends BaseRecord {
   id: string;
   url: string;
   user_id: string;
