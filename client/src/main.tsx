@@ -12,15 +12,15 @@ import { Index } from "./routes/index.tsx";
 
 const router = createBrowserRouter([
   {
-	path: "/",
-	element: <Index />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "/app",
+    path: "/",
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        path: "/",
+        element: <Index />,
+        errorElement: <ErrorPage />,
+      },
       {
         path: "auth",
         element: <AuthPage />,

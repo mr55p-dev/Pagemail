@@ -1,0 +1,42 @@
+:root {
+	--color-red: #DA5927;
+	--color-orange: #E8AC3C;
+}
+body {
+  font-family: "Noto Sans", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+}
+
+h1 {
+  font-family: "Pacifico";
+  font-style: normal;
+  font-weight: 400;
+  color: #1b6b98;
+  text-align: center;
+}
+
+nav {
+	position: sticky;
+	top: 0px;
+	bottom: 0px;
+	height: auto;
+	width: 100vw;
+	background-color: white;
+	z-index: 2;
+	display: flex;
+	justify-content: end;
+	gap: 16px;
+
+	& > a,button {
+		padding: 16px;
+		margin: 8px;
+		border: 1px solid black;
+		background: white;
+
+		border-radius: 8px;
+	}
+
+}
+
+

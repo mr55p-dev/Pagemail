@@ -4,7 +4,7 @@ import "../styles/index.css";
 export const Index = () => {
   const nav = useNavigate();
   const handleCta = () => {
-    nav("/app/auth");
+    nav("/auth");
   };
   return (
     <>
@@ -19,9 +19,6 @@ export const Index = () => {
               <p>Get started!</p>
             </button>
           </div>
-        </div>
-        <div className="backdrop">
-          <div className="backdrop-fade" />
         </div>
       </div>
     </>

@@ -1,5 +1,9 @@
 import React from "react";
 import { Login, SignUp } from "../components/AuthForm/AuthForm.component";
+import "../styles/auth.css";
+import { useUser } from "../lib/pocketbase";
+import { AuthState } from "../lib/data";
+import { useNavigate } from "react-router";
 
 enum AuthMethod {
   LOGIN,
@@ -7,28 +11,23 @@ enum AuthMethod {
 }
 const AuthPage = () => {
   const [method, setMethod] = React.useState<AuthMethod>(AuthMethod.LOGIN);
+  const { authState } = useUser()
+  const nav = useNavigate()
+  if (authState === AuthState.AUTH) {
+	nav("/pages")
+  }
 
   return (
     <>
-      <div className="auth-wrapper" style={{ margin: "16px"}}>
+      <div className="auth-wrapper">
         <h1>Authenticate</h1>
-        {method === AuthMethod.LOGIN ? (
-          <div>
-            <h4>Sign in</h4>
-            <Login />
-            <button onClick={() => setMethod(AuthMethod.SIGNUP)}>
-              Not signed up?
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h4>Sign up</h4>
-            <SignUp />
-            <button onClick={() => setMethod(AuthMethod.LOGIN)}>
-              Already signed up?
-            </button>
-          </div>
-        )}
+        <div className="button-container">
+          <button onClick={() => setMethod(AuthMethod.LOGIN)}>Log in</button>
+          <button onClick={() => setMethod(AuthMethod.SIGNUP)}>Sign up</button>
+        </div>
+        <div className="form">
+          {method === AuthMethod.LOGIN ? <Login /> : <SignUp />}
+        </div>
       </div>
     </>
   );

@@ -34,7 +34,7 @@ export const Login = () => {
   };
 
   return (
-    <div>
+    <>
       {authErr ? <div>{authErr.message}</div> : undefined}
       <label htmlFor="email-field">Email</label>
       <input
@@ -43,7 +43,7 @@ export const Login = () => {
         value={email}
         id="email-field"
       />
-      <label htmlFor="password-field">password</label>
+      <label htmlFor="password-field">Password</label>
       <input
         type="password"
         onChange={handlePassword}
@@ -54,7 +54,7 @@ export const Login = () => {
         Sign in
       </button>
       <GoogleAuth />
-    </div>
+    </>
   );
 };
 
@@ -88,14 +88,7 @@ export const SignUp = () => {
   }, [password, passwordCheck]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "300px",
-        margin: "16px auto",
-      }}
-    >
+    <>
       {authErr ? <div>{authErr.message}</div> : undefined}
       <label htmlFor="username-field">Name</label>
       <input
@@ -139,7 +132,7 @@ export const SignUp = () => {
         Sign Up
       </button>
       <GoogleAuth />
-    </div>
+    </>
   );
 };
 
@@ -152,7 +145,7 @@ const GoogleAuth = () => {
   };
 
   return (
-    <button onClick={handleGoogle}>
+    <button style={{background: "none", border: "none", margin: 0, padding: 0}} onClick={handleGoogle}>
       <img src={signinUrl} width="200px" />
     </button>
   );

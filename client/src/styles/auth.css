@@ -1,0 +1,40 @@
+.auth-wrapper {
+  width: 740px;
+  margin: 0px auto;
+  & > h1 {
+    margin-top: 32px;
+  }
+
+  .button-container {
+    width: fit-content;
+    margin: 16px auto;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 32px;
+  }
+
+  .form {
+    width: fit-content;
+    margin: 0 auto;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+
+    .form-input {
+      & > input {
+        width: 100%;
+        border: 1px solid black;
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+        padding: 16px;
+        margin: 8px;
+        background: none;
+      }
+    }
+
+    .form-submit {
+    }
+  }
+}
