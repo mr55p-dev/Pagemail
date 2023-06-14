@@ -39,6 +39,10 @@ export const useUser = () => {
     setUser(getCurrentUser());
   });
 
+  React.useEffect(() => {
+    setAuthState(user ? AuthState.AUTH : AuthState.NOT_AUTH);
+  }, [user]);
+
   const login = async <T>(callback: () => Promise<T>): Promise<T> => {
     setAuthState(AuthState.PENDING);
     try {
@@ -56,6 +60,7 @@ export const useUser = () => {
 
   const logout = () => {
     pb.authStore.clear();
+	setAuthState(AuthState.NOT_AUTH)
   };
 
   return { user, authState, login, logout, authErr };
