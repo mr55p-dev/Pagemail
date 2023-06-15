@@ -6,11 +6,15 @@
   top: 0px;
   width: 100%;
 background: $color-orange;
-background: linear-gradient(135deg, $color-orange 0%, $color-red 100%);
+background: linear-gradient(135deg, $color-red 0%, $color-orange 100%);
 
   display: grid;
   place-content: center;
   .content {
     margin: auto;
   }
+}
+
+nav {
+	background-color: transparent !important;
 }
