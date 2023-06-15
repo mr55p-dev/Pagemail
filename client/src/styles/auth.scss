@@ -16,11 +16,7 @@
   }
 
   .form {
-    width: fit-content;
     margin: 0 auto;
-    display: grid;
-    align-content: center;
-    justify-content: center;
 
     .form-input {
       & > input {

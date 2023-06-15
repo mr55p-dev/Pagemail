@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router";
-import { useUser } from "../lib/pocketbase";
-import { AuthState } from "../lib/data";
 import { Navbar } from "../components/Navbar/Navbar.component";
 
 export const Index = () => {
@@ -8,7 +6,6 @@ export const Index = () => {
   const handleCta = () => {
     nav("/auth");
   };
-  const { authState } = useUser();
   return (
     <>
       <Navbar />
@@ -21,7 +18,6 @@ export const Index = () => {
             <button onClick={handleCta}>
               <p>Get started!</p>
             </button>
-            <p>{authState === AuthState.AUTH ? "AUTH" : "Not AUTH"}</p>
           </div>
         </div>
       </div>

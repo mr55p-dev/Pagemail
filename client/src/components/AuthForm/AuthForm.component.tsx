@@ -2,6 +2,7 @@ import React, { ChangeEventHandler } from "react";
 import { AuthState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
 import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
+import { useNotification } from "../../lib/notif";
 
 function useFormComponent(
   init: boolean
@@ -36,36 +37,46 @@ export const Login = () => {
   return (
     <>
       {authErr ? <div>{authErr.message}</div> : undefined}
-      <label htmlFor="email-field">Email</label>
-      <input
-        type="email"
-        onChange={handleEmail}
-        value={email}
-        id="email-field"
-      />
-      <label htmlFor="password-field">Password</label>
-      <input
-        type="password"
-        onChange={handlePassword}
-        value={password}
-        id="password-field"
-      />
-      <button onClick={handleSignin} disabled={authState === AuthState.PENDING}>
-        Sign in
-      </button>
-      <GoogleAuth />
+      <div className="form-input">
+        <label htmlFor="email-field">Email</label>
+        <input
+          type="email"
+          onChange={handleEmail}
+          value={email}
+          id="email-field"
+        />
+      </div>
+      <div className="form-input">
+        <label htmlFor="password-field">Password</label>
+        <input
+          type="password"
+          onChange={handlePassword}
+          value={password}
+          id="password-field"
+        />
+      </div>
+      <div className="button-container">
+        <button
+          onClick={handleSignin}
+          disabled={authState === AuthState.PENDING}
+        >
+          Sign in
+        </button>
+        <GoogleAuth />
+      </div>
     </>
   );
 };
 
 export const SignUp = () => {
   const { login, authState, authErr } = useUser();
+  const { trigger, component } = useNotification();
 
   const [email, handleEmail] = useFormComponent("");
   const [password, handlePassword] = useFormComponent("");
   const [passwordCheck, handlePasswordCheck] = useFormComponent("");
   const [username, handleUsername] = useFormComponent("");
-  const [subscribed, handleSubscribed] = useFormComponent(true);
+  const [subscribed, setSubscribed] = React.useState(true);
 
   const handleSignup = () => {
     login(async () => {
@@ -90,41 +101,53 @@ export const SignUp = () => {
   return (
     <>
       {authErr ? <div>{authErr.message}</div> : undefined}
-      <label htmlFor="username-field">Name</label>
-      <input
-        type="text"
-        onChange={handleUsername}
-        value={username}
-        id="username-field"
-      />
-      <label htmlFor="email-field">Email</label>
-      <input
-        type="email"
-        onChange={handleEmail}
-        value={email}
-        id="email-field"
-      />
-      <label htmlFor="password-field">Password</label>
-      <input
-        type="password"
-        onChange={handlePassword}
-        value={password}
-        id="password-field"
-      />
-      <label htmlFor="password-check-field">Repeat password</label>
-      <input
-        type="password"
-        onChange={handlePasswordCheck}
-        value={passwordCheck}
-        id="password-check-field"
-      />
-      <label htmlFor="subscribe-field">Subscribe?</label>
-      <input
-        type="checkbox"
-        onChange={handleSubscribed}
-        checked={subscribed}
-        id="subscribed-check-field"
-      />
+      {component}
+      <button onClick={() => trigger("hello")}>Click meee</button>
+      <div className="form-input">
+        <label htmlFor="username-field">Name</label>
+        <input
+          type="text"
+          onChange={handleUsername}
+          value={username}
+          id="username-field"
+        />
+      </div>
+      <div className="form-input">
+        <label htmlFor="email-field">Email</label>
+        <input
+          type="email"
+          onChange={handleEmail}
+          value={email}
+          id="email-field"
+        />
+      </div>
+      <div className="form-input">
+        <label htmlFor="password-field">Password</label>
+        <input
+          type="password"
+          onChange={handlePassword}
+          value={password}
+          id="password-field"
+        />
+      </div>
+      <div className="form-input">
+        <label htmlFor="password-check-field">Repeat password</label>
+        <input
+          type="password"
+          onChange={handlePasswordCheck}
+          value={passwordCheck}
+          id="password-check-field"
+        />
+      </div>
+      <div className="form-input">
+        <label htmlFor="subscribe-field">Subscribe?</label>
+        <input
+          type="checkbox"
+          onChange={() => setSubscribed((prev) => !prev)}
+          checked={subscribed}
+          id="subscribed-field"
+        />
+      </div>
       <button
         onClick={handleSignup}
         disabled={!valid || authState === AuthState.PENDING}
@@ -145,7 +168,10 @@ const GoogleAuth = () => {
   };
 
   return (
-    <button style={{background: "none", border: "none", margin: 0, padding: 0}} onClick={handleGoogle}>
+    <button
+      style={{ background: "none", border: "none", margin: 0, padding: 0 }}
+      onClick={handleGoogle}
+    >
       <img src={signinUrl} width="200px" />
     </button>
   );

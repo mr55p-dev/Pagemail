@@ -12,7 +12,6 @@ export const pb = new PocketBase(pb_url);
 pb.autoCancellation(false);
 
 export const getCurrentUser = (): UserRecord | null => {
-  console.log("Checking current user");
   if (pb.authStore.model instanceof Record) {
     const mdl = pb.authStore.model;
     return {
@@ -35,9 +34,13 @@ export const useUser = () => {
   );
   const nav = useNavigate();
 
-  pb.authStore.onChange(() => {
-    setUser(getCurrentUser());
-  });
+  React.useEffect(() => {
+    const unsub = pb.authStore.onChange(() => {
+      setUser(getCurrentUser());
+    });
+
+	return () => unsub()
+  }, []);
 
   React.useEffect(() => {
     setAuthState(user ? AuthState.AUTH : AuthState.NOT_AUTH);
@@ -60,7 +63,7 @@ export const useUser = () => {
 
   const logout = () => {
     pb.authStore.clear();
-	setAuthState(AuthState.NOT_AUTH)
+    setAuthState(AuthState.NOT_AUTH);
   };
 
   return { user, authState, login, logout, authErr };
