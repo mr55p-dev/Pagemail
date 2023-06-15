@@ -1,9 +1,5 @@
 import React from "react";
 import { Login, SignUp } from "../components/AuthForm/AuthForm.component";
-import "../styles/auth.css";
-import { useUser } from "../lib/pocketbase";
-import { AuthState } from "../lib/data";
-import { useNavigate } from "react-router";
 
 enum AuthMethod {
   LOGIN,
@@ -11,11 +7,6 @@ enum AuthMethod {
 }
 const AuthPage = () => {
   const [method, setMethod] = React.useState<AuthMethod>(AuthMethod.LOGIN);
-  const { authState } = useUser()
-  const nav = useNavigate()
-  if (authState === AuthState.AUTH) {
-	nav("/pages")
-  }
 
   return (
     <>
