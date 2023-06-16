@@ -3,6 +3,10 @@ import { AuthState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
 import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
 import { useNotification } from "../../lib/notif";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import Input from "@mui/joy/Input";
+import Button from "@mui/joy/Button";
 
 function useFormComponent(
   init: boolean
@@ -37,33 +41,32 @@ export const Login = () => {
   return (
     <>
       {authErr ? <div>{authErr.message}</div> : undefined}
-      <div className="form-input">
-        <label htmlFor="email-field">Email</label>
-        <input
+      <FormControl>
+        <FormLabel>Email</FormLabel>
+        <Input
           type="email"
           onChange={handleEmail}
           value={email}
           id="email-field"
         />
-      </div>
-      <div className="form-input">
-        <label htmlFor="password-field">Password</label>
-        <input
+      </FormControl>
+      <FormControl>
+        <FormLabel>Password</FormLabel>
+        <Input
           type="password"
           onChange={handlePassword}
           value={password}
           id="password-field"
         />
-      </div>
-      <div className="button-container">
-        <button
-          onClick={handleSignin}
-          disabled={authState === AuthState.PENDING}
-        >
-          Sign in
-        </button>
-        <GoogleAuth />
-      </div>
+      </FormControl>
+      <Button
+        onClick={handleSignin}
+        disabled={authState === AuthState.PENDING}
+        sx={{ m: 1 }}
+      >
+        Sign in
+      </Button>
+      <GoogleAuth />
     </>
   );
 };
@@ -168,11 +171,11 @@ const GoogleAuth = () => {
   };
 
   return (
-    <button
-      style={{ background: "none", border: "none", margin: 0, padding: 0 }}
+    <Button
+      sx={{ mx: 2 }}
       onClick={handleGoogle}
     >
       <img src={signinUrl} width="200px" />
-    </button>
+    </Button>
   );
 };

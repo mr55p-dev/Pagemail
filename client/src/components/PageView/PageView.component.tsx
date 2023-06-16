@@ -88,7 +88,7 @@ const Page = ({ url, id, created }: PageProps) => {
     <div>
       {body}
       <button onClick={handleDelete}>X</button>
-	  <p>{created}</p>
+      <p>{created}</p>
     </div>
   );
 };

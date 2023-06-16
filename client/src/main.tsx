@@ -8,22 +8,23 @@ import AuthPage from "./routes/auth.tsx";
 import PagesPage from "./routes/pages.tsx";
 import Protected from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
-import "./style.scss";
+import { CssVarsProvider } from "@mui/joy/styles";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Index />,
-    errorElement: <ErrorPage />,
-  },
   {
     path: "/",
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
       {
+        path: "/",
+        element: <Index />,
+        errorElement: <ErrorPage />,
+      },
+      {
         path: "auth",
         element: <AuthPage />,
+        errorElement: <ErrorPage />,
       },
       {
         path: "pages",
@@ -39,6 +40,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <CssVarsProvider>
+      <RouterProvider router={router} />
+    </CssVarsProvider>
   </React.StrictMode>
 );
