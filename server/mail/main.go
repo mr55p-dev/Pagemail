@@ -6,7 +6,9 @@ import (
 	"net/mail"
 	"time"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
@@ -24,10 +26,12 @@ func format_time(tm time.Time) string {
 	)
 }
 
-func get_mail_body(urls *[]UrlRecord, name string) string {
+func get_mail_body(records []*models.Record, name string) string {
 	var list_contents string
-	for _, url := range *urls {
-		list_contents += fmt.Sprintf(`<li><a href="%s">%s</a></li>`, url.Url, url.Url)
+	for _, record := range records {
+		url := record.GetString("url")
+		created := record.GetTime("created")
+		list_contents += fmt.Sprintf(`<li><a href="%s">%s</a> (created %s)</li>`, url, url, created)
 	}
 
 	res := fmt.Sprintf(`
@@ -73,24 +77,24 @@ func Mailer(app *pocketbase.PocketBase) error {
 	log.Printf("Fetched %d users", len(users))
 
 	// For each user
-	day_duration, _ := time.ParseDuration("24h")
+	yesterday := time.Now().AddDate(0, 0, -1).Truncate(24 * time.Hour).Add(7 * time.Hour)
 	now := time.Now()
-	start := now.Add(day_duration * -1)
 
 	for _, usr := range users {
 		//// Fetch all records which have created BETWEEN now-24hrs AND now
-		var urls []UrlRecord
-		q_str := fmt.Sprintf("SELECT url FROM pages WHERE user_id = '%s' AND created BETWEEN '%s' AND '%s'", usr.Id, format_time(start), format_time(now))
-		q := db.NewQuery(q_str)
-		err := q.All(&urls)
+		// Write a query which selects all the records where user_id == usr.id and created > 7am yesterday
+		records, err := app.Dao().FindRecordsByExpr("pages",
+			dbx.HashExp{"user_id": usr.Id},
+			dbx.NewExp("created BETWEEN {:start} AND {:end}", dbx.Params{"start": yesterday, "end": now}))
 		if err != nil {
 			log.Print(err)
 			return err
 		}
-		if len(urls) == 0 {
+		if len(records) == 0 {
 			log.Printf("Skipping %s", usr.Email)
 			continue
 		}
+		log.Printf("Found %d records", len(records))
 
 		//// Send an email with the links
 		message := mailer.Message{
@@ -100,9 +104,10 @@ func Mailer(app *pocketbase.PocketBase) error {
 			},
 			To:      []mail.Address{{Address: usr.Email}},
 			Subject: "Pagemail briefing",
-			HTML:    get_mail_body(&urls, usr.Email),
+			HTML:    get_mail_body(records, usr.Email),
 		}
-		log.Printf("Sending email to %s (%d links)", usr.Email, len(urls))
+		log.Printf("Sending email to %s (%d links)", usr.Email, len(records))
+		log.Print(get_mail_body(records, usr.Email))
 		if err := mail_client.Send(&message); err != nil {
 			log.Printf("Failed to send email to %s", usr.Email)
 			log.Print(err)
