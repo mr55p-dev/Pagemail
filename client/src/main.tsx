@@ -9,6 +9,7 @@ import PagesPage from "./routes/pages.tsx";
 import Protected from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
 import { CssVarsProvider } from "@mui/joy/styles";
+import CssBaseline from "@mui/joy/CssBaseline";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <CssVarsProvider>
+      <CssBaseline />
       <RouterProvider router={router} />
     </CssVarsProvider>
   </React.StrictMode>

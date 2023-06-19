@@ -1,163 +1,152 @@
-import React, { ChangeEventHandler } from "react";
+// import React, { ChangeEventHandler } from "react";
 import { AuthState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
 import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
-import { useNotification } from "../../lib/notif";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
-import Input from "@mui/joy/Input";
-import Button from "@mui/joy/Button";
+// import { useNotification } from "../../lib/notif";
+import { useForm } from "react-hook-form";
+import {
+  Typography,
+  Link,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Checkbox,
+  FormHelperText,
+  Stack,
+} from "@mui/joy";
 
-function useFormComponent(
-  init: boolean
-): [boolean, ChangeEventHandler<HTMLInputElement>];
-function useFormComponent(
-  init: string
-): [string, ChangeEventHandler<HTMLInputElement>];
-function useFormComponent(
-  init: string | boolean
-): [string | boolean, ChangeEventHandler<HTMLInputElement>] {
-  const [val, setVal] = React.useState<string | boolean>(init);
-
-  const handleValChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setVal(e.currentTarget.value);
-  };
-
-  return [val, handleValChange];
+interface LoginForm {
+  email: string;
+  password: string;
 }
 
 export const Login = () => {
   const { login, authState, authErr } = useUser();
+  const { register, handleSubmit } = useForm<LoginForm>();
 
-  const [email, handleEmail] = useFormComponent("");
-  const [password, handlePassword] = useFormComponent("");
+  const onSubmit = (data: LoginForm) =>
+    login(() =>
+      pb.collection("users").authWithPassword(data.email, data.password)
+    );
 
-  const handleSignin = () => {
-    login(async () => {
-      await pb.collection("users").authWithPassword(email, password);
-    });
+  const handlePasswordReset = () => {
+    alert(
+      "Password reset is not yet available, please contact ellis@pagemail.io for assistance"
+    );
   };
 
   return (
     <>
       {authErr ? <div>{authErr.message}</div> : undefined}
-      <FormControl>
-        <FormLabel>Email</FormLabel>
-        <Input
-          type="email"
-          onChange={handleEmail}
-          value={email}
-          id="email-field"
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Password</FormLabel>
-        <Input
-          type="password"
-          onChange={handlePassword}
-          value={password}
-          id="password-field"
-        />
-      </FormControl>
-      <Button
-        onClick={handleSignin}
-        disabled={authState === AuthState.PENDING}
-        sx={{ m: 1 }}
-      >
-        Sign in
-      </Button>
-      <GoogleAuth />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack spacing={2}>
+          <FormControl>
+            <FormLabel>Email</FormLabel>
+            <Input type="email" {...register("email", { required: true })} />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Password</FormLabel>
+            <Input type="password" {...register("password")} />
+          </FormControl>
+          <FormControl>
+            <Button type="submit" disabled={authState === AuthState.PENDING}>
+              Sign in
+            </Button>
+          </FormControl>
+          <FormControl>
+            <Typography fontSize="sm" sx={{ alignSelf: "center" }}>
+              <Link onClick={handlePasswordReset}>Reset password</Link>
+            </Typography>
+          </FormControl>
+        </Stack>
+      </form>
     </>
   );
 };
 
+interface SignupForm {
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  name?: string;
+  subscribed: boolean;
+}
+
 export const SignUp = () => {
-  const { login, authState, authErr } = useUser();
-  const { trigger, component } = useNotification();
+  const { login, authErr } = useUser();
+  // const { trigger, component } = useNotification();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<SignupForm>();
 
-  const [email, handleEmail] = useFormComponent("");
-  const [password, handlePassword] = useFormComponent("");
-  const [passwordCheck, handlePasswordCheck] = useFormComponent("");
-  const [username, handleUsername] = useFormComponent("");
-  const [subscribed, setSubscribed] = React.useState(true);
-
-  const handleSignup = () => {
+  const onSubmit = (data: SignupForm) =>
     login(async () => {
-      const data = {
-        email: email,
-        emailVisibility: true,
-        password: password,
-        passwordConfirm: passwordCheck,
-        subscribed: subscribed,
-        name: username,
-      };
       await pb.collection("users").create(data);
-      await pb.collection("users").authWithPassword(email, password);
+      await pb.collection("users").authWithPassword(data.email, data.password);
     });
-  };
-
-  const [valid, setValid] = React.useState(true);
-  React.useEffect(() => {
-    setValid(password === passwordCheck);
-  }, [password, passwordCheck]);
 
   return (
     <>
       {authErr ? <div>{authErr.message}</div> : undefined}
-      {component}
-      <button onClick={() => trigger("hello")}>Click meee</button>
-      <div className="form-input">
-        <label htmlFor="username-field">Name</label>
-        <input
-          type="text"
-          onChange={handleUsername}
-          value={username}
-          id="username-field"
-        />
-      </div>
-      <div className="form-input">
-        <label htmlFor="email-field">Email</label>
-        <input
-          type="email"
-          onChange={handleEmail}
-          value={email}
-          id="email-field"
-        />
-      </div>
-      <div className="form-input">
-        <label htmlFor="password-field">Password</label>
-        <input
-          type="password"
-          onChange={handlePassword}
-          value={password}
-          id="password-field"
-        />
-      </div>
-      <div className="form-input">
-        <label htmlFor="password-check-field">Repeat password</label>
-        <input
-          type="password"
-          onChange={handlePasswordCheck}
-          value={passwordCheck}
-          id="password-check-field"
-        />
-      </div>
-      <div className="form-input">
-        <label htmlFor="subscribe-field">Subscribe?</label>
-        <input
-          type="checkbox"
-          onChange={() => setSubscribed((prev) => !prev)}
-          checked={subscribed}
-          id="subscribed-field"
-        />
-      </div>
-      <button
-        onClick={handleSignup}
-        disabled={!valid || authState === AuthState.PENDING}
-      >
-        Sign Up
-      </button>
-      <GoogleAuth />
+      <form onSubmit={handleSubmit(onSubmit, (data) => console.error(data))}>
+        <Stack spacing={1}>
+          <FormControl>
+            <FormLabel>Name</FormLabel>
+            <Input type="text" {...register("name")} />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Email</FormLabel>
+            <Input type="email" {...register("email", { required: true })} />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Password</FormLabel>
+            <Input
+              type="password"
+              color={
+                errors.password || errors.passwordConfirm ? "danger" : "neutral"
+              }
+              {...register("password", { required: true })}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Repeat password</FormLabel>
+            <Input
+              type="password"
+              color={errors.passwordConfirm ? "danger" : "neutral"}
+              {...register("passwordConfirm", {
+                required: true,
+                validate: (val: string) => {
+                  if (watch("password") != val) {
+                    return "Passwords do not match";
+                  }
+                },
+              })}
+            />
+            {errors.passwordConfirm && (
+              <FormHelperText color="danger">
+                {errors.passwordConfirm.message}
+              </FormHelperText>
+            )}
+          </FormControl>
+          <FormControl>
+            <Checkbox
+              defaultChecked
+              label="Subscribe?"
+              {...register("subscribed")}
+            />
+            <FormHelperText>
+              You'll receive a briefing each morning of yesterdays pages
+            </FormHelperText>
+          </FormControl>
+          <FormControl>
+            <Button type="submit">Sign Up</Button>
+          </FormControl>
+        </Stack>
+      </form>
     </>
   );
 };
@@ -171,10 +160,7 @@ const GoogleAuth = () => {
   };
 
   return (
-    <Button
-      sx={{ mx: 2 }}
-      onClick={handleGoogle}
-    >
+    <Button sx={{ mx: 2 }} onClick={handleGoogle}>
       <img src={signinUrl} width="200px" />
     </Button>
   );

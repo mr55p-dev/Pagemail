@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import { Navbar } from "../components/Navbar/Navbar.component";
 
 export const Index = () => {
   const nav = useNavigate();
@@ -8,7 +7,6 @@ export const Index = () => {
   };
   return (
     <>
-      <Navbar />
       <div className="index-content">
         <div className="content">
           <div className="title-box">

@@ -1,7 +1,5 @@
-// import React from "react";
-import Typography from "@mui/joy/Typography";
 import { Login, SignUp } from "../components/AuthForm/AuthForm.component";
-import { Sheet, Tab, TabList, TabPanel, Tabs } from "@mui/joy";
+import { Sheet, Typography, Tab, TabList, TabPanel, Tabs } from "@mui/joy";
 
 enum AuthMethod {
   LOGIN,
