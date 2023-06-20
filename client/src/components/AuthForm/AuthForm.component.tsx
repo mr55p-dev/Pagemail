@@ -1,7 +1,7 @@
 // import React, { ChangeEventHandler } from "react";
 import { AuthState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
-import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
+// import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
 // import { useNotification } from "../../lib/notif";
 import { useForm } from "react-hook-form";
 import {
@@ -74,7 +74,7 @@ interface SignupForm {
 }
 
 export const SignUp = () => {
-  const { login, authErr } = useUser();
+  const { login } = useUser();
   // const { trigger, component } = useNotification();
   const {
     register,
@@ -150,17 +150,17 @@ export const SignUp = () => {
   );
 };
 
-const GoogleAuth = () => {
-  const { login } = useUser();
-  const handleGoogle = () => {
-    login(async () => {
-      await pb.collection("users").authWithOAuth2({ provider: "google" });
-    });
-  };
-
-  return (
-    <Button sx={{ mx: 2 }} onClick={handleGoogle}>
-      <img src={signinUrl} width="200px" />
-    </Button>
-  );
-};
+// const GoogleAuth = () => {
+//   const { login } = useUser();
+//   const handleGoogle = () => {
+//     login(async () => {
+//       await pb.collection("users").authWithOAuth2({ provider: "google" });
+//     });
+//   };
+//
+//   return (
+//     <Button sx={{ mx: 2 }} onClick={handleGoogle}>
+//       <img src={signinUrl} width="200px" />
+//     </Button>
+//   );
+// };

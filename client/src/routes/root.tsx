@@ -5,13 +5,11 @@ import { Container } from "@mui/joy";
 
 const Root = () => {
   return (
-    <>
-      <Container maxWidth="md">
-        <Navbar />
-        <NotificationBanner />
-        <Outlet />
-      </Container>
-    </>
+    <Container maxWidth="md">
+      <Navbar />
+      <NotificationBanner />
+      <Outlet />
+    </Container>
   );
 };
 

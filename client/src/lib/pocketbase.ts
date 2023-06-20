@@ -34,7 +34,7 @@ export const useUser = () => {
     user ? AuthState.AUTH : AuthState.NOT_AUTH
   );
   const nav = useNavigate();
-  const { notifErr } = React.useContext(NotificationCtx);
+  const { notifInfo, notifErr } = React.useContext(NotificationCtx);
 
   React.useEffect(() => {
     const unsub = pb.authStore.onChange(() => {
@@ -59,7 +59,7 @@ export const useUser = () => {
     } catch (err) {
       setAuthState(AuthState.NOT_AUTH);
       setAuthErr(err as Error);
-      notifErr(err?.message || "");
+      notifErr((err as Error).message);
       return Promise.reject(err);
     }
   };
@@ -67,6 +67,7 @@ export const useUser = () => {
   const logout = () => {
     pb.authStore.clear();
     setAuthState(AuthState.NOT_AUTH);
+	notifInfo("Signed out");
   };
 
   return { user, authState, login, logout, authErr };
