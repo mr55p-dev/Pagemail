@@ -1,14 +1,14 @@
+import { Container, Typography } from "@mui/joy";
 import { PageAdd } from "../components/PageAdd/PageAdd.component";
 import { PageView } from "../components/PageView/PageView.component";
 
 const PagesPage = () => {
   return (
     <>
-      <div className="pages-wrapper">
-        <h1>Pages</h1>
-		<PageAdd />
-		<PageView />
-      </div>
+      <Container maxWidth="md">
+        <PageAdd />
+        <PageView />
+      </Container>
     </>
   );
 };

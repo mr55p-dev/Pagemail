@@ -1,9 +1,19 @@
 import React from "react";
 import { pb, useUser } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  IconButton,
+  Input,
+  Stack,
+  Typography,
+} from "@mui/joy";
+import { AddCircleOutlined, ContentPaste } from "@mui/icons-material";
 
 export const PageAdd = () => {
-  const { user } = useUser()
+  const { user } = useUser();
   const [clipboardEnabled, setClipboardEnabled] = React.useState<boolean>(true);
   const [url, setUrl] = React.useState<string>("");
   const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
@@ -36,28 +46,38 @@ export const PageAdd = () => {
       .catch(() => setDataState(DataState.FAILED));
   };
   return (
-    <div className="pageadd-wrapper">
-      <h3>Add a page</h3>
+    <>
+      <Typography level="h4" my={1}>
+        Add a page
+      </Typography>
       {showSuccess ? <p>Success!</p> : undefined}
       {dataState === DataState.PENDING ? (
         <p>Loading...</p>
       ) : (
         <form onSubmit={handleSubmit}>
-          <input
-            type="url"
-            id="url-input"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            autoComplete="off"
-          />
-          <label htmlFor="url-input">URL</label>
-          <button type="submit">Submit</button>
-          <button type="button" onClick={handlePaste} disabled={!clipboardEnabled}>Paste</button>
-          <button type="reset" onClick={() => setUrl("")}>
-            Clear
-          </button>
+          <Stack direction="row" gap={1}>
+            <Input
+              type="url"
+              id="url-input"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              autoComplete="off"
+              placeholder="URL"
+              sx={{ width: "100%" }}
+              endDecorator={
+                <IconButton
+                  onClick={handlePaste}
+                  variant="plain"
+                  disabled={!clipboardEnabled}
+                >
+                  <ContentPaste />
+                </IconButton>
+              }
+            />
+            <Button type="submit">Submit</Button>
+          </Stack>
         </form>
       )}
-    </div>
+    </>
   );
 };

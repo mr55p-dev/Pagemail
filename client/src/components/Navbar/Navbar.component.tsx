@@ -3,6 +3,7 @@ import { AuthState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
 import {
   CircularProgress,
+  Container,
   Divider,
   Grid,
   IconButton,
@@ -23,7 +24,7 @@ export const Navbar = () => {
   const { mode, setMode } = useColorScheme();
   const nav = useNavigate();
   return (
-    <>
+    <Container maxWidth="md">
       <Grid
         container
         direction="row"
@@ -80,6 +81,6 @@ export const Navbar = () => {
         </Grid>
       </Grid>
       <Divider />
-    </>
+    </Container>
   );
 };
