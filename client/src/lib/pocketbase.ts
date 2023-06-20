@@ -3,6 +3,7 @@ import { UserRecord } from "./datamodels";
 import React from "react";
 import { AuthState } from "./data";
 import { useNavigate } from "react-router-dom";
+import { NotificationCtx } from "./notif";
 
 const pb_url =
   process.env.NODE_ENV === "development"
@@ -33,13 +34,14 @@ export const useUser = () => {
     user ? AuthState.AUTH : AuthState.NOT_AUTH
   );
   const nav = useNavigate();
+  const { notifErr } = React.useContext(NotificationCtx);
 
   React.useEffect(() => {
     const unsub = pb.authStore.onChange(() => {
       setUser(getCurrentUser());
     });
 
-	return () => unsub()
+    return () => unsub();
   }, []);
 
   React.useEffect(() => {
@@ -57,6 +59,7 @@ export const useUser = () => {
     } catch (err) {
       setAuthState(AuthState.NOT_AUTH);
       setAuthErr(err as Error);
+      notifErr(err?.message || "");
       return Promise.reject(err);
     }
   };

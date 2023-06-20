@@ -3,20 +3,20 @@ import { pb, useUser } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
 import {
   Button,
-  FormControl,
-  FormLabel,
+  CircularProgress,
   IconButton,
   Input,
   Stack,
   Typography,
 } from "@mui/joy";
-import { AddCircleOutlined, ContentPaste } from "@mui/icons-material";
+import { ContentPaste } from "@mui/icons-material";
+import { NotificationCtx } from "../../lib/notif";
 
 export const PageAdd = () => {
   const { user } = useUser();
+  const { notifOk, notifErr } = React.useContext(NotificationCtx);
   const [clipboardEnabled, setClipboardEnabled] = React.useState<boolean>(true);
   const [url, setUrl] = React.useState<string>("");
-  const [showSuccess, setShowSuccess] = React.useState<boolean>(false);
   const [dataState, setDataState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
@@ -39,45 +39,53 @@ export const PageAdd = () => {
       .create(data)
       .then(() => {
         setDataState(DataState.SUCCESS);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 1000);
+        notifOk("Success!", );
       })
       .then(() => setUrl(""))
-      .catch(() => setDataState(DataState.FAILED));
+      .catch(() => {
+        notifErr("Failed");
+        setDataState(DataState.FAILED);
+      });
   };
+
+  const isPending = dataState === DataState.PENDING;
   return (
     <>
       <Typography level="h4" my={1}>
         Add a page
       </Typography>
-      {showSuccess ? <p>Success!</p> : undefined}
-      {dataState === DataState.PENDING ? (
-        <p>Loading...</p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <Stack direction="row" gap={1}>
-            <Input
-              type="url"
-              id="url-input"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              autoComplete="off"
-              placeholder="URL"
-              sx={{ width: "100%" }}
-              endDecorator={
-                <IconButton
-                  onClick={handlePaste}
-                  variant="plain"
-                  disabled={!clipboardEnabled}
-                >
-                  <ContentPaste />
-                </IconButton>
-              }
-            />
-            <Button type="submit">Submit</Button>
-          </Stack>
-        </form>
-      )}
+      <form onSubmit={handleSubmit}>
+        <Stack direction="row" gap={1}>
+          <Input
+            type="url"
+            id="url-input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            autoComplete="off"
+            placeholder="URL"
+            sx={{ width: "100%" }}
+            disabled={isPending}
+            endDecorator={
+              <IconButton
+                onClick={handlePaste}
+                variant="plain"
+                disabled={!clipboardEnabled || isPending}
+              >
+                <ContentPaste />
+              </IconButton>
+            }
+          />
+          <Button
+            type="submit"
+            startDecorator={
+              isPending && <CircularProgress variant="outlined" />
+            }
+            disabled={isPending}
+          >
+            Submit
+          </Button>
+        </Stack>
+      </form>
     </>
   );
 };

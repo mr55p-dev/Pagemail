@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
 import {
+  Box,
   CircularProgress,
-  Container,
   Divider,
   Grid,
   IconButton,
@@ -24,7 +24,7 @@ export const Navbar = () => {
   const { mode, setMode } = useColorScheme();
   const nav = useNavigate();
   return (
-    <Container maxWidth="md">
+    <Box>
       <Grid
         container
         direction="row"
@@ -81,6 +81,6 @@ export const Navbar = () => {
         </Grid>
       </Grid>
       <Divider />
-    </Container>
+    </Box>
   );
 };

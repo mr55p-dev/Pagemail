@@ -91,7 +91,6 @@ export const SignUp = () => {
 
   return (
     <>
-      {authErr ? <div>{authErr.message}</div> : undefined}
       <form onSubmit={handleSubmit(onSubmit, (data) => console.error(data))}>
         <Stack spacing={1}>
           <FormControl>

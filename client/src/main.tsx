@@ -9,6 +9,7 @@ import Protected from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
+import { NotificationProvider } from "./lib/notif.tsx";
 
 const router = createBrowserRouter([
   {
@@ -57,7 +58,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <CssVarsProvider theme={thm} defaultMode="system">
       <CssBaseline />
-      <RouterProvider router={router} />
+      <NotificationProvider>
+        <RouterProvider router={router} />
+      </NotificationProvider>
     </CssVarsProvider>
   </React.StrictMode>
 );
