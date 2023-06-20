@@ -52,7 +52,7 @@ export const PageAdd = () => {
   return (
     <>
       <Typography level="h4" my={1}>
-        Add a page
+		Save your pages
       </Typography>
       <form onSubmit={handleSubmit}>
         <Stack direction="row" gap={1}>
@@ -65,6 +65,7 @@ export const PageAdd = () => {
             placeholder="URL"
             sx={{ width: "100%" }}
             disabled={isPending}
+			size="lg"
             endDecorator={
               <IconButton
                 onClick={handlePaste}

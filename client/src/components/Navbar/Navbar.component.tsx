@@ -39,8 +39,15 @@ export const Navbar = () => {
           flexDirection="row"
           alignItems="center"
           gap={1}
+          sx={{
+            ["& > *"]: {
+              my: 1,
+            },
+          }}
         >
-          <img height="36px" src={IconDefault} />
+          <Link to="/">
+            <img height="36px" src={IconDefault} />
+          </Link>
           <Typography level="h4" sx={{ py: 1 }}>
             <Link style={{ textDecoration: "none", color: "unset" }} to="/">
               Pagemail
@@ -50,23 +57,23 @@ export const Navbar = () => {
         <Grid xs="auto" display="flex" direction="row" gap={1}>
           {authState === AuthState.AUTH ? (
             <>
-              <IconButton onClick={() => nav("/pages")}>
+              <IconButton size="md" onClick={() => nav("/pages")}>
                 <ArticleOutlined />
               </IconButton>
 
-              <IconButton onClick={logout}>
+              <IconButton size="md" onClick={logout}>
                 <LogoutOutlined />
               </IconButton>
             </>
           ) : authState === AuthState.PENDING ? (
             <>
-              <IconButton>
+              <IconButton size="md">
                 <CircularProgress thickness={2} />
               </IconButton>
             </>
           ) : (
             <>
-              <IconButton onClick={() => nav("/pages")}>
+              <IconButton size="md" onClick={() => nav("/pages")}>
                 <AccountBoxOutlined />
               </IconButton>
             </>
@@ -75,6 +82,7 @@ export const Navbar = () => {
           <IconButton
             onClick={() => setMode(mode === "light" ? "dark" : "light")}
             sx={{ justifySelf: "end" }}
+            size="md"
           >
             {mode === "light" ? <DarkModeOutlined /> : <LightModeOutlined />}
           </IconButton>

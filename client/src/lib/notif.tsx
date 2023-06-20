@@ -6,6 +6,7 @@ import {
   Typography,
   ColorPaletteProp,
   CircularProgress,
+  Box,
 } from "@mui/joy";
 import React from "react";
 
@@ -142,31 +143,46 @@ export const NotificationBanner = () => {
     setProgress(0);
   };
   return (
-    <Alert
-      variant="soft"
-      color={colors[notif.style]}
-      startDecorator={
-        <CircularProgress
-          determinate
-          value={progress}
-          variant="soft"
-          color={colors[notif.style]}
-        >
-          {notif.notification.icon || icons[notif.style]}
-        </CircularProgress>
-      }
-      endDecorator={
-        <Button
-          onClick={handleClear}
-          variant="outlined"
-          color={colors[notif.style]}
-        >
-          Close
-        </Button>
-      }
+    <Box
+      sx={{
+        position: "absolute",
+        width: "100%",
+        top: 0,
+        left: 0,
+      }}
     >
-      <Typography level="body1">{notif.notification.title}</Typography>
-      <Typography level="body2">{notif.notification.text}</Typography>
-    </Alert>
+      <Alert
+        variant="soft"
+        color={colors[notif.style]}
+        sx={{
+          maxWidth: "sm",
+          marginX: "auto",
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+        }}
+        startDecorator={
+          <CircularProgress
+            determinate
+            value={progress}
+            variant="soft"
+            color={colors[notif.style]}
+          >
+            {notif.notification.icon || icons[notif.style]}
+          </CircularProgress>
+        }
+        endDecorator={
+          <Button
+            onClick={handleClear}
+            variant="outlined"
+            color={colors[notif.style]}
+          >
+            Close
+          </Button>
+        }
+      >
+        <Typography level="body1">{notif.notification.title}</Typography>
+        <Typography level="body2">{notif.notification.text}</Typography>
+      </Alert>
+    </Box>
   );
 };

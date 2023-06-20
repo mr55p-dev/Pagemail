@@ -2,6 +2,18 @@ import React from "react";
 import { pb } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
 import { PageRecord } from "../../lib/datamodels";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Card,
+  CardContent,
+  CardOverflow,
+  Grid,
+  Link,
+  Typography,
+} from "@mui/joy";
+import { DeleteOutline, OpenInNew } from "@mui/icons-material";
 
 interface PageProps {
   url: string;
@@ -24,6 +36,9 @@ const Page = ({ url, id, created }: PageProps) => {
   const [previewData, setPreviewData] = React.useState<
     PageMetadataResponse | undefined
   >(undefined);
+
+  const dt = new Date(created);
+  const dest = new URL(url);
 
   React.useEffect(() => {
     setPreviewState(DataState.PENDING);
@@ -65,19 +80,22 @@ const Page = ({ url, id, created }: PageProps) => {
   if (previewData) {
     body = (
       <>
-        <a href={url} target="_blank">
-          <h4>{previewData.title || url}</h4>
-        </a>
-        <p>{previewData.description}</p>
-        <span>{url}</span>
+        <Link href={url} target="_blank">
+          <Typography level="h4">{previewData.title || url}</Typography>
+        </Link>
+        <Typography level="body2">{url}</Typography>
+        <Typography level="body1" mt={1}>
+          {previewData.description}
+        </Typography>
       </>
     );
   } else {
     body = (
       <>
-        <a href={url} target="_blank">
-          <p>{url}</p>
-        </a>
+        <Link href={url} target="_blank">
+          <Typography level="h4">{dest.hostname}</Typography>
+        </Link>
+		<Typography level="body2">{dest.origin}</Typography>
         {previewState === DataState.PENDING ? (
           <p>Loading preview...</p>
         ) : undefined}
@@ -85,11 +103,33 @@ const Page = ({ url, id, created }: PageProps) => {
     );
   }
   return (
-    <div>
-      {body}
-      <button onClick={handleDelete}>X</button>
-      <p>{created}</p>
-    </div>
+    <Grid xs={12} sm={6} md={4}>
+      <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
+        <CardContent>{body}</CardContent>
+        <ButtonGroup variant="outlined" color="neutral" sx={{ mx: "auto" }}>
+          <Button
+            startDecorator={<OpenInNew />}
+            color="success"
+            onClick={() => window.open(url)}
+          >
+            Open
+          </Button>
+          <Button
+            startDecorator={<DeleteOutline />}
+            onClick={handleDelete}
+            color="danger"
+          >
+            Delete
+          </Button>
+        </ButtonGroup>
+
+        <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
+          <Typography level="body1" sx={{ py: 1 }}>
+            {dt.toLocaleDateString()} @ {dt.toLocaleTimeString()}
+          </Typography>
+        </CardOverflow>
+      </Card>
+    </Grid>
   );
 };
 
@@ -124,10 +164,10 @@ export const PageView = () => {
     };
   }, []);
   return (
-    <div className="pages-wrapper">
+    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
       {pages.map((e) => (
         <Page url={e.url} id={e.id} created={e.created} key={e.id} />
       ))}
-    </div>
+    </Grid>
   );
 };
