@@ -26,7 +26,7 @@ interface PageMetadataResponse {
   description?: string;
 }
 
-const Page = ({ url, id, created }: PageProps) => {
+export const Page = ({ url, id, created }: PageProps) => {
   const [deleteState, setDeleteState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
