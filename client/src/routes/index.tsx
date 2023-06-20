@@ -1,4 +1,4 @@
-import { Typography } from "@mui/joy";
+import { Box, Button, Typography } from "@mui/joy";
 import { useNavigate } from "react-router";
 
 export const Index = () => {
@@ -7,19 +7,19 @@ export const Index = () => {
     nav("/auth");
   };
   return (
-    <>
-      <div className="index-content">
-        <div className="content">
-          <div className="title-box">
-            <Typography level="display1">Never forget a link again</Typography>
-          </div>
-          <div className="cta">
-            <button onClick={handleCta}>
-              <p>Get started!</p>
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+    <div className="index-content">
+      <Typography level="display1">Never forget a link again</Typography>
+      <Box className="cta">
+        <Button
+          size="lg"
+          variant="solid"
+          sx={{ mx: "auto" }}
+          color="success"
+          onClick={handleCta}
+        >
+          Get started!
+        </Button>
+      </Box>
+    </div>
   );
 };

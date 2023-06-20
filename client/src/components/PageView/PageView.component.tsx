@@ -3,7 +3,6 @@ import { pb } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
 import { PageRecord } from "../../lib/datamodels";
 import {
-  Box,
   Button,
   ButtonGroup,
   Card,
@@ -83,7 +82,7 @@ const Page = ({ url, id, created }: PageProps) => {
         <Link href={url} target="_blank">
           <Typography level="h4">{previewData.title || url}</Typography>
         </Link>
-        <Typography level="body2">{url}</Typography>
+        <Typography level="body2">{dest.origin}</Typography>
         <Typography level="body1" mt={1}>
           {previewData.description}
         </Typography>
