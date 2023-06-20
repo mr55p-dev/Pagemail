@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { DeleteOutline, OpenInNew } from "@mui/icons-material";
+import { NotificationCtx } from "../../lib/notif";
 
 interface PageProps {
   url: string;
@@ -35,6 +36,7 @@ const Page = ({ url, id, created }: PageProps) => {
   const [previewData, setPreviewData] = React.useState<
     PageMetadataResponse | undefined
   >(undefined);
+  const { notifOk, notifErr } = React.useContext(NotificationCtx);
 
   const dt = new Date(created);
   const dest = new URL(url);
@@ -65,8 +67,14 @@ const Page = ({ url, id, created }: PageProps) => {
   const handleDelete = () => {
     pb.collection("pages")
       .delete(id)
-      .then(() => setDeleteState(DataState.SUCCESS))
-      .catch(() => setDeleteState(DataState.FAILED));
+      .then(() => {
+        setDeleteState(DataState.SUCCESS);
+        notifOk("Deleted", `Page at ${dest.hostname} removed.`);
+      })
+      .catch(() => {
+        setDeleteState(DataState.FAILED);
+        notifErr("Failed");
+      });
   };
 
   switch (deleteState) {
@@ -94,7 +102,7 @@ const Page = ({ url, id, created }: PageProps) => {
         <Link href={url} target="_blank">
           <Typography level="h4">{dest.hostname}</Typography>
         </Link>
-		<Typography level="body2">{dest.origin}</Typography>
+        <Typography level="body2">{dest.origin}</Typography>
         {previewState === DataState.PENDING ? (
           <p>Loading preview...</p>
         ) : undefined}
