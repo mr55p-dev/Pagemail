@@ -13,7 +13,7 @@ build:
 deploy:
 	ssh -i ../pagemail-prod-rsa.pem ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com "sudo service pagemail stop; sudo rm -f /home/ec2-user/server"
 	scp -i ../pagemail-prod-rsa.pem -r dist/server ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com:/home/ec2-user/server
-	ssh -i ../pagemail-prod-rsa.pem ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com "sudo service pagemail start; sudo rm -f /home/ec2-user/server"
+	ssh -i ../pagemail-prod-rsa.pem ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com "sudo service pagemail start"
 
 run:
 	go run main.go --debug --dir=pb_data_test serve

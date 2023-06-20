@@ -45,11 +45,20 @@ func main() {
 		})
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
-			Path:    "/api/preview",
-			Handler: custom_api.Preview,
+			Path:    "/api/page/save",
+			Handler: custom_api.SaveFactoryGET(app),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
-				apis.RequireRecordAuth("users"),
+				// apis.RequireRecordAuth("users"),
+			},
+		})
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodPost,
+			Path:    "/api/page/save",
+			Handler: custom_api.SaveFactoryPOST(app),
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				// apis.RequireRecordAuth("users"),
 			},
 		})
 		e.Router.AddRoute(echo.Route{
