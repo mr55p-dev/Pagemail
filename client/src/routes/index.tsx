@@ -1,3 +1,4 @@
+import { Typography } from "@mui/joy";
 import { useNavigate } from "react-router";
 
 export const Index = () => {
@@ -10,7 +11,7 @@ export const Index = () => {
       <div className="index-content">
         <div className="content">
           <div className="title-box">
-            <h1 className="title">Never forget a link again</h1>
+            <Typography level="display1">Never forget a link again</Typography>
           </div>
           <div className="cta">
             <button onClick={handleCta}>
