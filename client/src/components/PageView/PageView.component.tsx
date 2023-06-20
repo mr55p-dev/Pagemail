@@ -116,7 +116,7 @@ export const Page = ({ url, id, created }: PageProps) => {
         <ButtonGroup variant="outlined" color="neutral" sx={{ mx: "auto" }}>
           <Button
             startDecorator={<OpenInNew />}
-            color="success"
+            color="primary"
             onClick={() => window.open(url)}
           >
             Open

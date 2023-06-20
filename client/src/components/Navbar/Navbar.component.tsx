@@ -1,16 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { AuthState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
+import NavBrandDark from "../../assets/default-monochrome-a.svg";
+import NavBrandLight from "../../assets/default-monochrome-light-a.svg";
+
 import {
   Box,
   CircularProgress,
   Divider,
   Grid,
   IconButton,
-  Typography,
   useColorScheme,
 } from "@mui/joy";
-import IconDefault from "../../assets/default-icon.svg";
 import {
   AccountBoxOutlined,
   ArticleOutlined,
@@ -39,22 +40,23 @@ export const Navbar = () => {
           flexDirection="row"
           alignItems="center"
           gap={1}
-          sx={{
-            ["& > *"]: {
-              my: 1,
-            },
-          }}
         >
-          <Link to="/">
-            <img height="36px" src={IconDefault} />
+          <Link
+            style={{
+              textDecoration: "none",
+              color: "unset",
+              display: "grid",
+              placeItems: "end center",
+            }}
+            to="/"
+          >
+            <img
+              height="40px"
+              src={mode === "light" ? NavBrandDark : NavBrandLight}
+            />
           </Link>
-          <Typography level="h4" sx={{ py: 1 }}>
-            <Link style={{ textDecoration: "none", color: "unset" }} to="/">
-              Pagemail
-            </Link>
-          </Typography>
         </Grid>
-        <Grid xs="auto" display="flex" direction="row" gap={1}>
+        <Grid xs="auto" display="flex" direction="row" gap={1} my={1}>
           {authState === AuthState.AUTH ? (
             <>
               <IconButton size="md" onClick={() => nav("/pages")}>
