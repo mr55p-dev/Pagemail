@@ -10,6 +10,7 @@ import { Index } from "./routes/index.tsx";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { NotificationProvider } from "./lib/notif.tsx";
+import { AccountPage } from "./routes/account.tsx";
 
 const router = createBrowserRouter([
   {
@@ -20,18 +21,24 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Index />,
-        errorElement: <ErrorPage />,
       },
       {
         path: "auth",
         element: <AuthPage />,
-        errorElement: <ErrorPage />,
       },
       {
         path: "pages",
         element: (
           <Protected>
             <PagesPage />
+          </Protected>
+        ),
+      },
+      {
+        path: "account",
+        element: (
+          <Protected>
+            <AccountPage />
           </Protected>
         ),
       },

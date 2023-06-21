@@ -8,7 +8,8 @@ import {
   CircularProgress,
   Box,
 } from "@mui/joy";
-import React from "react";
+import React, { useCallback } from "react";
+import { useTimeoutProgress } from "./timeout";
 
 enum NotifState {
   OK,
@@ -108,40 +109,16 @@ export const NotificationProvider = ({
     </NotificationCtx.Provider>
   );
 };
-const DURATION = 400;
-
 export const NotificationBanner = () => {
   const notif = React.useContext(NotificationCtx);
-  const [progress, setProgress] = React.useState(0);
-  const interval = React.useRef<NodeJS.Timeout>();
-
-  React.useEffect(() => {
-    if (notif.notification) {
-      const increment = 100 / DURATION; // Calculate the increment value per millisecond
-      interval.current = setInterval(() => {
-        setProgress((prevProgress) => {
-          const newProgress = prevProgress + increment;
-          return newProgress >= 100 ? 100 : newProgress;
-        });
-      }, 1); // Increase progress every 1 millisecond
-
-      return () => clearInterval(interval.current);
-    }
-  }, [notif]);
-
-  React.useEffect(() => {
-    if (progress >= 100) {
-      notif.notifClear();
-      setProgress(0);
-    }
-  }, [notif, progress]);
+  const { cancel, progress } = useTimeoutProgress(
+	4,
+    !!notif.notification,
+    notif.notifClear
+  );
 
   if (!notif.notification || notif.style == null) return null;
 
-  const handleClear = () => {
-    notif.notifClear();
-    setProgress(0);
-  };
   return (
     <Box
       sx={{
@@ -172,7 +149,7 @@ export const NotificationBanner = () => {
         }
         endDecorator={
           <Button
-            onClick={handleClear}
+            onClick={cancel}
             variant="outlined"
             color={colors[notif.style]}
           >
