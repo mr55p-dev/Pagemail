@@ -113,7 +113,7 @@ export const Page = ({ url, id, created }: PageProps) => {
     <Grid xs={12} sm={6} md={4}>
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
         <CardContent>{body}</CardContent>
-        <ButtonGroup variant="outlined" color="neutral" sx={{ mx: "auto" }}>
+        <ButtonGroup variant="outlined" color="neutral" sx={{ mx: "auto", width: 1, ['& > *']: {flexGrow: 1}}}>
           <Button
             startDecorator={<OpenInNew />}
             color="primary"
@@ -131,7 +131,7 @@ export const Page = ({ url, id, created }: PageProps) => {
         </ButtonGroup>
 
         <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
-          <Typography level="body1" sx={{ py: 1 }}>
+          <Typography level="body3" sx={{ py: 1 }}>
             {dt.toLocaleDateString()} @ {dt.toLocaleTimeString()}
           </Typography>
         </CardOverflow>

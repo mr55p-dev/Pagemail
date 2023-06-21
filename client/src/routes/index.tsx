@@ -7,13 +7,15 @@ export const Index = () => {
     nav("/auth");
   };
   return (
-    <Box width="100%">
-      <Typography level="display1">Never forget a link again</Typography>
+    <Box
+      width="100%"
+    >
+      <Typography level="display1" textAlign="center">Never forget a link again</Typography>
       <Button
         size="lg"
         variant="solid"
         fullWidth
-		sx={{ display: "block", mx: "auto", my: 2, maxWidth: "sm" }}
+        sx={{ display: "block", mx: "auto", my: 2, maxWidth: "sm" }}
         color="primary"
         onClick={handleCta}
       >
@@ -21,13 +23,15 @@ export const Index = () => {
       </Button>
       <Typography
         level="body1"
+		textAlign="center"
+		justifyContent="center"
         endDecorator={
           <Link href="https://www.icloud.com/shortcuts/6da395d20b9542d8aa5ee56e884f0c4b">
-            shortcut here!
+            Get the shortcut here!
           </Link>
         }
       >
-        On iOS? Get the{" "}
+        On iOS? 
       </Typography>
     </Box>
   );

@@ -6,13 +6,13 @@ enum AuthMethod {
   SIGNUP,
 }
 const AuthPage = () => {
-  // const [method, setMethod] = React.useState<AuthMethod>(AuthMethod.LOGIN);
-
   return (
     <>
       <Sheet
+        variant="outlined"
+        color="primary"
         sx={{
-          width: 300,
+          maxWidth: "320px",
           mx: "auto", // margin left & right
           my: 4, // margin top & bottom
           py: 3, // padding top & bottom
