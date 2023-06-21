@@ -91,8 +91,8 @@ export const Page = ({ url, id, created }: PageProps) => {
           <Typography level="h4">{previewData.title || url}</Typography>
         </Link>
         <Typography level="body2">{dest.origin}</Typography>
-        <Typography level="body1" mt={1} maxHeight="100px" textOverflow="ellipsis" border="1px solid black">
-          {previewData.description}
+        <Typography level="body1" mt={1}>
+          {previewData.description && truncate(previewData.description, 225)}
         </Typography>
       </>
     );
@@ -113,7 +113,11 @@ export const Page = ({ url, id, created }: PageProps) => {
     <Grid xs={12} sm={6} md={4}>
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
         <CardContent>{body}</CardContent>
-        <ButtonGroup variant="outlined" color="neutral" sx={{ mx: "auto", width: 1, ['& > *']: {flexGrow: 1}}}>
+        <ButtonGroup
+          variant="outlined"
+          color="neutral"
+          sx={{ mx: "auto", width: 1, ["& > *"]: { flexGrow: 1 } }}
+        >
           <Button
             startDecorator={<OpenInNew />}
             color="primary"
@@ -178,3 +182,13 @@ export const PageView = () => {
     </Grid>
   );
 };
+
+function min(arg0: number, arg1: number): number {
+  return Number(arg0 < arg1 && arg0) + Number(arg1 < arg0 && arg1);
+}
+
+function truncate(description: string, maxlen?: number): string {
+  const append =
+    description.length < (maxlen == null ? 0 : maxlen) ? "" : "...";
+  return description.slice(0, min(maxlen || 0, description.length)) + append;
+}
