@@ -15,13 +15,13 @@ import {
 import { DeleteOutline, OpenInNew } from "@mui/icons-material";
 import { NotificationCtx } from "../../lib/notif";
 
-interface PageProps {
+export interface PageProps {
   url: string;
   id: string;
   created: string;
 }
 
-interface PageMetadataResponse {
+export interface PageMetadataResponse {
   title?: string;
   description?: string;
 }
@@ -91,7 +91,7 @@ export const Page = ({ url, id, created }: PageProps) => {
           <Typography level="h4">{previewData.title || url}</Typography>
         </Link>
         <Typography level="body2">{dest.origin}</Typography>
-        <Typography level="body1" mt={1}>
+        <Typography level="body1" mt={1} maxHeight="100px" textOverflow="ellipsis" border="1px solid black">
           {previewData.description}
         </Typography>
       </>
