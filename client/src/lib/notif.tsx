@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Box,
 } from "@mui/joy";
-import React, { useCallback } from "react";
+import React from "react";
 import { useTimeoutProgress } from "./timeout";
 
 enum NotifState {

@@ -26,34 +26,22 @@ func saveRecord(app *pocketbase.PocketBase, user_id string, url string) error {
 	return form.Submit()
 }
 
-func SaveFactoryGET(app *pocketbase.PocketBase) echo.HandlerFunc {
+func SaveRoute(app *pocketbase.PocketBase) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// Fetch the page contents
 		url := c.QueryParam("url")
-		user_id := c.QueryParam("user_id")
-		if url == "" {
-			return c.String(http.StatusBadRequest, "Must include a URL")
+		claims, ok := c.Get("TokenClaims").(*TokenClaims)
+		if !ok {
+			return c.String(http.StatusBadRequest, "Could not validate authorization token")
 		}
-		if user_id == "" {
-			return c.String(http.StatusBadRequest, "Must include a user id")
-		}
-		if err := saveRecord(app, user_id, url); err != nil {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("Failed to store this record: %s", err))
-		}
-		return c.String(http.StatusOK, "Saved")
-	}
-}
+		user_id := claims.UserID
+		fmt.Printf("User ID claim: %s", user_id)
 
-func SaveFactoryPOST(app *pocketbase.PocketBase) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// Fetch the page contents
-		url := c.FormValue("url")
-		user_id := c.FormValue("user_id")
 		if url == "" {
 			return c.String(http.StatusBadRequest, "Must include a URL")
 		}
 		if user_id == "" {
-			return c.String(http.StatusBadRequest, "Must include a user id")
+			return c.String(http.StatusBadRequest, "Could not retrieve user id")
 		}
 		if err := saveRecord(app, user_id, url); err != nil {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("Failed to store this record: %s", err))
