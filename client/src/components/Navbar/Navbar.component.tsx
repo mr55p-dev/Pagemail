@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
 import NavBrandDark from "../../assets/default-monochrome-a.svg";
@@ -19,6 +19,20 @@ import {
   LightModeOutlined,
   LogoutOutlined,
 } from "@mui/icons-material";
+
+const NavButton = ({ to, action, children }: { to?: string, children: React.ReactNode, action?: () => void }) => {
+  const nav = useNavigate()
+  const { pathname } = useLocation()
+
+  return (
+  <IconButton size="md" variant={pathname === to ? "solid" : "soft"} onClick={() => {
+    action && action()
+    to && nav(to);
+  }
+  }>
+    {children}
+  </IconButton>)
+}
 
 export const Navbar = () => {
   const { authState, logout } = useUser();
@@ -59,13 +73,17 @@ export const Navbar = () => {
         <Grid xs="auto" display="flex" direction="row" gap={1} my={1}>
           {authState === AuthState.AUTH ? (
             <>
-              <IconButton size="md" onClick={() => nav("/pages")}>
+              <NavButton to="/pages">
                 <ArticleOutlined />
-              </IconButton>
+              </NavButton>
 
-              <IconButton size="md" onClick={logout}>
+              <NavButton to="/account">
+                <AccountBoxOutlined />
+              </NavButton>
+
+              <NavButton action={logout}>
                 <LogoutOutlined />
-              </IconButton>
+              </NavButton>
             </>
           ) : authState === AuthState.PENDING ? (
             <>
