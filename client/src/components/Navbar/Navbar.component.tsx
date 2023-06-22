@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
@@ -26,7 +27,7 @@ const NavButton = ({ to, action, children }: { to?: string, children: React.Reac
 
   return (
   <IconButton size="md" variant={pathname === to ? "solid" : "soft"} onClick={() => {
-    action && action()
+    action && action();
     to && nav(to);
   }
   }>
@@ -38,8 +39,24 @@ export const Navbar = () => {
   const { authState, logout } = useUser();
   const { mode, setMode } = useColorScheme();
   const nav = useNavigate();
+  const headerRef = React.useRef<HTMLElement>();
+
+  // React.useEffect(() => {
+  //   if (!headerRef.current) {
+  //     return
+  //   }
+
+  //   const obs = new IntersectionObserver(([e]) => {
+  //     e.target.classList.toggle("scrolled")
+  //     console.log("hello")
+  //   })
+  //   obs.observe(headerRef.current)
+
+  //   return () => obs.disconnect()
+  // }, [])
+
   return (
-    <Box>
+    <Box position="sticky" top="-1px" left={0} zIndex={2} bgcolor="background.body" ref={headerRef}>
       <Grid
         container
         direction="row"

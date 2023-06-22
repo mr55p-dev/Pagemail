@@ -5,7 +5,7 @@ import Root from "./routes/root.tsx";
 import ErrorPage from "./error-page.tsx";
 import AuthPage from "./routes/auth.tsx";
 import PagesPage from "./routes/pages.tsx";
-import Protected from "./components/Protected/Protected.component.tsx";
+import { Protected, NotProtected } from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
       },
       {
         path: "auth",
-        element: <AuthPage />,
+        element: <NotProtected><AuthPage /></NotProtected>
       },
       {
         path: "pages",
