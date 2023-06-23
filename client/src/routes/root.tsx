@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { Navbar } from "../components/Navbar/Navbar.component";
-import { NotificationBanner } from "../lib/notif";
+import { NotificationBanner } from "../components/Notification/Notification.component";
 import { Box, Container } from "@mui/joy";
 
 const Root = () => {
