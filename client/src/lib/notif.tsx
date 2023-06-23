@@ -121,6 +121,7 @@ export const NotificationBanner = () => {
 
   return (
     <Box
+    zIndex={10}
       sx={{
         position: "absolute",
         width: "100%",
