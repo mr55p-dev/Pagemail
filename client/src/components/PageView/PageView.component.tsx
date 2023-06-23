@@ -109,6 +109,7 @@ export const Page = ({ url, id, created }: PageProps) => {
       </>
     );
   }
+
   return (
     <Grid xs={12} sm={6} md={4}>
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
@@ -166,6 +167,7 @@ export const PageView = () => {
         }
       });
     });
+
     return () => {
       try {
         pb.collection("pages").unsubscribe("*");
@@ -174,8 +176,13 @@ export const PageView = () => {
       }
     };
   }, []);
+
   return (
-    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
+    <Grid
+      container
+      spacing={1}
+      sx={{ flexGrow: 1, mt: 1 }}
+    >
       {pages.map((e) => (
         <Page url={e.url} id={e.id} created={e.created} key={e.id} />
       ))}

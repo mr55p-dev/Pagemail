@@ -21,19 +21,31 @@ import {
   LogoutOutlined,
 } from "@mui/icons-material";
 
-const NavButton = ({ to, action, children }: { to?: string, children: React.ReactNode, action?: () => void }) => {
-  const nav = useNavigate()
-  const { pathname } = useLocation()
+const NavButton = ({
+  to,
+  action,
+  children,
+}: {
+  to?: string;
+  children: React.ReactNode;
+  action?: () => void;
+}) => {
+  const nav = useNavigate();
+  const { pathname } = useLocation();
 
   return (
-  <IconButton size="md" variant={pathname === to ? "solid" : "soft"} onClick={() => {
-    action && action();
-    to && nav(to);
-  }
-  }>
-    {children}
-  </IconButton>)
-}
+    <IconButton
+      size="md"
+      variant={pathname === to ? "solid" : "soft"}
+      onClick={() => {
+        action && action();
+        to && nav(to);
+      }}
+    >
+      {children}
+    </IconButton>
+  );
+};
 
 export const Navbar = () => {
   const { authState, logout } = useUser();
@@ -56,7 +68,14 @@ export const Navbar = () => {
   // }, [])
 
   return (
-    <Box position="sticky" top="-1px" left={0} zIndex={2} bgcolor="background.body" ref={headerRef}>
+    <Box
+      position="sticky"
+      top="-1px"
+      left={0}
+      zIndex={2}
+      bgcolor="background.body"
+      ref={headerRef}
+    >
       <Grid
         container
         direction="row"
