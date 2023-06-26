@@ -1,6 +1,7 @@
 import {
   Button,
   IconButton,
+  Input,
   LinearProgress,
   Sheet,
   Stack,
@@ -10,7 +11,7 @@ import { pb } from "../lib/pocketbase";
 import React from "react";
 import { NotificationCtx } from "../lib/notif";
 import { useTimeoutProgress } from "../lib/timeout";
-import { Cancel } from "@mui/icons-material";
+import { Cancel, ContentCopy } from "@mui/icons-material";
 
 interface NewTokenRes {
   data: {
@@ -20,7 +21,13 @@ interface NewTokenRes {
 
 export const AccountPage = () => {
   const [tkn, setTkn] = React.useState<string | undefined>();
-  const { notifErr } = React.useContext(NotificationCtx);
+  const { notifOk, notifErr } = React.useContext(NotificationCtx);
+
+  const handleCopyToken = () => {
+	tkn && navigator.clipboard.writeText(tkn)
+	.then(() => notifOk("Copied"))
+	.catch(() => notifErr("Could not copy to clipboard"))
+  }
 
   const generateToken = async () => {
     try {
@@ -37,7 +44,7 @@ export const AccountPage = () => {
     }
   };
 
-  const { progress, cancel } = useTimeoutProgress(20, !!tkn, () =>
+  const { progress, cancel } = useTimeoutProgress(120, !!tkn, () =>
     setTkn(undefined)
   );
 
@@ -63,7 +70,16 @@ export const AccountPage = () => {
       </Typography>
       {tkn ? (
         <>
-          <Typography level="body1">Your token is: {tkn}</Typography>
+          <Typography level="body1">Your token is:</Typography>
+          <Input
+            defaultValue={tkn}
+			onClick={(e) => e.currentTarget.select()}
+            endDecorator={
+              <IconButton onClick={handleCopyToken} variant="plain">
+                <ContentCopy />
+              </IconButton>
+            }
+          />
           <Stack direction="row" alignItems="center" gap={2}>
             <LinearProgress determinate value={progress} />
             <IconButton onClick={cancel}>
