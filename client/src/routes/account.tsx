@@ -1,8 +1,12 @@
 import {
   Button,
+  Checkbox,
   IconButton,
   Input,
   LinearProgress,
+  Modal,
+  ModalClose,
+  ModalDialog,
   Sheet,
   Stack,
   Tab,
@@ -11,11 +15,12 @@ import {
   Tabs,
   Typography,
 } from "@mui/joy";
-import { pb } from "../lib/pocketbase";
+import { pb, useUser } from "../lib/pocketbase";
 import React from "react";
 import { NotificationCtx } from "../lib/notif";
 import { useTimeoutProgress } from "../lib/timeout";
-import { Cancel, ContentCopy } from "@mui/icons-material";
+import { Cancel, ContentCopy, Delete } from "@mui/icons-material";
+import { UserRecord } from "../lib/datamodels";
 
 interface NewTokenRes {
   data: {
@@ -29,8 +34,13 @@ enum AccViews {
 }
 
 export const AccountPage = () => {
-  const [tkn, setTkn] = React.useState<string | undefined>();
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
+  const { user } = useUser();
+
+  const [tkn, setTkn] = React.useState<string | undefined>();
+  const [subscribed, setSubscribed] = React.useState<boolean>(
+    user?.subscribed || false
+  );
 
   const handleCopyToken = () => {
     tkn &&
@@ -38,6 +48,31 @@ export const AccountPage = () => {
         .writeText(tkn)
         .then(() => notifOk("Copied"))
         .catch(() => notifErr("Could not copy to clipboard"));
+  };
+
+  const handleSubscribeToggle = () => {
+    if (user?.id) {
+      pb.collection("users")
+        .update<UserRecord>(user.id, {
+          subscribed: !subscribed,
+        })
+        .then((data) => setSubscribed(data.subscribed))
+        .catch((e) => notifErr("Failed to chanege subscription", e.message));
+    }
+  };
+
+  const handleAccountDelete = () => {
+    if (user?.id) {
+      pb.collection("users")
+        .delete(user.id)
+        .then(() => notifOk("Account deleted"))
+        .catch(() =>
+          notifErr(
+            "Something went wrong",
+            "Your account has not been deleted. Please contact support."
+          )
+        );
+    }
   };
 
   const generateToken = async () => {
@@ -86,16 +121,29 @@ export const AccountPage = () => {
         size="md"
         defaultValue={AccViews.SETTINGS}
       >
-        <TabList sx={{ m: 1 }}>
+        <TabList sx={{ my: 1 }}>
           <Tab value={AccViews.SETTINGS}>Settings</Tab>
           <Tab value={AccViews.TOKEN}>Token</Tab>
         </TabList>
-        <TabPanel></TabPanel>
-        <TabPanel value={AccViews.TOKEN} sx={{ ["& > *"]: { my: 1 } }}>
+        <TabPanel value={AccViews.SETTINGS} sx={{ ["& > *"]: { my: 1 } }}>
+          <Stack direction="row" useFlexGap justifyContent="space-evenly">
+            <Button onClick={handleSubscribeToggle}>
+              {subscribed ? "Unsubscribe" : "Subscribe"}
+            </Button>
+            <Button
+              endDecorator={<Delete />}
+              color="danger"
+              onClick={handleAccountDelete}
+            >
+              Delete Account
+            </Button>
+          </Stack>
+        </TabPanel>
+        <TabPanel value={AccViews.TOKEN} sx={{ ["& > *"]: { mb: 2 } }}>
           <Typography level="body1">
             You can generate a new token for use with the iOS shortcut here. The
             token will revoke any past ones, so you'll need to update it
-            everywhere. The token will be displayed here for 30 seconds.
+            everywhere.
           </Typography>
           {tkn ? (
             <>
