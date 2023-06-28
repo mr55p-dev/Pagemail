@@ -1,0 +1,4 @@
+**/node_modules
+pagemail-jwt-signature.key
+pagemail-jwt-signature.key.pub
+**/dist

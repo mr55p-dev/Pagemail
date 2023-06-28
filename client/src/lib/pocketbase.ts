@@ -5,12 +5,12 @@ import { AuthState } from "./data";
 import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
-const pb_url =
-  process.env.NODE_ENV === "development"
-    ? "http://127.0.0.1:8090"
-    : "https://v2.pagemail.io";
+const pb_url = process.env.PAGEMAIL_API_HOST;
+if (!pb_url) {
+  throw new Error(`Backend URI of '${pb_url}' is not valid`)
+}
 export const pb = new PocketBase(pb_url);
-pb.autoCancellation(false);
+pb.autoCancellation(true);
 
 export const getCurrentUser = (): UserRecord | null => {
   if (pb.authStore.model instanceof Record) {
