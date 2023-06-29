@@ -5,9 +5,9 @@ import { AuthState } from "./data";
 import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
-const pb_url = process.env.PAGEMAIL_API_HOST;
-export const pb = new PocketBase(pb_url);
-pb.autoCancellation(true);
+const pb_url = import.meta.env.VITE_PAGEMAIL_API_HOST;
+export const pb = new PocketBase(pb_url || "https://v2.pagemail.io/");
+pb.autoCancellation(false);
 
 export const getCurrentUser = (): UserRecord | null => {
   if (pb.authStore.model instanceof Record) {

@@ -4,10 +4,10 @@ init:
 	npm install
 
 run:
-	npm run dev
+	VITE_PAGEMAIL_API_HOST=http://localhost:8090 npm run dev
 
 build:
-	npm run build
+	VITE_PAGEMAIL_API_HOST=https://v2.pagemail.io npm run build
 
 deploy:
 	ssh -i ../pagemail-prod-rsa.pem ec2-user@ec2-18-169-123-238.eu-west-2.compute.amazonaws.com "sudo rm -rf /var/www/pagemail/* /home/ec2-user/dist"

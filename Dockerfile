@@ -15,7 +15,7 @@ COPY client/package-lock.json /app/package-lock.json
 COPY client/Makefile /app/Makefile
 RUN make init
 COPY client/ /app
-ENV PAGEMAIL_API_HOST=http://localhost:5001
+ENV VITE_PAGEMAIL_API_HOST=http://localhost:5001
 RUN npm run build
 
 
@@ -33,3 +33,4 @@ EXPOSE 4000
 
 
 ENTRYPOINT ["/start.sh"]
+# docker run --init -it -p 5001:80 -p 4000:4000 -v /Users/ellis/Git/pagemail/server/pb_data_test:/data/pb_data pagemail
