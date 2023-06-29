@@ -6,9 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
 const pb_url = process.env.PAGEMAIL_API_HOST;
-if (!pb_url) {
-  throw new Error(`Backend URI of '${pb_url}' is not valid`)
-}
 export const pb = new PocketBase(pb_url);
 pb.autoCancellation(true);
 

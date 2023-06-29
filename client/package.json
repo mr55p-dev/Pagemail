@@ -15,7 +15,6 @@
   "dependencies": {
     "@mui/icons-material": "^5.11.16",
     "@mui/joy": "^5.0.0-alpha.84",
-    "almond.css": "^1.2.2",
     "normalize.css": "^8.0.1",
     "pocketbase": "^0.15.1",
     "react": "^18.2.0",
