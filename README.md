@@ -1,4 +1,11 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pagemail
+
+Environment variables:
+- `PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY` - path to rsa private key for custom jwt token signing
+- `PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY` - path to rsa public key for custom jwt token signing
+
+
+
 
 ## Getting Started
 
