@@ -1,0 +1,113 @@
+---
+name: Deploy code from master to production
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.3.x
+          cache: npm
+
+      - name: Initialize environment
+        run: make -C client init
+
+      - name: Build code
+        run: make -C client build
+
+      - name: Store dist artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: dist-frontend
+          path: ${{ github.workspace }}/dist/
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.20.4"
+
+      - name: Initialize environment
+        run: make -C server init
+
+      - name: Build binary
+        run: make -C server build
+
+      - name: Store build artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: dist-backend
+          path: ${{ github.workspace }}/dist/
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download frontend
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-frontend
+          path: frontend/
+
+      - name: Download backend
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-backend
+          path: backend/
+
+      - name: Clean existing server resources
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            sudo service pagemail stop
+            sudo rm -f /home/ec2-user/server
+            sudo rm -rf /var/www/pagemail/* /home/ec2-user/dist
+
+      - name: Copy frontend artifacts onto server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: "frontend/*"
+          target: /var/www/pagemail
+          strip_components: 1
+
+      - name: Copy backend artifacts onto server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: "backend/server"
+          target: /home/ec2-user/
+          strip_components: 1
+
+      - name: Restart all services
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            sudo service pagemail start
+            sudo cp -r /home/ec2-user/dist/* /var/www/pagemail/
+            sudo service nginx restart
