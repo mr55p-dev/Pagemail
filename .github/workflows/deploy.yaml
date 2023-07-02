@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 20.3.x
           cache: npm
+          cache-dependency-path: 'client/package-lock.json'
 
       - name: Initialize environment
         run: make -C client init
@@ -27,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: dist-frontend
-          path: ${{ github.workspace }}/dist/
+          path: ${{ github.workspace }}/client/dist/
 
   build-backend:
     runs-on: ubuntu-latest
@@ -49,10 +50,11 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: dist-backend
-          path: ${{ github.workspace }}/dist/
+          path: ${{ github.workspace }}/server/dist/
 
   deploy:
     runs-on: ubuntu-latest
+    needs: [build-frontend, build-backend]
     steps:
       - name: Download frontend
         uses: actions/download-artifact@v3
