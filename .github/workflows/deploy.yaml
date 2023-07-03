@@ -113,6 +113,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            sudo chmod a+x /home/ec2-user/server
             sudo service pagemail start
             sudo cp -r /home/ec2-user/dist/* /var/www/pagemail/
             sudo service nginx restart
