@@ -13,29 +13,25 @@ install-nginx:
 	sudo certbot certonly --nginx -d "v2.pagemail.io,www.pagemail.io,pagemail.io,staging.pagemail.io" --expand --non-interactive
 	sudo systemctl restart nginx 
 
-install-prod-service:
-	sudo systemctl stop pagemail
-	sudo cp $(BASE_DIR)/services/pagemail.service $(SERVICES_TARGET)/pagemail.service
-	systemctl --user daemon-reload
-	sudo systemctl start pagemail
-
-install-stage-service:
-	sudo systemctl stop pagemail.stage
-	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
-	systemctl --user daemon-reload
-	sudo systemctl start pagemail.stage
-
 install-stage-frontend:
 	rm -rf $(STAGE_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(STAGE_WEB_TARGET)/
 
 install-stage-backend:
+	sudo systemctl stop pagemail.stage
+	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
 	cp $(BASE_DIR)/server/dist/server $(STAGE_DIR)/server
 	sudo chmod a+x $(STAGE_DIR)/server
+	systemctl --user daemon-reload
+	sudo systemctl start pagemail.stage
 
 install-prod-frontend:
+	sudo systemctl stop pagemail
+	sudo cp $(BASE_DIR)/services/pagemail.service $(SERVICES_TARGET)/pagemail.service
 	rm -rf $(PROD_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(PROD_WEB_TARGET)/
+	systemctl --user daemon-reload
+	sudo systemctl start pagemail
 	
 install-prod-backend:
 	cp $(BASE_DIR)/server/dist/server $(PROD_DIR)/server
