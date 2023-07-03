@@ -1,5 +1,5 @@
 ---
-name: Deploy code from master to production
+name: Deploy code from master to Production
 on:
   workflow_dispatch:
   push:
@@ -7,11 +7,13 @@ on:
       - main
 permissions:
   contents: read
+env:
+  ENV: production
 
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
-    environment: production
+    environment: Production
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -52,7 +54,7 @@ jobs:
 
   build-backend:
     runs-on: ubuntu-latest
-    environment: production
+    environment: Production
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -92,7 +94,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: Production
     needs: [build-frontend, build-backend]
     if: |
       always() &&
