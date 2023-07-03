@@ -16,13 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            client/**
-
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -31,11 +24,10 @@ jobs:
           cache-dependency-path: "client/package-lock.json"
 
       - uses: actions/cache/restore@v3
-        if: steps.changed-files.outputs.any_changed == 'false'
         id: cache-restore
         with:
           path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-frontend
+          key: ${{ runner.os }}-${{ hashFiles('client/**')}}
 
       - name: Initialize environment
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -50,7 +42,7 @@ jobs:
         id: cache-save
         with:
           path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-frontend
+          key: ${{ runner.os }}-${{ hashFiles('client/**')}}
 
       - name: Store dist artifact
         uses: actions/upload-artifact@master
@@ -65,13 +57,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            server/**
-
       - uses: actions/setup-go@v4
         with:
           go-version: "1.20.4"
@@ -79,11 +64,10 @@ jobs:
           cache-dependency-path: server/go.sum
 
       - uses: actions/cache/restore@v3
-        if: steps.changed-files.outputs.any_changed == 'false'
         id: cache-restore
         with:
           path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-backend
+          key: ${{ runner.os }}-${{ hashFiles('server/**')}}
 
       - name: Initialize environment
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -98,7 +82,7 @@ jobs:
         id: cache-save
         with:
           path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-backend
+          key: ${{ runner.os }}-${{ hashFiles('server/**')}}
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
