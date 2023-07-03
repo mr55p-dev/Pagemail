@@ -35,7 +35,7 @@ jobs:
 
       - name: Build code
         if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: make -C client build-stage
+        run: make -C client build
 
       - uses: actions/cache/save@v3
         if: steps.cache-restore.outputs.cache-hit != 'true'
