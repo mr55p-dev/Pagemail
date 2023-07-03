@@ -1,56 +1,29 @@
 ---
-name: Deploy code from master to production
+name: Deploy code to stage
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 permissions:
   contents: read
-
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            client/**
 
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 20.3.x
           cache: npm
-          cache-dependency-path: "client/package-lock.json"
-
-      - uses: actions/cache/restore@v3
-        if: steps.changed-files.outputs.any_changed == 'false'
-        id: cache-restore
-        with:
-          path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-frontend
+          cache-dependency-path: 'client/package-lock.json'
 
       - name: Initialize environment
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client init
 
       - name: Build code
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client build
-
-      - uses: actions/cache/save@v3
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        id: cache-save
-        with:
-          path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-frontend
 
       - name: Store dist artifact
         uses: actions/upload-artifact@master
@@ -60,45 +33,20 @@ jobs:
 
   build-backend:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            server/**
-
       - uses: actions/setup-go@v4
         with:
           go-version: "1.20.4"
-          cache: true
-          cache-dependency-path: server/go.sum
-
-      - uses: actions/cache/restore@v3
-        if: steps.changed-files.outputs.any_changed == 'false'
-        id: cache-restore
-        with:
-          path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-backend
 
       - name: Initialize environment
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server init
 
       - name: Build binary
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server build
-
-      - uses: actions/cache/save@v3
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        id: cache-save
-        with:
-          path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-backend
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
@@ -108,24 +56,11 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     needs: [build-frontend, build-backend]
-    if: |
-      always() &&
-      !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            nginx/**
-            services/**
 
       - name: Download frontend
         uses: actions/download-artifact@v3
@@ -139,7 +74,13 @@ jobs:
           name: dist-backend
           path: server-dist/
 
-      - name: Copy makefile to server
+      - name: Test some stuf
+        run: |
+          ls
+          echo ${{ github.workspace }}
+          ls ${{ github.workspace }}
+
+      - name: Copy Makefile to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
@@ -182,35 +123,25 @@ jobs:
           target: /home/ec2-user/pagemail/server/dist
           strip_components: 1
 
-      - name: Copy server files onto server
+      - name: Copy nginx files onto server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "Makefile,nginx/*,services/*"
+          source: "nginx/*,services/*"
           target: /home/ec2-user/pagemail
 
-      - name: run install scripts
+      - name: Run install scripts
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          key: ${{ secrets.key }}
-          port: ${{ secrets.port }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           script: |
             cd pagemail
             make install-prod
-
-      - name: Run static install scripts
-        if: steps.changed-files.outputs.any_changed == 'true'
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          key: ${{ secrets.key }}
-          port: ${{ secrets.port }}
-          script: |
-            cd pagemail
             make install-nginx
+            make post-install

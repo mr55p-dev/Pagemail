@@ -43,8 +43,8 @@ func get_mail_body(records []*models.Record, name string) string {
 </head>
 
 <body>
-	<h1>Your Pagemail digest</h1>
-	<p>Hello, %s. Here are all the pages you have recently saved</p>
+	<h1>Your saved pages</h1>
+		<p>Hello, %s. Here are all the pages you have recently saved:</p>
 	<ul>
 		%s
 	</ul>

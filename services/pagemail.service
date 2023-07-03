@@ -1,0 +1,12 @@
+[Unit]
+Description=pagemail
+After=network.target
+
+[Service]
+ExecStart=/home/ec2-user/server serve --dir=/home/ec2-user/pb_data --http="0.0.0.0:4000"
+Restart=always
+Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/keys/prod.key.pub"
+Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/keys/prod.key"
+
+[Install]
+WantedBy=multi-user.target

@@ -7,7 +7,6 @@ export enum NotifState {
   ERR,
 }
 
-
 export interface NotificationCtxAttrs {
   notification?: Notification;
   style?: NotifState;
