@@ -185,7 +185,7 @@ jobs:
           port: ${{ secrets.port }}
           script: |
             cd pagemail
-            make install-prod
+            make install-stage
 
       - name: Run static install scripts
         if: steps.changed-files.outputs.any_changed == 'true'
