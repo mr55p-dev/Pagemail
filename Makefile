@@ -5,7 +5,7 @@ PROD_DIR := /home/ec2-user/prod
 STAGE_DIR := /home/ec2-user/stage
 SERVICES_TARGET := /etc/systemd
 PROD_WEB_TARGET := /var/www/pagemail
-STAGE_WEB_TARGET := /var/www/pagemail.staging
+STAGE_WEB_TARGET := /var/www/pagemail-staging
 
 install-nginx:
 	sudo rm /etc/nginx/conf.d/*
