@@ -9,6 +9,9 @@ permissions:
   contents: read
 env:
   ENV: production
+concurrency:
+  group: production
+  cancel-in-progress: false
 
 jobs:
   build-frontend:
