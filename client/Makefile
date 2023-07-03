@@ -1,4 +1,4 @@
-.PHONY = init run
+.PHONY = init run test
 
 init:
 	npm install

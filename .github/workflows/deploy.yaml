@@ -7,6 +7,7 @@ on:
       - main
 permissions:
   contents: read
+
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
@@ -15,18 +16,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v37
+        with:
+          files: |
+            client/**
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 20.3.x
           cache: npm
-          cache-dependency-path: 'client/package-lock.json'
+          cache-dependency-path: "client/package-lock.json"
+
+      - uses: actions/cache/restore@v3
+        if: steps.changed-files.outputs.any_changed == 'false'
+        id: cache-restore
+        with:
+          path: ${{ github.workspace }}/client/dist
+          key: ${{ runner.os }}-frontend
 
       - name: Initialize environment
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client init
 
       - name: Build code
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client build
+
+      - uses: actions/cache/save@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        id: cache-save
+        with:
+          path: ${{ github.workspace }}/client/dist
+          key: ${{ runner.os }}-frontend
 
       - name: Store dist artifact
         uses: actions/upload-artifact@master
@@ -41,15 +65,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v37
+        with:
+          files: |
+            server/**
+
       - uses: actions/setup-go@v4
         with:
           go-version: "1.20.4"
+          cache: true
+          cache-dependency-path: server/go.sum
+
+      - uses: actions/cache/restore@v3
+        if: steps.changed-files.outputs.any_changed == 'false'
+        id: cache-restore
+        with:
+          path: ${{ github.workspace }}/server/dist
+          key: ${{ runner.os }}-backend
 
       - name: Initialize environment
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server init
 
       - name: Build binary
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server build
+
+      - uses: actions/cache/save@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        id: cache-save
+        with:
+          path: ${{ github.workspace }}/server/dist
+          key: ${{ runner.os }}-backend
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
@@ -61,9 +110,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [build-frontend, build-backend]
+    if: |
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v37
+        with:
+          files: |
+            nginx/**
+            services/**
 
       - name: Download frontend
         uses: actions/download-artifact@v3
@@ -98,7 +160,6 @@ jobs:
             cd pagemail
             make pre-install
 
-
       - name: Copy frontend artifacts onto server
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -121,25 +182,35 @@ jobs:
           target: /home/ec2-user/pagemail/server/dist
           strip_components: 1
 
-      - name: Copy nginx files onto server
+      - name: Copy server files onto server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "nginx/*,services/*"
+          source: "Makefile,nginx/*,services/*"
           target: /home/ec2-user/pagemail
 
-      - name: Run install scripts
+      - name: run install scripts
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
+          host: ${{ secrets.host }}
+          username: ${{ secrets.username }}
+          key: ${{ secrets.key }}
+          port: ${{ secrets.port }}
           script: |
             cd pagemail
             make install-prod
+
+      - name: Run static install scripts
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.host }}
+          username: ${{ secrets.username }}
+          key: ${{ secrets.key }}
+          port: ${{ secrets.port }}
+          script: |
+            cd pagemail
             make install-nginx
-            make post-install
