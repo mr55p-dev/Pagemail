@@ -11,14 +11,17 @@ endif
 
 .PHONY = init run test
 
+test:
+	env
+
 init:
 	npm install
 
 run:
-	VITE_PAGEMAIL_API_HOST=http://localhost:8090 npm run dev
+	npm run dev
 
 build:
-	VITE_PAGEMAIL_API_HOST=https://pagemail.io npm run build
+	npm run build
 
 serve-local:
 	npx serve dist -l 5173
