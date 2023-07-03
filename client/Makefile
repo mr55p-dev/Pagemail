@@ -1,7 +1,7 @@
-ifeq ($(ENV), "production")
+ifeq "$(ENV)" "production"
 	export NODE_ENV := production
 	export VITE_PAGEMAIL_API_HOST := "https://pagemail.io"
-else ifeq ($(ENV), "staging")
+else ifeq "$(ENV)" "staging"
 	export NODE_ENV := production
 	export VITE_PAGEMAIL_API_HOST := "http://staging.pagemail.io"
 else
