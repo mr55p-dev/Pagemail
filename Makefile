@@ -37,9 +37,9 @@ install-prod-backend:
 	cp $(BASE_DIR)/server/dist/server $(PROD_DIR)/server
 	sudo chmod a+x $(PROD_DIR)/server
 
-install-stage: install-stage-frontend install-stage-backend install-stage-service
+install-stage: install-stage-frontend install-stage-backend
 
-install-prod: install-prod-frontend install-prod-backend install-prod-service
+install-prod: install-prod-frontend install-prod-backend
 
 pre-install:
 	if [ -d $(BASE_DIR) ]; then rm -rf $(BASE_DIR)/*; fi
