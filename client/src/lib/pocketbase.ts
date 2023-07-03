@@ -6,7 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
 const pb_url = import.meta.env.VITE_PAGEMAIL_API_HOST;
-export const pb = new PocketBase(pb_url || "https://pagemail.io/");
+console.log(pb_url)
+export const pb = new PocketBase(pb_url);
+console.log(pb.baseUrl)
 pb.autoCancellation(false);
 
 export const getCurrentUser = (): UserRecord | null => {
