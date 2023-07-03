@@ -1,15 +1,18 @@
 ifeq ($(ENV), "production")
-	NODE_ENV := production
-	VITE_PAGEMAIL_API_HOST := "https://pagemail.io"
+	export NODE_ENV := production
+	export VITE_PAGEMAIL_API_HOST := "https://pagemail.io"
 else ifeq ($(ENV), "staging")
-	NODE_ENV := production
-	VITE_PAGEMAIL_API_HOST := "http://staging.pagemail.io"
+	export NODE_ENV := production
+	export VITE_PAGEMAIL_API_HOST := "http://staging.pagemail.io"
 else
-	NODE_ENV := development
-	VITE_PAGEMAIL_API_HOST := "http://localhost:8090"
+	export NODE_ENV := development
+	export VITE_PAGEMAIL_API_HOST := "http://localhost:8090"
 endif
 
 .PHONY = init run test
+
+test:
+	env
 
 init:
 	npm install
