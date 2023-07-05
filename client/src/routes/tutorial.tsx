@@ -1,5 +1,5 @@
 import { IosShare } from "@mui/icons-material";
-import { Box, Link, Sheet, Stack, Typography } from "@mui/joy";
+import { Box, Link, Stack, Typography } from "@mui/joy";
 import ImageURL1 from "../assets/screenshot-ios-1.png";
 import ImageURL2 from "../assets/screenshot-ios-2.png";
 import ImageURL3 from "../assets/screenshot-ios-3.png";
