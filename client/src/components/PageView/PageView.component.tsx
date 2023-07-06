@@ -85,10 +85,20 @@ export const Page = ({ url, id, created }: PageProps) => {
   }
   let body;
   if (previewData) {
+    const ttl = previewData.title || url;
     body = (
       <>
         <Link href={url} target="_blank">
-          <Typography level="h4">{previewData.title || url}</Typography>
+          <Typography
+            level="h4"
+            sx={{
+              overflow: "hidden",
+			  whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {ttl}
+          </Typography>
         </Link>
         <Typography level="body2">{dest.origin}</Typography>
         <Typography level="body1" mt={1}>
@@ -111,7 +121,7 @@ export const Page = ({ url, id, created }: PageProps) => {
   }
 
   return (
-    <Grid xs={12} sm={6} md={4}>
+    <Grid xs={12} sm={6} md={4} maxHeight="400px">
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
         <CardContent>{body}</CardContent>
         <ButtonGroup
@@ -178,11 +188,7 @@ export const PageView = () => {
   }, []);
 
   return (
-    <Grid
-      container
-      spacing={1}
-      sx={{ flexGrow: 1, mt: 1 }}
-    >
+    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
       {pages.map((e) => (
         <Page url={e.url} id={e.id} created={e.created} key={e.id} />
       ))}
