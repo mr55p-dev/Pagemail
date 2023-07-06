@@ -2,35 +2,43 @@ package mail
 
 import (
 	"fmt"
+	"html/template"
+	"io"
 	"log"
+	"net/http"
 	"net/mail"
 	"time"
 
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
 type UrlRecord struct{ Url string }
 
-func format_time(tm time.Time) string {
-	return fmt.Sprintf(
-		"%d-%02d-%02dT%02d:%02d:%02d-00:00",
-		tm.Year(),
-		tm.Month(),
-		tm.Day(),
-		tm.Hour(),
-		tm.Minute(),
-		tm.Second(),
-	)
+type MailItem struct {
+	Url       string
+	Timestamp time.Time
 }
 
-func get_mail_body(records []*models.Record, name string) string {
+type User struct {
+	Id    string
+	Email string
+}
+
+type MailTemplateData struct {
+	Name string
+	SavedItems []MailItem
+}
+
+func get_mail_body(w io.Writer, items []MailItem, name string) string {
+	tmpl := template.Must(template.ParseFiles("templates/mailer.html.template"))
+	tmpl.Execute(w, MailT)
 	var list_contents string
-	for _, record := range records {
-		url := record.GetString("url")
-		created := record.GetTime("created")
+	for _, item := range items {
+		url := item.Url
+		created := item.Timestamp.Format("02-01 15:04")
 		list_contents += fmt.Sprintf(`<li><a href="%s">%s</a> (created %s)</li>`, url, url, created)
 	}
 
@@ -54,9 +62,23 @@ func get_mail_body(records []*models.Record, name string) string {
 	return res
 }
 
-type User struct {
-	Id    string
-	Email string
+func TestMailer(c echo.Context) error {
+	mailItems := []MailItem{
+		{
+			Url:       "http://www.example.com/",
+			Timestamp: time.Now(),
+		},
+		{
+			Url:       "https://mail.google.com/this_is_a_long_url/with?some=query&parameters=to&be=annoying",
+			Timestamp: time.Now(),
+		},
+		{
+			Url:       "http://pagemail.io/",
+			Timestamp: time.Now(),
+		},
+	}
+	mailHTML := get_mail_body(mailItems, "Test user")
+	return c.HTML(http.StatusOK, mailHTML)
 }
 
 func Mailer(app *pocketbase.PocketBase) error {
@@ -96,6 +118,14 @@ func Mailer(app *pocketbase.PocketBase) error {
 		}
 		log.Printf("Found %d records", len(records))
 
+		mailItems := []MailItem{}
+		for _, record := range records {
+			mailItems = append(mailItems, MailItem{
+				Url:       record.GetString("url"),
+				Timestamp: record.GetTime("created"),
+			})
+		}
+
 		//// Send an email with the links
 		message := mailer.Message{
 			From: mail.Address{
@@ -104,10 +134,10 @@ func Mailer(app *pocketbase.PocketBase) error {
 			},
 			To:      []mail.Address{{Address: usr.Email}},
 			Subject: "Pagemail briefing",
-			HTML:    get_mail_body(records, usr.Email),
+			HTML:    get_mail_body(mailItems, usr.Email),
 		}
 		log.Printf("Sending email to %s (%d links)", usr.Email, len(records))
-		log.Print(get_mail_body(records, usr.Email))
+
 		if err := mail_client.Send(&message); err != nil {
 			log.Printf("Failed to send email to %s", usr.Email)
 			log.Print(err)

@@ -46,7 +46,6 @@ func main() {
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				custom_api.VerifyTokenMiddleware(app),
-				// apis.RequireRecordAuth("users"),
 			},
 		})
 		e.Router.AddRoute(echo.Route{
@@ -59,12 +58,21 @@ func main() {
 			},
 		})
 		e.Router.AddRoute(echo.Route{
-			Method: http.MethodGet,
-			Path: "/api/user/token/new",
+			Method:  http.MethodGet,
+			Path:    "/api/user/token/new",
 			Handler: custom_api.NewTokenRoute(app),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireRecordAuth("users"),
+			},
+		})
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodGet,
+			Path:    "/api/admin/mail/previewTemplate",
+			Handler: mail.TestMailer,
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireAdminAuth(),
 			},
 		})
 
