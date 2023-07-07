@@ -1,9 +1,8 @@
 import {
   ArrowBackIosRounded,
   ArrowForwardIosRounded,
-  SwipeLeft,
 } from "@mui/icons-material";
-import { Box, Button, Card, IconButton, Link, Stack } from "@mui/joy";
+import { Box, Card, IconButton, Stack } from "@mui/joy";
 import React from "react";
 
 export const CarouselItem = ({
