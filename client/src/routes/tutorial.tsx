@@ -21,7 +21,7 @@ export const Tutorial = () => {
   return (
     <Box mt={1} mx="auto">
       <Typography level="h2">iOS setup instructions</Typography>
-      <Typography level="h6">To install Pagemail on your device:</Typography>
+      <Typography level="h6" mt={2}>To install Pagemail on your device:</Typography>
       <Carousel ids={["i1", "i2", "i3"]}>
         <CarouselItem id="i1" image={<img src={ImageURL1} height="500px" />}>
           <Typography level="body1">
@@ -39,7 +39,7 @@ export const Tutorial = () => {
         </CarouselItem>
       </Carousel>
 
-      <Typography level="h6">To install the shortcut</Typography>
+      <Typography level="h6" mt={2}>To install the shortcut</Typography>
       <Carousel ids={["s1", "s2", "s3", "s4", "s5", "s6", "s7"]}>
         <CarouselItem id="s1" image={<img src={ShortcutShot1} height="500px" />}>
           <Typography>

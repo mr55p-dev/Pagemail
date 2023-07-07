@@ -1,4 +1,8 @@
-import { ArrowBackIosRounded, ArrowForwardIosRounded, SwipeLeft } from "@mui/icons-material";
+import {
+  ArrowBackIosRounded,
+  ArrowForwardIosRounded,
+  SwipeLeft,
+} from "@mui/icons-material";
 import { Box, Button, Card, IconButton, Link, Stack } from "@mui/joy";
 import React from "react";
 
@@ -81,14 +85,14 @@ export const Carousel = ({
       >
         {children}
       </Box>
-		<Stack justifyContent="space-between" direction="row">
-		  <IconButton onClick={handlePrev} disabled={current <= 0}>
-			<ArrowBackIosRounded />
-		  </IconButton>
-		  <IconButton onClick={handleNext} disabled={current >= ids.length - 1}>
-			<ArrowForwardIosRounded />
-		  </IconButton>
-		</Stack>
+      <Stack justifyContent="space-between" direction="row">
+        <IconButton onClick={handlePrev} disabled={current <= 0}>
+          <ArrowBackIosRounded />
+        </IconButton>
+        <IconButton onClick={handleNext} disabled={current >= ids.length - 1}>
+          <ArrowForwardIosRounded />
+        </IconButton>
+      </Stack>
     </Box>
   );
 };
