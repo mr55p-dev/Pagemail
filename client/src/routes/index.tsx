@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { useNavigate } from "react-router";
+import { iosShortcutLink } from "../lib/const";
 
 const InfoCard = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -127,7 +128,7 @@ export const Index = () => {
             this page in safari, click the share button and select "Add to
             homescreen". We also offer a shortcut for iOS devices, to let you
             save to Pagemail from anywhere.{" "}
-            <Link href="https://www.icloud.com/shortcuts/4a3b7f40f0c94a318df2af0a8d6ae917">
+            <Link href={iosShortcutLink}>
               Check it out here!
             </Link>
           </Typography>
