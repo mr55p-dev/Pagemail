@@ -1,4 +1,6 @@
 import React from "react";
+import { ContentCopy, DeleteOutline, OpenInNew } from "@mui/icons-material";
+import LinesEllipsis from "react-lines-ellipsis";
 import { pb } from "../../lib/pocketbase";
 import { DataState } from "../../lib/data";
 import { PageRecord } from "../../lib/datamodels";
@@ -9,10 +11,10 @@ import {
   CardContent,
   CardOverflow,
   Grid,
+  IconButton,
   Link,
   Typography,
 } from "@mui/joy";
-import { DeleteOutline, OpenInNew } from "@mui/icons-material";
 import { NotificationCtx } from "../../lib/notif";
 
 export interface PageProps {
@@ -27,9 +29,6 @@ export interface PageMetadataResponse {
 }
 
 export const Page = ({ url, id, created }: PageProps) => {
-  const [deleteState, setDeleteState] = React.useState<DataState>(
-    DataState.UNKNOWN
-  );
   const [previewState, setPreviewState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
@@ -68,52 +67,63 @@ export const Page = ({ url, id, created }: PageProps) => {
     pb.collection("pages")
       .delete(id)
       .then(() => {
-        setDeleteState(DataState.SUCCESS);
         notifOk("Deleted", `Page at ${dest.hostname} removed.`);
       })
       .catch(() => {
-        setDeleteState(DataState.FAILED);
         notifErr("Failed");
       });
   };
 
-  switch (deleteState) {
-    case DataState.PENDING:
-      return <p>Deleting...</p>;
-    case DataState.FAILED:
-      return <p>Something went wrong deleting this!</p>;
-  }
-  let body;
-  if (previewData) {
-    body = (
-      <>
-        <Link href={url} target="_blank">
-          <Typography level="h4">{previewData.title || url}</Typography>
-        </Link>
-        <Typography level="body2">{dest.origin}</Typography>
-        <Typography level="body1" mt={1}>
-          {previewData.description && truncate(previewData.description, 225)}
-        </Typography>
-      </>
-    );
-  } else {
-    body = (
-      <>
-        <Link href={url} target="_blank">
-          <Typography level="h4">{dest.hostname}</Typography>
-        </Link>
-        <Typography level="body2">{dest.origin}</Typography>
-        {previewState === DataState.PENDING ? (
-          <p>Loading preview...</p>
-        ) : undefined}
-      </>
-    );
-  }
+  const previewTitle = previewData?.title;
+  const ttl = previewData?.title ?? dest.host + dest.pathname;
 
   return (
-    <Grid xs={12} sm={6} md={4}>
+    <Grid xs={12} sm={6} md={4} maxHeight="400px">
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
-        <CardContent>{body}</CardContent>
+        <CardContent>
+          <Link href={url} target="_blank" maxWidth="100%">
+            <Typography
+              level="h4"
+              sx={{
+                maxWidth: "100%",
+                wordBreak: previewTitle ? "break-word" : "break-all",
+              }}
+            >
+              <LinesEllipsis maxLine={previewTitle ? "3" : "2"} text={ttl} />
+            </Typography>
+          </Link>
+          <Typography
+            level="body3"
+            sx={{
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+            }}
+            startDecorator={
+              <IconButton
+                onClick={() =>
+                  navigator.clipboard
+                    .writeText(dest.toString())
+                    .then(() => notifOk("Copied"))
+                    .catch(() => notifErr("Could not save to the clipboard"))
+                }
+                variant="plain"
+                size="sm"
+              >
+                <ContentCopy />
+              </IconButton>
+            }
+          >
+            {dest.toString()}
+          </Typography>
+          <Typography level="body1" mt={1}>
+            {previewState === DataState.PENDING ? (
+              "Loading preview..."
+            ) : (
+              <LinesEllipsis maxLine="4" text={previewData?.description} />
+            )}
+          </Typography>
+        </CardContent>
         <ButtonGroup
           variant="outlined"
           color="neutral"
@@ -178,24 +188,10 @@ export const PageView = () => {
   }, []);
 
   return (
-    <Grid
-      container
-      spacing={1}
-      sx={{ flexGrow: 1, mt: 1 }}
-    >
+    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
       {pages.map((e) => (
         <Page url={e.url} id={e.id} created={e.created} key={e.id} />
       ))}
     </Grid>
   );
 };
-
-function min(arg0: number, arg1: number): number {
-  return Number(arg0 < arg1 && arg0) + Number(arg1 < arg0 && arg1);
-}
-
-function truncate(description: string, maxlen?: number): string {
-  const append =
-    description.length < (maxlen == null ? 0 : maxlen) ? "" : "...";
-  return description.slice(0, min(maxlen || 0, description.length)) + append;
-}

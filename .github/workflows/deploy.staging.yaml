@@ -113,6 +113,7 @@ jobs:
           files: |
             nginx/**
             services/**
+            test_pages/**
 
       - name: Download frontend
         uses: actions/download-artifact@v3
@@ -176,7 +177,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "Makefile,nginx/*,services/*"
+          source: "Makefile,nginx/*,services/*,test_pages/*"
           target: /home/ec2-user/pagemail
 
       - name: run install scripts
@@ -201,3 +202,4 @@ jobs:
           script: |
             cd pagemail
             make install-nginx
+            make install-test-sites
