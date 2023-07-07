@@ -5,12 +5,16 @@ import Root from "./routes/root.tsx";
 import ErrorPage from "./error-page.tsx";
 import AuthPage from "./routes/auth.tsx";
 import PagesPage from "./routes/pages.tsx";
-import { Protected, NotProtected } from "./components/Protected/Protected.component.tsx";
+import {
+  Protected,
+  NotProtected,
+} from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { NotificationProvider } from "./lib/notif.tsx";
 import { AccountPage } from "./routes/account.tsx";
+import { Tutorial } from "./routes/tutorial.tsx";
 
 const router = createBrowserRouter([
   {
@@ -24,7 +28,11 @@ const router = createBrowserRouter([
       },
       {
         path: "auth",
-        element: <NotProtected><AuthPage /></NotProtected>
+        element: (
+          <NotProtected>
+            <AuthPage />
+          </NotProtected>
+        ),
       },
       {
         path: "pages",
@@ -42,19 +50,26 @@ const router = createBrowserRouter([
           </Protected>
         ),
       },
+      {
+        path: "tutorial",
+        element: <Tutorial />,
+      },
     ],
   },
 ]);
 
 const thm = extendTheme({
+  components: {
+    JoyBox: {
+      defaultProps: {
+        my: 100,
+      },
+    },
+  },
   typography: {
     display1: {
-      // `--joy` is the default CSS variable prefix.
-      // If you have a custom prefix, you have to use it instead.
-      // For more details about the custom prefix, go to https://mui.com/joy-ui/customization/using-css-variables/#custom-prefix
       background:
         "linear-gradient(135deg, rgba(218,89,39,1) 0%, rgba(232,172,60,1) 100%)",
-      // `Webkit*` properties must come later.
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
     },
@@ -97,8 +112,8 @@ const thm = extendTheme({
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
+    <CssBaseline />
     <CssVarsProvider theme={thm} defaultMode="system">
-      <CssBaseline />
       <NotificationProvider>
         <RouterProvider router={router} />
       </NotificationProvider>

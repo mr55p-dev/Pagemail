@@ -1,3 +1,10 @@
+ifeq "$(ENV)" "production"
+else ifeq "$(ENV)" "staging"
+else
+	PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := ../pagemail-jwt-signature.key
+	PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := ../pagemail-jwt-signature.key.pub
+endif
+
 SERVER_TGT = dist/server
 .PHONY = init build serve clean
 
