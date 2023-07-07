@@ -12,7 +12,6 @@ import {
   CardOverflow,
   Grid,
   IconButton,
-  Input,
   Link,
   Typography,
 } from "@mui/joy";
@@ -30,9 +29,6 @@ export interface PageMetadataResponse {
 }
 
 export const Page = ({ url, id, created }: PageProps) => {
-  const [deleteState, setDeleteState] = React.useState<DataState>(
-    DataState.UNKNOWN
-  );
   const [previewState, setPreviewState] = React.useState<DataState>(
     DataState.UNKNOWN
   );
@@ -71,11 +67,9 @@ export const Page = ({ url, id, created }: PageProps) => {
     pb.collection("pages")
       .delete(id)
       .then(() => {
-        setDeleteState(DataState.SUCCESS);
         notifOk("Deleted", `Page at ${dest.hostname} removed.`);
       })
       .catch(() => {
-        setDeleteState(DataState.FAILED);
         notifErr("Failed");
       });
   };
@@ -201,13 +195,3 @@ export const PageView = () => {
     </Grid>
   );
 };
-
-function min(arg0: number, arg1: number): number {
-  return Number(arg0 < arg1 && arg0) + Number(arg1 < arg0 && arg1);
-}
-
-function truncate(description: string, maxlen?: number): string {
-  const append =
-    description.length < (maxlen == null ? 0 : maxlen) ? "" : "...";
-  return description.slice(0, min(maxlen || 0, description.length)) + append;
-}

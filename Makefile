@@ -6,12 +6,16 @@ STAGE_DIR := /home/ec2-user/stage
 SERVICES_TARGET := /etc/systemd
 PROD_WEB_TARGET := /var/www/pagemail
 STAGE_WEB_TARGET := /var/www/pagemail.staging
+TEST_WEB_TARGET := /var/www/testsites
 
 install-nginx:
 	sudo rm /etc/nginx/conf.d/*
 	sudo cp $(BASE_DIR)/nginx/* /etc/nginx/conf.d/
 	sudo certbot certonly --nginx -d "v2.pagemail.io,www.pagemail.io,pagemail.io,staging.pagemail.io" --expand --non-interactive
 	sudo systemctl restart nginx 
+
+install-test-sites:
+	cp $(BASE_DIR)/test_pages/* $(TEST_WEB_TARGET)/
 
 install-stage-frontend:
 	rm -rf $(STAGE_WEB_TARGET)/*
