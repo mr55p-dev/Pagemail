@@ -54,7 +54,7 @@ export const Tutorial = () => {
         </CarouselItem>
         <CarouselItem id="s3" image={<img src={ShortcutShot3} height="500px" />}>
           <Typography>
-            Click <a href={iosShortcutLink}>here</a> to start installing the
+            Click <Link href={iosShortcutLink}>here</Link> to start installing the
             shortcut. You will need the token you just generated when setting it
             up.
           </Typography>
