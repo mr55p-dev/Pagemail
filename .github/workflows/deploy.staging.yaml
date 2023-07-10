@@ -204,3 +204,4 @@ jobs:
             cd pagemail
             make install-nginx
             make install-test-sites
+            make install-stage-templates

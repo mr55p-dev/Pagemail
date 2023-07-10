@@ -17,6 +17,14 @@ install-nginx:
 install-test-sites:
 	cp $(BASE_DIR)/test_pages/* $(TEST_WEB_TARGET)/
 
+install-stage-templates:
+	rm -rf $(STAGE_DIR)/templates/*
+	cp $(BASE_DIR)/templates/* $(STAGE_DIR)/templates/*
+
+install-prod-templates:
+	rm -rf $(PROD_DIR)/templates/*
+	cp $(BASE_DIR)/templates/* $(PROD_DIR)/templates/*
+
 install-stage-frontend:
 	rm -rf $(STAGE_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(STAGE_WEB_TARGET)/
