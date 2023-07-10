@@ -69,7 +69,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/admin/mail/previewTemplate",
-			Handler: mail.TestMailer,
+			Handler: mail.TestMailBody,
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireAdminAuth(),

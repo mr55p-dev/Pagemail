@@ -1,18 +1,15 @@
 package custom_api
 
 import (
+	"net/http"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/labstack/echo/v5"
-	"net/http"
+
+	"pagemail/server/models"
 )
 
-type UrlData struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Url         string `json:"url"`
-}
-
-func FetchUrl(url string, data *UrlData) error {
+func FetchUrl(url string, data *models.UrlData) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err
@@ -51,7 +48,7 @@ func Preview(c echo.Context) error {
 	if uri == "" {
 		return c.String(http.StatusBadRequest, "Must include a URL")
 	}
-	data := new(UrlData)
+	data := new(models.UrlData)
 	if err := FetchUrl(uri, data); err != nil {
 		return c.String(http.StatusServiceUnavailable, "Failed to fetch the external resource")
 	}
