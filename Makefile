@@ -34,7 +34,7 @@ install-stage-backend:
 	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
 	cp $(BASE_DIR)/server/dist/server $(STAGE_DIR)/server
 	sudo chmod a+x $(STAGE_DIR)/server
-	systemctl --user daemon-reload
+	sudo systemctl daemon-reload
 	sudo systemctl start pagemail.staging
 
 install-prod-frontend:
@@ -42,7 +42,7 @@ install-prod-frontend:
 	sudo cp $(BASE_DIR)/services/pagemail.service $(SERVICES_TARGET)/pagemail.service
 	rm -rf $(PROD_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(PROD_WEB_TARGET)/
-	systemctl --user daemon-reload
+	sudo systemctl daemon-reload
 	sudo systemctl start pagemail
 	
 install-prod-backend:
