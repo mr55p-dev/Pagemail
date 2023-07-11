@@ -3,7 +3,7 @@
 BASE_DIR := /home/ec2-user/pagemail
 PROD_DIR := /home/ec2-user/prod
 STAGE_DIR := /home/ec2-user/stage
-SERVICES_TARGET := /etc/systemd
+SERVICES_TARGET := /etc/systemd/system
 PROD_WEB_TARGET := /var/www/pagemail
 STAGE_WEB_TARGET := /var/www/pagemail.staging
 TEST_WEB_TARGET := /var/www/testsites
