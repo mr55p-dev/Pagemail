@@ -1,8 +1,9 @@
 ifeq "$(ENV)" "production"
 else ifeq "$(ENV)" "staging"
 else
-	PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := ../pagemail-jwt-signature.key
-	PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := ../pagemail-jwt-signature.key.pub
+	export PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := ../pagemail-jwt-signature.key
+	export PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := ../pagemail-jwt-signature.key.pub
+	export PAGEMAIL_EMAIL_TEMPLATE_PATH :=  ../templates/email.html.template
 endif
 
 SERVER_TGT = dist/server
@@ -30,4 +31,3 @@ serve:
 
 clean:
 	rm $(SERVER_TGT)
-

@@ -1,102 +1,134 @@
 package mail
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"log"
+	"net/http"
 	"net/mail"
+	"os"
+	"pagemail/server/models"
 	"time"
 
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
-type UrlRecord struct{ Url string }
-
-func format_time(tm time.Time) string {
-	return fmt.Sprintf(
-		"%d-%02d-%02dT%02d:%02d:%02d-00:00",
-		tm.Year(),
-		tm.Month(),
-		tm.Day(),
-		tm.Hour(),
-		tm.Minute(),
-		tm.Second(),
-	)
+type MailTemplateData struct {
+	UserIdentifier string
+	DateStart      string
+	Pages          []models.UrlData
 }
 
-func get_mail_body(records []*models.Record, name string) string {
-	var list_contents string
-	for _, record := range records {
-		url := record.GetString("url")
-		created := record.GetTime("created")
-		list_contents += fmt.Sprintf(`<li><a href="%s">%s</a> (created %s)</li>`, url, url, created)
+func GetUsers(db *dbx.Builder) ([]models.User, error) {
+	var users []models.User
+	q := (*db).NewQuery("SELECT id, email FROM users WHERE subscribed = true AND email IS NOT NULL")
+	err := q.All(&users)
+	return users, err
+}
+
+func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.Time) ([]models.PageRecord, error) {
+	//// Fetch all records which have created BETWEEN now-24hrs AND now
+	// Write a query which selects all the records where user_id == usr.id and created > 7am yesterday
+	var pages []models.PageRecord
+	records, err := app.Dao().FindRecordsByExpr("pages",
+		dbx.HashExp{"user_id": user.Id},
+		dbx.NewExp("created BETWEEN {:start} AND {:end}", dbx.Params{"start": startTime, "end": time.Now()}))
+	if err != nil {
+		log.Print(err)
+		return pages, err
+	}
+	for _, row := range records {
+		pages = append(pages, models.PageRecord{
+			Url:     row.GetString("url"),
+			Created: row.GetCreated().Time(),
+		})
 	}
 
-	res := fmt.Sprintf(`
-<!DOCTYPE html>
-<html>
-
-<head>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/alvaromontoro/almond.css@latest/dist/almond.min.css" />
-</head>
-
-<body>
-	<h1>Your saved pages</h1>
-		<p>Hello, %s. Here are all the pages you have recently saved:</p>
-	<ul>
-		%s
-	</ul>
-</body>
-</html>
-	`, name, list_contents)
-	return res
+	return pages, nil
 }
 
-type User struct {
-	Id    string
-	Email string
+func GetPageData(page models.PageRecord) (models.UrlData, error) {
+	res := models.UrlData{
+		PageRecord: models.PageRecord{
+			Url: page.Url,
+		},
+	}
+	return res, nil
+}
+
+func GetMailBody(data MailTemplateData) string {
+	templatePath := os.Getenv("PAGEMAIL_EMAIL_TEMPLATE_PATH")
+	var w bytes.Buffer
+	tmpl := template.Must(template.ParseFiles(templatePath))
+	if err := tmpl.Execute(&w, data); err != nil {
+		panic(err)
+	}
+
+	return w.String()
+}
+
+func getUserIdentifier(user models.User) string {
+	if user.Name != "" {
+		return user.Name
+	} else if user.Email != "" {
+		return user.Email
+	} else {
+		return user.Id
+	}
 }
 
 func Mailer(app *pocketbase.PocketBase) error {
+	log.Print("Running mailer")
+
+	// Setup clients
 	mail_client := app.NewMailClient()
 	db := app.Dao().DB()
 
-	log.Print("Running mailer")
-
 	// Fetch all the subscribed users
-	var users []User
-	q := db.NewQuery("SELECT id, email FROM users WHERE subscribed = true AND email IS NOT NULL")
-	err := q.All(&users)
+	users, err := GetUsers(&db)
+	log.Printf("Fetched %d users", len(users))
 	if err != nil {
-		log.Print(err)
+		log.Print(fmt.Errorf("Failed to fetch users: %s", err))
 		return err
 	}
 
-	log.Printf("Fetched %d users", len(users))
-
 	// For each user
-	yesterday := time.Now().AddDate(0, 0, -1).Truncate(24 * time.Hour).Add(7 * time.Hour)
-	now := time.Now()
+	startDate := time.Now().AddDate(0, 0, -1).Truncate(24 * time.Hour).Add(7 * time.Hour)
 
 	for _, usr := range users {
-		//// Fetch all records which have created BETWEEN now-24hrs AND now
-		// Write a query which selects all the records where user_id == usr.id and created > 7am yesterday
-		records, err := app.Dao().FindRecordsByExpr("pages",
-			dbx.HashExp{"user_id": usr.Id},
-			dbx.NewExp("created BETWEEN {:start} AND {:end}", dbx.Params{"start": yesterday, "end": now}))
+		// Get the relevant pages for the user
+		pages, err := GetUserPages(app, usr, startDate)
 		if err != nil {
-			log.Print(err)
-			return err
+			log.Print(fmt.Errorf("Failed to fetch pages for user %s: %s", usr.Id, err))
 		}
-		if len(records) == 0 {
-			log.Printf("Skipping %s", usr.Email)
+		log.Printf("Found %d records", len(pages))
+
+		// Enrich page data with previews
+		var enrichedPages []models.UrlData
+		for _, page := range pages {
+			if d, err := GetPageData(page); err == nil {
+				enrichedPages = append(enrichedPages, d)
+			}
+		}
+
+		// Skip if the user does not have any pages after enriching
+		if len(enrichedPages) == 0 {
 			continue
 		}
-		log.Printf("Found %d records", len(records))
 
-		//// Send an email with the links
+		// Create mail template data
+		identifier := getUserIdentifier(usr)
+		data := MailTemplateData{
+			UserIdentifier: identifier,
+			DateStart:      startDate.Format("02/01/06"),
+			Pages:          enrichedPages,
+		}
+
+		// Send an email with the links
 		message := mailer.Message{
 			From: mail.Address{
 				Address: app.Settings().Meta.SenderAddress,
@@ -104,14 +136,51 @@ func Mailer(app *pocketbase.PocketBase) error {
 			},
 			To:      []mail.Address{{Address: usr.Email}},
 			Subject: "Pagemail briefing",
-			HTML:    get_mail_body(records, usr.Email),
+			HTML:    GetMailBody(data),
 		}
-		log.Printf("Sending email to %s (%d links)", usr.Email, len(records))
-		log.Print(get_mail_body(records, usr.Email))
+		log.Printf("Sending email to %s (%d pages)", usr.Email, len(data.Pages))
+
 		if err := mail_client.Send(&message); err != nil {
 			log.Printf("Failed to send email to %s", usr.Email)
 			log.Print(err)
 		}
 	}
 	return nil
+}
+
+func TestMailBody(c echo.Context) error {
+	templateData := MailTemplateData{
+		UserIdentifier: "Test user",
+		DateStart:      time.Now().Format("02-01-2006"),
+		Pages: []models.UrlData{{
+			UrlPreviewData: models.UrlPreviewData{
+				Title:       "Example page",
+				Description: "A disturbed garage's creature comes with it the thought that the urdy carnation is a flock. A cordial cushion's apartment comes with it the thought that the starboard umbrella is a weapon. Authors often misinterpret the chocolate as an advised college, when in actuality it feels more like a saintly dinghy.",
+			},
+			PageRecord: models.PageRecord{
+				Url:     "https://www.example.com/",
+				Created: time.Now(),
+			},
+		},
+			{
+				UrlPreviewData: models.UrlPreviewData{
+					Title:       "Example page",
+					Description: "",
+				},
+				PageRecord: models.PageRecord{
+					Url:     "https://www.example.com/",
+					Created: time.Now(),
+				},
+			},
+			{
+				PageRecord: models.PageRecord{
+					Url:     "https://www.example2.com",
+					Created: time.Now(),
+				},
+			},
+		},
+	}
+
+	mailHTML := GetMailBody(templateData)
+	return c.HTML(http.StatusOK, mailHTML)
 }
