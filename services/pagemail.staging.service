@@ -5,8 +5,8 @@ After=network.target
 [Service]
 ExecStart=/home/ec2-user/stage/server serve --dir=/home/ec2-user/data/stage --debug --http="0.0.0.0:4001"
 Restart=always
-Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/stage/keys/staging.key.pub"
-Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/stage/keys/staging.key"
+Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/keys/staging.key.pub"
+Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/keys/staging.key"
 Environment="PAGEMAIL_EMAIL_TEMPLATE_PATH=/home/ec2-user/stage/templates/email.html.template"
 
 [Install]
