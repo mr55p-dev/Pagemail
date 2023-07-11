@@ -1,11 +1,5 @@
 ifeq "$(ENV)" "production"
-    export PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := /home/ec2-user/keys/prod.key.pub
-    export PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := /home/ec2-user/keys/prod.key
-    export PAGEMAIL_EMAIL_TEMPLATE_PATH := /home/ec2-user/prod/templates/email.html.template
 else ifeq "$(ENV)" "staging"
-    export PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := /home/ec2-user/stage/keys/staging.key.pub
-    export PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := /home/ec2-user/stage/keys/staging.key
-    export PAGEMAIL_EMAIL_TEMPLATE_PATH := /home/ec2-user/templates/email.html.template
 else
 	export PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY := ../pagemail-jwt-signature.key
 	export PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY := ../pagemail-jwt-signature.key.pub
