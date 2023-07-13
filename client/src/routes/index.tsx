@@ -7,8 +7,10 @@ import {
   Link,
   Stack,
   Typography,
+  Alert,
 } from "@mui/joy";
 import { useNavigate } from "react-router";
+import { Link as RouterLink } from "react-router-dom";
 import { iosShortcutLink } from "../lib/const";
 
 const InfoCard = ({ children }: { children: React.ReactNode }) => {
@@ -28,6 +30,13 @@ export const Index = () => {
   };
   return (
     <Box>
+      <Alert sx={{ mt: 1 }} color="info">
+        <Typography>
+          <RouterLink to="/legacy">
+            <Link>A notice about v1</Link>
+          </RouterLink>
+        </Typography>
+      </Alert>
       <Typography level="display1" textAlign="center" mt={4} mb={2}>
         Never forget a link again
       </Typography>
@@ -42,7 +51,7 @@ export const Index = () => {
           spacing={1}
           maxWidth="sm"
           mx="auto"
-		  my={2}
+          my={2}
         >
           <Button
             fullWidth
@@ -128,9 +137,7 @@ export const Index = () => {
             this page in safari, click the share button and select "Add to
             homescreen". We also offer a shortcut for iOS devices, to let you
             save to Pagemail from anywhere.{" "}
-            <Link href={iosShortcutLink}>
-              Check it out here!
-            </Link>
+            <Link href={iosShortcutLink}>Check it out here!</Link>
           </Typography>
         </InfoCard>
       </Grid>
