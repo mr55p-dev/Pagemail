@@ -4,7 +4,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>Simple Transactional Email</title>
+	<title>Pagemail digest from {{ .DateStart }}</title>
 	<style>
 		/* -------------------------------------
           GLOBAL RESETS
@@ -390,7 +390,7 @@
 											<!--     </tr> -->
 											<!--   </tbody> -->
 											<!-- </table> -->
-											<ol>
+											<ul>
 												{{ range .Pages }}
 												<li>
 													<a href="{{ .Url }}">{{ if .Title }}<b>{{ .Title }}</b>{{ if
@@ -399,7 +399,7 @@
 													<i><span>{{ .Created.Format "02/01 15:04" }}</span></i>
 												</li>
 												{{ end }}
-											</ol>
+											</ul>
 										</td>
 									</tr>
 								</table>

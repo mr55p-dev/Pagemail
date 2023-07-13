@@ -47,6 +47,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.10.0 // indirect
+	github.com/gorilla/css v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
@@ -60,6 +61,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/vanng822/css v1.0.1 // indirect
+	github.com/vanng822/go-premailer v1.20.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	gocloud.dev v0.29.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect

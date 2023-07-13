@@ -16,6 +16,7 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/tools/mailer"
+	"github.com/vanng822/go-premailer/premailer"
 )
 
 type MailTemplateData struct {
@@ -74,7 +75,16 @@ func GetMailBody(data MailTemplateData) string {
 		panic(err)
 	}
 
-	return w.String()
+	// Apply premail
+	opts := premailer.NewOptions()
+	pre, err := premailer.NewPremailerFromBytes(w.Bytes(), opts)
+	inlined, err := pre.Transform()
+	if err != nil {
+		log.Printf("%s", err)
+		return w.String()
+	}
+
+	return inlined
 }
 
 func getUserIdentifier(user models.User) string {
@@ -156,23 +166,23 @@ func TestMailBody(c echo.Context) error {
 	urls := []models.PageRecord{
 		{
 			Created: time.Now(),
-			Url: "http://testsite.pagemail.io/long_title.html",
+			Url:     "http://testsite.pagemail.io/long_title.html",
 		},
 		{
 			Created: time.Now(),
-			Url: "http://testsite.pagemail.io/long_description.html",
+			Url:     "http://testsite.pagemail.io/long_description.html",
 		},
 		{
 			Created: time.Now(),
-			Url: "http://testsite.pagemail.io/long_everything.html",
+			Url:     "http://testsite.pagemail.io/long_everything.html",
 		},
 		{
 			Created: time.Now(),
-			Url: "http://testsite.pagemail.io/nothing.html",
+			Url:     "http://testsite.pagemail.io/nothing.html",
 		},
 		{
 			Created: time.Now(),
-			Url: "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
+			Url:     "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
 		},
 	}
 
@@ -183,23 +193,9 @@ func TestMailBody(c echo.Context) error {
 	templateData := MailTemplateData{
 		UserIdentifier: "Test user",
 		DateStart:      time.Now().Format("02-01-2006"),
-		Pages: data,
+		Pages:          data,
 	}
 
 	mailHTML := GetMailBody(templateData)
 	return c.HTML(http.StatusOK, mailHTML)
-}
-
-func TestMailForUser(app *pocketbase.PocketBase) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		// Insert some records to the users account
-
-		// Generate the email
-
-		// Return it in the response
-
-		// Delete the records which were added
-		return nil
-	}
-
 }
