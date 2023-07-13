@@ -13,12 +13,12 @@ type PageRecord struct {
 	Created time.Time
 }
 
-type UrlPreviewData struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
+type PreviewData struct {
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
-type UrlData struct {
-	UrlPreviewData
+type PageData struct {
+	PreviewData
 	PageRecord
 }
