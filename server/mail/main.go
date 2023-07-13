@@ -9,6 +9,7 @@ import (
 	"net/mail"
 	"os"
 	"pagemail/server/models"
+	"pagemail/server/preview"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -20,7 +21,7 @@ import (
 type MailTemplateData struct {
 	UserIdentifier string
 	DateStart      string
-	Pages          []models.UrlData
+	Pages          []models.PageData
 }
 
 func GetUsers(db *dbx.Builder) ([]models.User, error) {
@@ -51,13 +52,18 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 	return pages, nil
 }
 
-func GetPageData(page models.PageRecord) (models.UrlData, error) {
-	res := models.UrlData{
-		PageRecord: models.PageRecord{
-			Url: page.Url,
-		},
+func GetPageData(page models.PageRecord) models.PageData {
+	data, err := preview.FetchPreview(page.Url)
+	if err != nil {
+		return models.PageData{
+			PageRecord: page,
+		}
 	}
-	return res, nil
+
+	return models.PageData{
+		PageRecord:  page,
+		PreviewData: *data,
+	}
 }
 
 func GetMailBody(data MailTemplateData) string {
@@ -108,11 +114,9 @@ func Mailer(app *pocketbase.PocketBase) error {
 		log.Printf("Found %d records", len(pages))
 
 		// Enrich page data with previews
-		var enrichedPages []models.UrlData
+		var enrichedPages []models.PageData
 		for _, page := range pages {
-			if d, err := GetPageData(page); err == nil {
-				enrichedPages = append(enrichedPages, d)
-			}
+			enrichedPages = append(enrichedPages, GetPageData(page))
 		}
 
 		// Skip if the user does not have any pages after enriching
@@ -149,38 +153,53 @@ func Mailer(app *pocketbase.PocketBase) error {
 }
 
 func TestMailBody(c echo.Context) error {
+	urls := []models.PageRecord{
+		{
+			Created: time.Now(),
+			Url: "http://testsite.pagemail.io/long_title.html",
+		},
+		{
+			Created: time.Now(),
+			Url: "http://testsite.pagemail.io/long_description.html",
+		},
+		{
+			Created: time.Now(),
+			Url: "http://testsite.pagemail.io/long_everything.html",
+		},
+		{
+			Created: time.Now(),
+			Url: "http://testsite.pagemail.io/nothing.html",
+		},
+		{
+			Created: time.Now(),
+			Url: "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
+		},
+	}
+
+	data := []models.PageData{}
+	for _, url := range urls {
+		data = append(data, GetPageData(url))
+	}
 	templateData := MailTemplateData{
 		UserIdentifier: "Test user",
 		DateStart:      time.Now().Format("02-01-2006"),
-		Pages: []models.UrlData{{
-			UrlPreviewData: models.UrlPreviewData{
-				Title:       "Example page",
-				Description: "A disturbed garage's creature comes with it the thought that the urdy carnation is a flock. A cordial cushion's apartment comes with it the thought that the starboard umbrella is a weapon. Authors often misinterpret the chocolate as an advised college, when in actuality it feels more like a saintly dinghy.",
-			},
-			PageRecord: models.PageRecord{
-				Url:     "https://www.example.com/",
-				Created: time.Now(),
-			},
-		},
-			{
-				UrlPreviewData: models.UrlPreviewData{
-					Title:       "Example page",
-					Description: "",
-				},
-				PageRecord: models.PageRecord{
-					Url:     "https://www.example.com/",
-					Created: time.Now(),
-				},
-			},
-			{
-				PageRecord: models.PageRecord{
-					Url:     "https://www.example2.com",
-					Created: time.Now(),
-				},
-			},
-		},
+		Pages: data,
 	}
 
 	mailHTML := GetMailBody(templateData)
 	return c.HTML(http.StatusOK, mailHTML)
+}
+
+func TestMailForUser(app *pocketbase.PocketBase) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Insert some records to the users account
+
+		// Generate the email
+
+		// Return it in the response
+
+		// Delete the records which were added
+		return nil
+	}
+
 }
