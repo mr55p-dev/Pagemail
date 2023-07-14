@@ -19,16 +19,12 @@ install-test-sites:
 	cp $(BASE_DIR)/test_pages/* $(TEST_WEB_TARGET)/
 
 install-stage-templates:
-	sudo systemctl stop pagemail.staging
 	rm -rf $(STAGE_DIR)/templates/*
 	cp $(BASE_DIR)/templates/* $(STAGE_DIR)/templates/
-	sudo systemctl start pagemail.stage
 
 install-prod-templates:
-	sudo systemctl stop pagemail
 	rm -rf $(PROD_DIR)/templates/*
 	cp $(BASE_DIR)/templates/* $(PROD_DIR)/templates/
-	sudo systemctl start pagemail
 
 # Frontend installations
 install-stage-frontend:

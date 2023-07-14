@@ -104,16 +104,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            nginx/**
-            services/**
-            test_pages/**
-            templates/**
-
       - name: Download frontend
         uses: actions/download-artifact@v3
         with:
@@ -191,7 +181,6 @@ jobs:
             make install-stage
 
       - name: Run static install scripts
-        if: steps.changed-files.outputs.any_changed == 'true'
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.host }}
