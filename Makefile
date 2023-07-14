@@ -8,6 +8,7 @@ PROD_WEB_TARGET := /var/www/pagemail
 STAGE_WEB_TARGET := /var/www/pagemail.staging
 TEST_WEB_TARGET := /var/www/testsites
 
+# Static files
 install-nginx:
 	sudo rm /etc/nginx/conf.d/*
 	sudo cp $(BASE_DIR)/nginx/* /etc/nginx/conf.d/
@@ -29,41 +30,53 @@ install-prod-templates:
 	cp $(BASE_DIR)/templates/* $(PROD_DIR)/templates/
 	sudo systemctl start pagemail
 
+# Frontend installations
 install-stage-frontend:
 	rm -rf $(STAGE_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(STAGE_WEB_TARGET)/
 
-install-stage-backend:
-	sudo systemctl stop pagemail.staging
-	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
-	cp $(BASE_DIR)/server/dist/server $(STAGE_DIR)/server
-	sudo chmod a+x $(STAGE_DIR)/server
-	sudo systemctl daemon-reload
-	sudo systemctl start pagemail.staging
-
 install-prod-frontend:
-	sudo systemctl stop pagemail
-	sudo cp $(BASE_DIR)/services/pagemail.service $(SERVICES_TARGET)/pagemail.service
 	rm -rf $(PROD_WEB_TARGET)/*
 	cp -r $(BASE_DIR)/client/dist/* $(PROD_WEB_TARGET)/
-	sudo systemctl daemon-reload
-	sudo systemctl start pagemail
 	
+# Backend installations
+install-stage-backend:
+	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
+	sudo chmod a+x $(BASE_DIR)/server/dist/server
+	cp $(BASE_DIR)/server/dist/server $(STAGE_DIR)/server
+	sudo systemctl daemon-reload
+
 install-prod-backend:
+	sudo cp $(BASE_DIR)/services/pagemail.service $(SERVICES_TARGET)/pagemail.service
 	cp $(BASE_DIR)/server/dist/server $(PROD_DIR)/server
 	sudo chmod a+x $(PROD_DIR)/server
+	sudo systemctl daemon-reload
 
+# Full installations
 install-stage: install-stage-frontend install-stage-backend
 
 install-prod: install-prod-frontend install-prod-backend
 
-pre-install:
+# Pre install scripts
+pre-install-stage:
 	if [ -d $(BASE_DIR) ]; then rm -rf $(BASE_DIR)/*; fi
+	sudo systemctl stop pagemail.staging
 
+# Post install script
+pre-install-prod:
+	if [ -d $(BASE_DIR) ]; then rm -rf $(BASE_DIR)/*; fi
+	sudo systemctl stop pagemail
 
-post-install:
-	rm -rf $(BASE_DIR)
+# Post install scripts
+post-install-stage:
+	# rm -rf $(BASE_DIR)
+	sudo systemctl start pagemail.staging
 
+post-install-prod:
+	# rm -rf $(BASE_DIR)
+	sudo systemctl start pagemail
+
+# Legacy
 clean:
 	sudo rm -f /home/ec2-user/server
 	sudo rm -rf /var/www/pagemail/* /home/ec2-user/dist
