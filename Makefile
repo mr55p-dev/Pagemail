@@ -38,8 +38,8 @@ install-prod-frontend:
 # Backend installations
 install-stage-backend:
 	sudo cp $(BASE_DIR)/services/pagemail.staging.service $(SERVICES_TARGET)/pagemail.staging.service
+	sudo chmod a+x $(BASE_DIR)/server/dist/server
 	cp $(BASE_DIR)/server/dist/server $(STAGE_DIR)/server
-	sudo chmod a+x $(STAGE_DIR)/server
 	sudo systemctl daemon-reload
 
 install-prod-backend:
@@ -56,12 +56,12 @@ install-prod: install-prod-frontend install-prod-backend
 # Pre install scripts
 pre-install-stage:
 	if [ -d $(BASE_DIR) ]; then rm -rf $(BASE_DIR)/*; fi
-	sudo systemctl stop pagemail
+	sudo systemctl stop pagemail.staging
 
 # Post install script
 pre-install-prod:
 	if [ -d $(BASE_DIR) ]; then rm -rf $(BASE_DIR)/*; fi
-	sudo systemctl stop pagemail.staging
+	sudo systemctl stop pagemail
 
 # Post install scripts
 post-install-stage:
