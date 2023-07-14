@@ -106,16 +106,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v37
-        with:
-          files: |
-            nginx/**
-            services/**
-            test_pages/**
-            templates/**
-
       - name: Download frontend
         uses: actions/download-artifact@v3
         with:
@@ -147,7 +137,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd pagemail
-            make pre-install-stage
+            make -C pagemail pre-install-stage
 
       - name: Copy frontend artifacts onto server
         uses: appleboy/scp-action@v0.1.4
@@ -189,11 +179,9 @@ jobs:
           key: ${{ secrets.key }}
           port: ${{ secrets.port }}
           script: |
-            cd pagemail
-            make install-prod
+            make -C pagemail install-prod
 
       - name: Run static install scripts
-        if: steps.changed-files.outputs.any_changed == 'true'
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.host }}
@@ -201,10 +189,9 @@ jobs:
           key: ${{ secrets.key }}
           port: ${{ secrets.port }}
           script: |
-            cd pagemail
-            make install-nginx
-            make install-test-sites
-            make install-prod-templates
+            make -C pagemail install-nginx
+            make -C pagemail install-test-sites
+            make -C pagemail install-prod-templates
 
       - name: Run post install scripts
         if: always()
@@ -215,5 +202,4 @@ jobs:
           key: ${{ secrets.key }}
           port: ${{ secrets.port }}
           script: |
-            cd pagemail
-            make post-install-prod
+            make -C pagemail post-install-prod
