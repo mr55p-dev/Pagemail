@@ -147,7 +147,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd pagemail
-            make pre-install
+            make pre-install-stage
 
       - name: Copy frontend artifacts onto server
         uses: appleboy/scp-action@v0.1.4
@@ -205,3 +205,15 @@ jobs:
             make install-nginx
             make install-test-sites
             make install-stage-templates
+
+      - name: Run post install scripts
+        if: always()
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.host }}
+          username: ${{ secrets.username }}
+          key: ${{ secrets.key }}
+          port: ${{ secrets.port }}
+          script: |
+            cd pagemail
+            make post-install-stage
