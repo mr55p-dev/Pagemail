@@ -15,6 +15,7 @@ import CssBaseline from "@mui/joy/CssBaseline";
 import { NotificationProvider } from "./lib/notif.tsx";
 import { AccountPage } from "./routes/account.tsx";
 import { Tutorial } from "./routes/tutorial.tsx";
+import { Legacy } from "./routes/legacy.tsx";
 
 const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
       {
         path: "tutorial",
         element: <Tutorial />,
+      },
+      {
+        path: "legacy",
+        element: <Legacy />,
       },
     ],
   },
