@@ -147,7 +147,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd pagemail
-            make pre-install-stage
+            make pre-install-prod
 
       - name: Copy frontend artifacts onto server
         uses: appleboy/scp-action@v0.1.4
