@@ -74,7 +74,6 @@ export const Navbar = () => {
       left={0}
       zIndex={2}
       bgcolor="background.body"
-      height="200px"
       ref={headerRef}
     >
       <Grid
