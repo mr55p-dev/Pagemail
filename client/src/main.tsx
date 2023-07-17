@@ -16,6 +16,7 @@ import { NotificationProvider } from "./lib/notif.tsx";
 import { AccountPage } from "./routes/account.tsx";
 import { Tutorial } from "./routes/tutorial.tsx";
 import { Legacy } from "./routes/legacy.tsx";
+import { Verify } from "./routes/verify.tsx";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: "tutorial",
         element: <Tutorial />,
+      },
+      {
+        path: "verify",
+        element: <Verify />,
       },
       {
         path: "legacy",
