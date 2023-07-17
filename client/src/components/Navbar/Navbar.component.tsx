@@ -53,98 +53,92 @@ export const Navbar = () => {
   const nav = useNavigate();
   const headerRef = React.useRef<HTMLElement>();
 
-  // React.useEffect(() => {
-  //   if (!headerRef.current) {
-  //     return
-  //   }
-
-  //   const obs = new IntersectionObserver(([e]) => {
-  //     e.target.classList.toggle("scrolled")
-  //     console.log("hello")
-  //   })
-  //   obs.observe(headerRef.current)
-
-  //   return () => obs.disconnect()
-  // }, [])
-
   return (
-    <Box
-      position="sticky"
-      top="-1px"
-      left={0}
-      zIndex={2}
-      bgcolor="background.body"
-      ref={headerRef}
-    >
-      <Grid
-        container
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        spacing={1}
-        sx={{ flexGrow: 1, px: 1 }}
+    <>
+      <div
+        style={{ height: "3.5rem", position: "relative", display: "hidden" }}
+      />
+
+      <Box
+        position="fixed"
+        top="-1px"
+        left={0}
+        width="100%"
+        height="3.5rem"
+        zIndex={2}
+        bgcolor="background.body"
+        ref={headerRef}
       >
         <Grid
-          xs={4}
-          display="flex"
-          flexDirection="row"
+          container
+          direction="row"
+          justifyContent="space-between"
           alignItems="center"
-          gap={1}
+          spacing={1}
+          sx={{ flexGrow: 1, px: 1 }}
         >
-          <Link
-            style={{
-              textDecoration: "none",
-              color: "unset",
-              display: "grid",
-              placeItems: "end center",
-            }}
-            to="/"
+          <Grid
+            xs={4}
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            gap={1}
           >
-            <img
-              height="40px"
-              src={mode === "light" ? NavBrandDark : NavBrandLight}
-            />
-          </Link>
+            <Link
+              style={{
+                textDecoration: "none",
+                color: "unset",
+                display: "grid",
+                placeItems: "end center",
+              }}
+              to="/"
+            >
+              <img
+                height="40px"
+                src={mode === "light" ? NavBrandDark : NavBrandLight}
+              />
+            </Link>
+          </Grid>
+          <Grid xs="auto" display="flex" direction="row" gap={1} my={1}>
+            {authState === AuthState.AUTH ? (
+              <>
+                <NavButton to="/pages">
+                  <ArticleOutlined />
+                </NavButton>
+
+                <NavButton to="/account">
+                  <AccountBoxOutlined />
+                </NavButton>
+
+                <NavButton action={logout}>
+                  <LogoutOutlined />
+                </NavButton>
+              </>
+            ) : authState === AuthState.PENDING ? (
+              <>
+                <IconButton size="md">
+                  <CircularProgress thickness={2} />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                <IconButton size="md" onClick={() => nav("/pages")}>
+                  <AccountBoxOutlined />
+                </IconButton>
+              </>
+            )}
+
+            <IconButton
+              onClick={() => setMode(mode === "light" ? "dark" : "light")}
+              sx={{ justifySelf: "end" }}
+              size="md"
+            >
+              {mode === "light" ? <DarkModeOutlined /> : <LightModeOutlined />}
+            </IconButton>
+          </Grid>
         </Grid>
-        <Grid xs="auto" display="flex" direction="row" gap={1} my={1}>
-          {authState === AuthState.AUTH ? (
-            <>
-              <NavButton to="/pages">
-                <ArticleOutlined />
-              </NavButton>
-
-              <NavButton to="/account">
-                <AccountBoxOutlined />
-              </NavButton>
-
-              <NavButton action={logout}>
-                <LogoutOutlined />
-              </NavButton>
-            </>
-          ) : authState === AuthState.PENDING ? (
-            <>
-              <IconButton size="md">
-                <CircularProgress thickness={2} />
-              </IconButton>
-            </>
-          ) : (
-            <>
-              <IconButton size="md" onClick={() => nav("/pages")}>
-                <AccountBoxOutlined />
-              </IconButton>
-            </>
-          )}
-
-          <IconButton
-            onClick={() => setMode(mode === "light" ? "dark" : "light")}
-            sx={{ justifySelf: "end" }}
-            size="md"
-          >
-            {mode === "light" ? <DarkModeOutlined /> : <LightModeOutlined />}
-          </IconButton>
-        </Grid>
-      </Grid>
-      <Divider />
-    </Box>
+        <Divider />
+      </Box>
+    </>
   );
 };
