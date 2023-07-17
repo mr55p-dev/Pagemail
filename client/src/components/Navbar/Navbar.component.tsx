@@ -1,12 +1,13 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthState } from "../../lib/data";
+import { AuthState, DataState } from "../../lib/data";
 import { useUser } from "../../lib/pocketbase";
 import NavBrandDark from "../../assets/default-monochrome-a.svg";
 import NavBrandLight from "../../assets/default-monochrome-light-a.svg";
 
 import {
   Box,
+  CircularProgress,
   Divider,
   Grid,
   IconButton,
@@ -47,7 +48,7 @@ const NavButton = ({
 };
 
 export const Navbar = () => {
-  const { authState, logout } = useUser();
+  const { authState, reqState, logout } = useUser();
   const { mode, setMode } = useColorScheme();
   const nav = useNavigate();
   const headerRef = React.useRef<HTMLElement>();
@@ -112,6 +113,12 @@ export const Navbar = () => {
                 <NavButton action={logout}>
                   <LogoutOutlined />
                 </NavButton>
+              </>
+            ) : reqState === DataState.PENDING ? (
+              <>
+                <IconButton size="md">
+                  <CircularProgress thickness={2} />
+                </IconButton>
               </>
             ) : (
               <>

@@ -1,7 +1,7 @@
-import PocketBase, { Record } from "pocketbase";
+import PocketBase, { Record, RecordAuthResponse } from "pocketbase";
 import { UserRecord } from "./datamodels";
 import React from "react";
-import { AuthState } from "./data";
+import { AuthState, DataState } from "./data";
 import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
@@ -42,6 +42,7 @@ export const useUser = () => {
   const [authState, setAuthState] = React.useState<AuthState>(
     getAuthState(user)
   );
+  const [reqState, setReqState] = React.useState<DataState>(DataState.UNKNOWN);
   const nav = useNavigate();
   const { notifInfo, notifErr } = React.useContext(NotificationCtx);
 
@@ -58,17 +59,20 @@ export const useUser = () => {
   }, [user]);
 
   const login = async (
-    callback: () => Promise<UserRecord>
+    callback: () => Promise<RecordAuthResponse<UserRecord>>
   ): Promise<UserRecord> => {
+    setReqState(DataState.PENDING);
     try {
       const rval = await callback();
       setAuthState(getAuthState(user));
       setAuthErr(null);
+      setReqState(DataState.SUCCESS);
       nav("/pages");
-      return rval;
+      return rval.record;
     } catch (err) {
       setAuthState(AuthState.UNAUTHORIZED);
       setAuthErr(err as Error);
+      setReqState(DataState.FAILED);
       notifErr((err as Error).message);
       return Promise.reject(err);
     }
@@ -80,5 +84,5 @@ export const useUser = () => {
     notifInfo("Signed out");
   };
 
-  return { user, authState, login, logout, authErr };
+  return { user, authState, login, logout, authErr, reqState };
 };

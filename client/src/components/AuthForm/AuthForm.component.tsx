@@ -14,8 +14,6 @@ import {
   Stack,
 } from "@mui/joy";
 import { UserRecord } from "../../lib/datamodels";
-import React from "react";
-import { NotificationCtx } from "../../lib/notif";
 
 interface LoginForm {
   email: string;
@@ -23,24 +21,15 @@ interface LoginForm {
 }
 
 export const Login = () => {
-  const [reqState, setReqState] = React.useState<DataState>(DataState.UNKNOWN);
-  const { login, authErr } = useUser();
-  const { notifErr } = React.useContext(NotificationCtx);
+  const { login, reqState } = useUser();
   const { register, handleSubmit } = useForm<LoginForm>();
 
   function onSubmit(data: LoginForm) {
-    setReqState(DataState.PENDING);
     login(async () => {
-      const response = await pb
+      return await pb
         .collection("users")
         .authWithPassword<UserRecord>(data.email, data.password);
-      return response.record;
     })
-      .then(() => setReqState(DataState.SUCCESS))
-      .catch((e) => {
-        setReqState(DataState.FAILED);
-        notifErr("Error logging in", e);
-      });
   }
 
   const handlePasswordReset = () => {
@@ -51,7 +40,6 @@ export const Login = () => {
 
   return (
     <>
-      {authErr ? <div>{authErr.message}</div> : undefined}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           <FormControl>
@@ -99,10 +87,9 @@ export const SignUp = () => {
   const onSubmit = (data: SignupForm) =>
     login(async () => {
       await pb.collection("users").create(data);
-      const res = await pb
+      return await pb
         .collection("users")
         .authWithPassword<UserRecord>(data.email, data.password);
-      return res.record;
     });
 
   return (
