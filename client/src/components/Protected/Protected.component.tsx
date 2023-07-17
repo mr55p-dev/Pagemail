@@ -4,11 +4,23 @@ import { useUser } from "../../lib/pocketbase";
 import { AuthState } from "../../lib/data";
 
 export const Protected = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
-  return user !== null ? children : <Navigate to="/auth" replace/>;
+  const { authState } = useUser();
+  switch (authState) {
+    case AuthState.AUTH:
+      return children;
+    case AuthState.UNVERIFIED:
+      return <Navigate to="/verify" replace />;
+    case AuthState.UNAUTHORIZED:
+    default:
+      return <Navigate to="/auth" replace />;
+  }
 };
 
-export const NotProtected = ({ children }: { children: React.ReactNode}) => {
-  const { authState } = useUser()
-  return authState !== AuthState.AUTH ? children : <Navigate to="/pages" replace/>
-}
+export const NotProtected = ({ children }: { children: React.ReactNode }) => {
+  const { authState } = useUser();
+  if (authState === AuthState.AUTH) {
+    return <Navigate to="/pages" replace />;
+  } else {
+    return children;
+  }
+};

@@ -7,7 +7,6 @@ import NavBrandLight from "../../assets/default-monochrome-light-a.svg";
 
 import {
   Box,
-  CircularProgress,
   Divider,
   Grid,
   IconButton,
@@ -113,12 +112,6 @@ export const Navbar = () => {
                 <NavButton action={logout}>
                   <LogoutOutlined />
                 </NavButton>
-              </>
-            ) : authState === AuthState.PENDING ? (
-              <>
-                <IconButton size="md">
-                  <CircularProgress thickness={2} />
-                </IconButton>
               </>
             ) : (
               <>

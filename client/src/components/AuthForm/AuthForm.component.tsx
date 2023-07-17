@@ -1,8 +1,6 @@
-// import React, { ChangeEventHandler } from "react";
-import { AuthState } from "../../lib/data";
+import { DataState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
 // import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
-// import { useNotification } from "../../lib/notif";
 import { useForm } from "react-hook-form";
 import {
   Typography,
@@ -15,6 +13,9 @@ import {
   FormHelperText,
   Stack,
 } from "@mui/joy";
+import { UserRecord } from "../../lib/datamodels";
+import React from "react";
+import { NotificationCtx } from "../../lib/notif";
 
 interface LoginForm {
   email: string;
@@ -22,13 +23,25 @@ interface LoginForm {
 }
 
 export const Login = () => {
-  const { login, authState, authErr } = useUser();
+  const [reqState, setReqState] = React.useState<DataState>(DataState.UNKNOWN);
+  const { login, authErr } = useUser();
+  const { notifErr } = React.useContext(NotificationCtx);
   const { register, handleSubmit } = useForm<LoginForm>();
 
-  const onSubmit = (data: LoginForm) =>
-    login(() =>
-      pb.collection("users").authWithPassword(data.email, data.password)
-    );
+  function onSubmit(data: LoginForm) {
+    setReqState(DataState.PENDING);
+    login(async () => {
+      const response = await pb
+        .collection("users")
+        .authWithPassword<UserRecord>(data.email, data.password);
+      return response.record;
+    })
+      .then(() => setReqState(DataState.SUCCESS))
+      .catch((e) => {
+        setReqState(DataState.FAILED);
+        notifErr("Error logging in", e);
+      });
+  }
 
   const handlePasswordReset = () => {
     alert(
@@ -50,7 +63,7 @@ export const Login = () => {
             <Input type="password" {...register("password")} />
           </FormControl>
           <FormControl>
-            <Button type="submit" disabled={authState === AuthState.PENDING}>
+            <Button type="submit" disabled={reqState === DataState.PENDING}>
               Sign in
             </Button>
           </FormControl>
@@ -86,7 +99,10 @@ export const SignUp = () => {
   const onSubmit = (data: SignupForm) =>
     login(async () => {
       await pb.collection("users").create(data);
-      await pb.collection("users").authWithPassword(data.email, data.password);
+      const res = await pb
+        .collection("users")
+        .authWithPassword<UserRecord>(data.email, data.password);
+      return res.record;
     });
 
   return (
