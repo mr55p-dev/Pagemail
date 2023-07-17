@@ -69,9 +69,10 @@ export const Navbar = () => {
 
   return (
     <Box
-      position="sticky"
+	  position="fixed"
       top="-1px"
       left={0}
+	  width="100%"
       zIndex={2}
       bgcolor="background.body"
       ref={headerRef}
