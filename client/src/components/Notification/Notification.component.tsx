@@ -38,7 +38,7 @@ export const NotificationBanner = () => {
       <Box
       zIndex={10}
         sx={{
-          position: "absolute",
+          position: "fixed",
           width: "100%",
           top: 0,
           left: 0,
