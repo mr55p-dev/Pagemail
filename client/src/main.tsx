@@ -8,6 +8,7 @@ import PagesPage from "./routes/pages.tsx";
 import {
   Protected,
   NotProtected,
+  NotVerified,
 } from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
@@ -58,7 +59,11 @@ const router = createBrowserRouter([
       },
       {
         path: "verify",
-        element: <Verify />,
+        element: (
+          <NotVerified>
+            <Verify />
+          </NotVerified>
+        ),
       },
       {
         path: "legacy",

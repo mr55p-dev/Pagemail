@@ -44,3 +44,5 @@ firebase-admin-secret.json
 .vscode/
 
 pagemail-jwt-signature*
+
+logs/
