@@ -7,6 +7,6 @@ export enum DataState {
 
 export enum AuthState {
   AUTH,
-  PENDING,
-  NOT_AUTH,
+  UNVERIFIED,
+  UNAUTHORIZED,
 }

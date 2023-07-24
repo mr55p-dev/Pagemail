@@ -1,8 +1,6 @@
-// import React, { ChangeEventHandler } from "react";
-import { AuthState } from "../../lib/data";
+import { DataState } from "../../lib/data";
 import { pb, useUser } from "../../lib/pocketbase";
 // import signinUrl from "../../assets/google-auth/2x/btn_google_signin_light_normal_web@2x.png";
-// import { useNotification } from "../../lib/notif";
 import { useForm } from "react-hook-form";
 import {
   Typography,
@@ -15,6 +13,7 @@ import {
   FormHelperText,
   Stack,
 } from "@mui/joy";
+import { UserRecord } from "../../lib/datamodels";
 
 interface LoginForm {
   email: string;
@@ -22,13 +21,16 @@ interface LoginForm {
 }
 
 export const Login = () => {
-  const { login, authState, authErr } = useUser();
+  const { login, reqState } = useUser();
   const { register, handleSubmit } = useForm<LoginForm>();
 
-  const onSubmit = (data: LoginForm) =>
-    login(() =>
-      pb.collection("users").authWithPassword(data.email, data.password)
-    );
+  function onSubmit(data: LoginForm) {
+    login(async () => {
+      return await pb
+        .collection("users")
+        .authWithPassword<UserRecord>(data.email, data.password);
+    })
+  }
 
   const handlePasswordReset = () => {
     alert(
@@ -38,7 +40,6 @@ export const Login = () => {
 
   return (
     <>
-      {authErr ? <div>{authErr.message}</div> : undefined}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
           <FormControl>
@@ -50,7 +51,7 @@ export const Login = () => {
             <Input type="password" {...register("password")} />
           </FormControl>
           <FormControl>
-            <Button type="submit" disabled={authState === AuthState.PENDING}>
+            <Button type="submit" disabled={reqState === DataState.PENDING}>
               Sign in
             </Button>
           </FormControl>
@@ -86,7 +87,9 @@ export const SignUp = () => {
   const onSubmit = (data: SignupForm) =>
     login(async () => {
       await pb.collection("users").create(data);
-      await pb.collection("users").authWithPassword(data.email, data.password);
+      return await pb
+        .collection("users")
+        .authWithPassword<UserRecord>(data.email, data.password);
     });
 
   return (

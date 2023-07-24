@@ -1,14 +1,14 @@
-import PocketBase, { Record } from "pocketbase";
+import PocketBase, { Record, RecordAuthResponse } from "pocketbase";
 import { UserRecord } from "./datamodels";
 import React from "react";
-import { AuthState } from "./data";
+import { AuthState, DataState } from "./data";
 import { useNavigate } from "react-router-dom";
 import { NotificationCtx } from "./notif";
 
 const pb_url = import.meta.env.VITE_PAGEMAIL_API_HOST;
-console.log(pb_url)
+console.log(pb_url);
 export const pb = new PocketBase(pb_url);
-console.log(pb.baseUrl)
+console.log(pb.baseUrl);
 pb.autoCancellation(false);
 
 export const getCurrentUser = (): UserRecord | null => {
@@ -26,12 +26,23 @@ export const getCurrentUser = (): UserRecord | null => {
   return null;
 };
 
+function getAuthState(user: UserRecord | null | undefined): AuthState {
+  if (!user) {
+    return AuthState.UNAUTHORIZED;
+  } else if (!user.verified) {
+    return AuthState.UNVERIFIED;
+  } else {
+    return AuthState.AUTH;
+  }
+}
+
 export const useUser = () => {
   const [user, setUser] = React.useState<UserRecord | null>(getCurrentUser());
   const [authErr, setAuthErr] = React.useState<Error | null>(null);
   const [authState, setAuthState] = React.useState<AuthState>(
-    user ? AuthState.AUTH : AuthState.NOT_AUTH
+    getAuthState(user)
   );
+  const [reqState, setReqState] = React.useState<DataState>(DataState.UNKNOWN);
   const nav = useNavigate();
   const { notifInfo, notifErr } = React.useContext(NotificationCtx);
 
@@ -44,20 +55,24 @@ export const useUser = () => {
   }, []);
 
   React.useEffect(() => {
-    setAuthState(user ? AuthState.AUTH : AuthState.NOT_AUTH);
+    setAuthState(getAuthState(user));
   }, [user]);
 
-  const login = async <T>(callback: () => Promise<T>): Promise<T> => {
-    setAuthState(AuthState.PENDING);
+  const login = async (
+    callback: () => Promise<RecordAuthResponse<UserRecord>>
+  ): Promise<UserRecord> => {
+    setReqState(DataState.PENDING);
     try {
       const rval = await callback();
-      setAuthState(AuthState.AUTH);
+      setAuthState(getAuthState(user));
       setAuthErr(null);
+      setReqState(DataState.SUCCESS);
       nav("/pages");
-      return rval;
+      return rval.record;
     } catch (err) {
-      setAuthState(AuthState.NOT_AUTH);
+      setAuthState(AuthState.UNAUTHORIZED);
       setAuthErr(err as Error);
+      setReqState(DataState.FAILED);
       notifErr((err as Error).message);
       return Promise.reject(err);
     }
@@ -65,9 +80,9 @@ export const useUser = () => {
 
   const logout = () => {
     pb.authStore.clear();
-    setAuthState(AuthState.NOT_AUTH);
-	notifInfo("Signed out");
+    setAuthState(AuthState.UNAUTHORIZED);
+    notifInfo("Signed out");
   };
 
-  return { user, authState, login, logout, authErr };
+  return { user, authState, login, logout, authErr, reqState };
 };
