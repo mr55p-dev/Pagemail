@@ -100,7 +100,7 @@ export const Navbar = () => {
             </Link>
           </Grid>
           <Grid xs="auto" display="flex" direction="row" gap={1} my={1}>
-            {authState === AuthState.AUTH ? (
+            {authState !== AuthState.UNAUTHORIZED ? (
               <>
                 <NavButton to="/pages">
                   <ArticleOutlined />
