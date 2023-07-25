@@ -7,7 +7,6 @@ import AuthPage from "./routes/auth.tsx";
 import PagesPage from "./routes/pages.tsx";
 import {
   Protected,
-  NotProtected,
   NotVerified,
 } from "./components/Protected/Protected.component.tsx";
 import { Index } from "./routes/index.tsx";
