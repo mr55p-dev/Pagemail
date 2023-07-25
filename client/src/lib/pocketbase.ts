@@ -58,9 +58,9 @@ export const useUser = () => {
     setAuthState(getAuthState(user));
   }, [user]);
 
-  const login = async (
+  async function login(
     callback: () => Promise<RecordAuthResponse<UserRecord>>
-  ): Promise<UserRecord> => {
+  ): Promise<UserRecord> {
     setReqState(DataState.PENDING);
     try {
       const rval = await callback();
@@ -76,13 +76,17 @@ export const useUser = () => {
       notifErr((err as Error).message);
       return Promise.reject(err);
     }
-  };
+  }
 
-  const logout = () => {
+  async function refresh() {
+    return await pb.collection("users").authRefresh();
+  }
+
+  function logout() {
     pb.authStore.clear();
     setAuthState(AuthState.UNAUTHORIZED);
     notifInfo("Signed out");
-  };
+  }
 
-  return { user, authState, login, logout, authErr, reqState };
+  return { user, authState, login, refresh, logout, authErr, reqState };
 };

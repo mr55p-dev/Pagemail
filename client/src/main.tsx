@@ -31,11 +31,7 @@ const router = createBrowserRouter([
       },
       {
         path: "auth",
-        element: (
-          <NotProtected>
-            <AuthPage />
-          </NotProtected>
-        ),
+        element: <AuthPage />,
       },
       {
         path: "pages",
