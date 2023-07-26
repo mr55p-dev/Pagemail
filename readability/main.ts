@@ -7,6 +7,7 @@ function parseDoc(docstring: Buffer, url: string): any {
   });
   const reader = new Readability(parser.window.document);
   return reader.parse();
+
 }
 
 function main() {
@@ -16,6 +17,9 @@ function main() {
   }
   process.stdin.once("data", (data) => {
     const parsed = parseDoc(data, siteURI);
+	if (!parsed?.textContent) {
+	  process.exit(1)
+	}
     process.stdout.write(JSON.stringify(parsed));
   });
 }
