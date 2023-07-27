@@ -9,4 +9,4 @@ build:
 
 run:
 	@npx tsc 
-	@curl -s $(url) | node dist/main.js $(url)
+	@curl -s $(url) | node dist/main.js $(url) | venv/bin/python main.py
