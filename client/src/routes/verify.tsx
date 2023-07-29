@@ -4,8 +4,14 @@ import { NotificationCtx } from "../lib/notif";
 import React from "react";
 
 export function Verify() {
-  const { user } = useUser();
+  const { user, refresh } = useUser();
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
+  const interval = React.useRef<NodeJS.Timeout | undefined>();
+
+  React.useEffect(() => {
+	interval.current = setInterval(() => refresh(), 2000)
+	return () => clearInterval(interval.current)
+  })
 
   function requestVerification() {
     if (user && user.email) {
