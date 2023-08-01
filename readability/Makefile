@@ -9,4 +9,4 @@ build:
 
 run:
 	@npx tsc 
-	@curl -s $(url) | node dist/main.js $(url) | venv/bin/python main.py
+	curl -s $(url) | node dist/main.js $(url) | /Users/ellis/Git/pagemail/readability/venv/bin/python test.py

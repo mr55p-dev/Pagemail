@@ -131,7 +131,7 @@ def main():
             TextType='ssml',
             VoiceId='Amy',
         )
-        sys.stdout.write(json.dumps(response, default=str))
+        sys.stdout.write(json.dumps(response["SynthesisTask"], default=str))
         sys.stdout.flush()
     except Exception as e:
         logging.exception(e)

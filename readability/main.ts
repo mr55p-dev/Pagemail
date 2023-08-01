@@ -1,27 +1,36 @@
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 
-function parseDoc(docstring: Buffer, url: string): any {
+function parseDoc(docstring: Buffer | string, url: string): any {
   const parser = new JSDOM(docstring, {
     url,
   });
   const reader = new Readability(parser.window.document);
   return reader.parse();
-
 }
 
-function main() {
+async function main() {
   const siteURI = process.argv[2];
-  if (!siteURI) {
-    throw new Error("Did not provide a site URI");
+  const url = new URL(siteURI)
+  if (!url) {
+    console.error("Did not provide a site URI");
+	process.exit(1)
   }
-  process.stdin.once("data", (data) => {
-    const parsed = parseDoc(data, siteURI);
-	if (!parsed?.textContent) {
-	  process.exit(1)
-	}
-    process.stdout.write(JSON.stringify(parsed));
-  });
+
+  const res = await fetch(siteURI)
+  if (!res.ok) {
+	console.error("Failed to fetch")
+	process.exit(2)
+  }
+
+  const body = await res.text()
+  const parsed = parseDoc(body, url.toString());
+  if (!parsed?.textContent) {
+	process.exit(3)
+  }
+
+  process.stdout.write(JSON.stringify(parsed));
+  process.exit(0)
 }
 
-main();
+main()
