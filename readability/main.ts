@@ -1,5 +1,6 @@
+import { parseArgs } from "node:util";
 import { JSDOM } from "jsdom";
-import { Readability } from "@mozilla/readability";
+import { Readability, isProbablyReaderable } from "@mozilla/readability";
 
 function parseDoc(docstring: Buffer | string, url: string): any {
   const parser = new JSDOM(docstring, {
@@ -9,28 +10,52 @@ function parseDoc(docstring: Buffer | string, url: string): any {
   return reader.parse();
 }
 
-async function main() {
-  const siteURI = process.argv[2];
-  const url = new URL(siteURI)
-  if (!url) {
-    console.error("Did not provide a site URI");
-	process.exit(1)
+async function fetchQuick(data: Buffer, url: URL) {
+  const parsed = new JSDOM(data, { url: url.toString() });
+  const isReadable = isProbablyReaderable(parsed.window.document);
+  if (isReadable) {
+    process.exit(0);
+  } else {
+    process.exit(1);
   }
+}
 
-  const res = await fetch(siteURI)
-  if (!res.ok) {
-	console.error("Failed to fetch")
-	process.exit(2)
-  }
-
-  const body = await res.text()
-  const parsed = parseDoc(body, url.toString());
+async function fetchReadableArticle(data: Buffer, url: URL) {
+  const parsed = parseDoc(data, url.toString());
   if (!parsed?.textContent) {
-	process.exit(3)
+    process.exit(3);
   }
 
   process.stdout.write(JSON.stringify(parsed));
-  process.exit(0)
+  process.exit(0);
 }
 
-main()
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      check: {
+        type: "boolean",
+        default: false,
+      },
+      url: {
+        type: "string",
+      },
+    },
+    strict: true,
+  });
+  const url = new URL(values.url || "");
+  if (!url) {
+    console.error("Did not provide a site URI");
+    process.exit(1);
+  }
+
+  process.stdin.addListener("data", (stream) => {
+    if (values.check) {
+      fetchQuick(stream, url);
+    } else {
+      fetchReadableArticle(stream, url);
+    }
+  });
+}
+
+main();

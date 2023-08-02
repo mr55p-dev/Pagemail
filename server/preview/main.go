@@ -9,7 +9,7 @@ import (
 	"pagemail/server/models"
 	"time"
 
-	// "pagemail/server/readability"
+	"pagemail/server/readability"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/pocketbase/pocketbase"
@@ -87,8 +87,7 @@ func FetchPreview(url string) (*models.Page, error) {
 	}()
 
 	go func() {
-		// is_readable_ch <- readability.CheckIsReadable(url, content)
-		is_readable_ch <- true
+		is_readable_ch <- readability.CheckIsReadable(url, content)
 	}()
 
 	out.IsReadable = <-is_readable_ch
