@@ -22,12 +22,12 @@ func ReadabilityHandler(app *pocketbase.PocketBase) echo.HandlerFunc {
 			return err
 		}
 
-		page_record := models.PageRecord{
+		page_record := models.Page{
 			Url:     raw_page_record.GetString("url"),
 			Created: raw_page_record.GetCreated().Time(),
 		}
 
-		task, err := readability.StartReaderTask(&page_record)
+		task, err := readability.StartReaderTask(app, &page_record)
 		if err != nil {
 			return err
 		}

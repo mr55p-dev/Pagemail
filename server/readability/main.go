@@ -1,45 +1,26 @@
 package readability
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"os/exec"
 	"pagemail/server/models"
 
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/forms"
-	db_models "github.com/pocketbase/pocketbase/models"
 )
 
-type SynthesisTask struct {
-	Engine            string `json:"engine"`
-	TaskId            string `json:"taskId"`
-	TaskStatus        string `json:"taskStatus"`
-	OutputUri         string `json:"outputUri"`
-	CreationTime      string `json:"creationTime"`
-	RequestCharacters int    `json:"requestCharacters"`
-	OutputFormat      string `json:"outputFormat"`
-	TextType          string `json:"textType"`
-	VoiceId           string `json:"voiceId"`
-	LanguageCode      string `json:"languageCode"`
-}
-
-func StartReaderTask(app *pocketbase.PocketBase, record *models.PageRecord) (*SynthesisTask, error) {
+func StartReaderTask(app *pocketbase.PocketBase, record *models.Page) (*models.SynthesisTask, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
 
-	task_data := new(SynthesisTask)
+	task_data := new(models.SynthesisTask)
 	raw_out, err := doReaderTask(url)
 	if err != nil {
 		return nil, err
 	}
 
 	err = json.Unmarshal(raw_out, task_data)
-	if err != nil {
-		return nil, err
-	}
-
-	err = writeTaskData(app, task_data)
 	if err != nil {
 		return nil, err
 	}
@@ -70,20 +51,12 @@ func doReaderTask(url string) ([]byte, error) {
 	return raw_output, nil
 }
 
-func writeTaskData(app *pocketbase.PocketBase, page_data *models.PageData, task_data *SynthesisTask) error {
+func CheckIsReadable(url string, contents *[]byte, ) bool {
+	check_tsk := exec.Command("node", "main.js", "--check", url)
+	check_tsk.Dir = "/Users/ellis/Git/pagemail/readability/dist"
+	check_tsk.Stdin = bytes.NewReader(*contents)
+	err := check_tsk.Wait()
 
-	record, err := app.Dao().FindRecordById("pages", page_data.Id)
-	if err != nil {
-		return err
-	}
-
-	form := forms.NewRecordUpsert(app, record)
-	form.LoadData(map[string]any{
-		"readability_job_status": task_data.TaskStatus,
-	})
-
-	return nil
-
+	return err != nil
 }
 
-// func ReaderTaskStatus(task_id string) (*Reader, error)

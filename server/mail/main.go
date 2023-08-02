@@ -22,7 +22,7 @@ import (
 type MailTemplateData struct {
 	UserIdentifier string
 	DateStart      string
-	Pages          []models.PageData
+	Pages          []models.Page
 }
 
 func GetUsers(db *dbx.Builder) ([]models.User, error) {
@@ -32,10 +32,10 @@ func GetUsers(db *dbx.Builder) ([]models.User, error) {
 	return users, err
 }
 
-func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.Time) ([]models.PageRecord, error) {
+func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.Time) ([]models.Page, error) {
 	//// Fetch all records which have created BETWEEN now-24hrs AND now
 	// Write a query which selects all the records where user_id == usr.id and created > 7am yesterday
-	var pages []models.PageRecord
+	var pages []models.Page
 	records, err := app.Dao().FindRecordsByExpr("pages",
 		dbx.HashExp{"user_id": user.Id},
 		dbx.NewExp("created BETWEEN {:start} AND {:end}", dbx.Params{"start": startTime, "end": time.Now()}))
@@ -44,7 +44,7 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 		return pages, err
 	}
 	for _, row := range records {
-		pages = append(pages, models.PageRecord{
+		pages = append(pages, models.Page{
 			Url:     row.GetString("url"),
 			Created: row.GetCreated().Time(),
 		})
@@ -53,18 +53,12 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 	return pages, nil
 }
 
-func GetPageData(page models.PageRecord) models.PageData {
+func GetPageData(page models.Page) models.Page {
 	data, err := preview.FetchPreview(page.Url)
 	if err != nil {
-		return models.PageData{
-			PageRecord: page,
-		}
+		return page
 	}
-
-	return models.PageData{
-		PageRecord:  page,
-		PreviewData: *data,
-	}
+	return *data
 }
 
 func GetMailBody(data MailTemplateData) string {
@@ -124,7 +118,7 @@ func Mailer(app *pocketbase.PocketBase) error {
 		log.Printf("Found %d records", len(pages))
 
 		// Enrich page data with previews
-		var enrichedPages []models.PageData
+		var enrichedPages []models.Page
 		for _, page := range pages {
 			enrichedPages = append(enrichedPages, GetPageData(page))
 		}
@@ -163,7 +157,7 @@ func Mailer(app *pocketbase.PocketBase) error {
 }
 
 func TestMailBody(c echo.Context) error {
-	urls := []models.PageRecord{
+	urls := []models.Page{
 		{
 			Created: time.Now(),
 			Url:     "http://testsite.pagemail.io/long_title.html",
@@ -186,7 +180,7 @@ func TestMailBody(c echo.Context) error {
 		},
 	}
 
-	data := []models.PageData{}
+	data := []models.Page{}
 	for _, url := range urls {
 		data = append(data, GetPageData(url))
 	}

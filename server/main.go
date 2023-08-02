@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"pagemail/server/custom_api"
+	"pagemail/server/preview"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -17,19 +18,20 @@ import (
 
 	"pagemail/server/mail"
 
+	_ "pagemail/server/migrations"
+
 	"github.com/robfig/cron/v3"
-	// _ "pagemail/server/migrations"
 )
 
 func main() {
 	app := pocketbase.New()
 	c := cron.New()
-	
-    // loosely check if it was executed using "go run"
-    isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
-    migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
-        Automigrate: isGoRun,
-    })
+
+	// loosely check if it was executed using "go run"
+	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
+	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
+		Automigrate: isGoRun,
+	})
 
 	// Register the terminate handler
 	app.OnTerminate().PreAdd(func(e *core.TerminateEvent) error { c.Stop(); return nil })
@@ -99,6 +101,9 @@ func main() {
 
 		return nil
 	})
+
+	// Register pre-write hooks
+	app.OnRecordAfterCreateRequest("pages").Add(preview.PagePreviewHook(app))
 
 	// Register the server cron jobs
 	if _, err := c.AddFunc(
