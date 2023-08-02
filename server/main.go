@@ -103,7 +103,7 @@ func main() {
 	})
 
 	// Register pre-write hooks
-	app.OnRecordAfterCreateRequest("pages").Add(preview.PagePreviewHook(app))
+	app.OnRecordBeforeCreateRequest("pages").Add(preview.PagePreviewHook(app))
 
 	// Register the server cron jobs
 	if _, err := c.AddFunc(
