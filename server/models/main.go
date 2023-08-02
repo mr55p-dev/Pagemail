@@ -9,6 +9,7 @@ type User struct {
 }
 
 type PageRecord struct {
+	Id		string
 	Url     string `json:"url"`
 	Created time.Time
 }

@@ -5,6 +5,10 @@ import (
 	"io"
 	"os/exec"
 	"pagemail/server/models"
+
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/forms"
+	db_models "github.com/pocketbase/pocketbase/models"
 )
 
 type SynthesisTask struct {
@@ -20,19 +24,24 @@ type SynthesisTask struct {
 	LanguageCode      string `json:"languageCode"`
 }
 
-func StartReaderTask(record *models.PageRecord) (*SynthesisTask, error) {
+func StartReaderTask(app *pocketbase.PocketBase, record *models.PageRecord) (*SynthesisTask, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
 
 	task_data := new(SynthesisTask)
 	raw_out, err := doReaderTask(url)
 	if err != nil {
-		return task_data, err
+		return nil, err
 	}
 
 	err = json.Unmarshal(raw_out, task_data)
 	if err != nil {
-		return task_data, err
+		return nil, err
+	}
+
+	err = writeTaskData(app, task_data)
+	if err != nil {
+		return nil, err
 	}
 
 	return task_data, nil
@@ -59,6 +68,22 @@ func doReaderTask(url string) ([]byte, error) {
 		return []byte{}, err
 	}
 	return raw_output, nil
+}
+
+func writeTaskData(app *pocketbase.PocketBase, page_data *models.PageData, task_data *SynthesisTask) error {
+
+	record, err := app.Dao().FindRecordById("pages", page_data.Id)
+	if err != nil {
+		return err
+	}
+
+	form := forms.NewRecordUpsert(app, record)
+	form.LoadData(map[string]any{
+		"readability_job_status": task_data.TaskStatus,
+	})
+
+	return nil
+
 }
 
 // func ReaderTaskStatus(task_id string) (*Reader, error)

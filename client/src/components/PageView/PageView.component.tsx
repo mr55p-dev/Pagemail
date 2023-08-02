@@ -74,6 +74,14 @@ export const Page = ({ url, id, created }: PageProps) => {
       });
   };
 
+  function requestReadability() {
+    pb.send("/api/page/readability", {
+      method: "GET",
+      params: { page_id: id },
+      cache: "no-cache",
+    }).then((res) => console.log(res));
+  }
+
   const previewTitle = previewData?.title;
   const ttl = previewData?.title ?? dest.host + dest.pathname;
 
@@ -130,13 +138,18 @@ export const Page = ({ url, id, created }: PageProps) => {
           sx={{ mx: "auto", width: 1, ["& > *"]: { flexGrow: 1 } }}
         >
           <Button
+            size="sm"
             startDecorator={<OpenInNew />}
             color="primary"
             onClick={() => window.open(url)}
           >
             Open
           </Button>
+          <Button size="sm" onClick={requestReadability}>
+            Readability
+          </Button>
           <Button
+            size="sm"
             startDecorator={<DeleteOutline />}
             onClick={handleDelete}
             color="danger"
