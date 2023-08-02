@@ -33,7 +33,7 @@ func doReaderTask(url string) ([]byte, error) {
 	defer r.Close()
 	defer w.Close()
 
-	document_tsk := exec.Command("node", "main.js", url)
+	document_tsk := exec.Command("node", "main.js", "--url", url)
 	document_tsk.Dir = "/Users/ellis/Git/pagemail/readability/dist"
 	document_tsk.Stdout = w
 	err := document_tsk.Start()
@@ -52,11 +52,11 @@ func doReaderTask(url string) ([]byte, error) {
 }
 
 func CheckIsReadable(url string, contents *[]byte, ) bool {
-	check_tsk := exec.Command("node", "main.js", "--check", url)
+	check_tsk := exec.Command("node", "main.js", "--check", "--url", url)
 	check_tsk.Dir = "/Users/ellis/Git/pagemail/readability/dist"
 	check_tsk.Stdin = bytes.NewReader(*contents)
 	err := check_tsk.Wait()
 
-	return err != nil
+	return err == nil
 }
 
