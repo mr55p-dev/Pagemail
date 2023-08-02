@@ -14,8 +14,10 @@ async function fetchQuick(data: Buffer, url: URL) {
   const parsed = new JSDOM(data, { url: url.toString() });
   const isReadable = isProbablyReaderable(parsed.window.document);
   if (isReadable) {
+    console.log("checks passed");
     process.exit(0);
   } else {
+    console.log("checks failed");
     process.exit(1);
   }
 }
@@ -43,10 +45,17 @@ async function main() {
     },
     strict: true,
   });
-  const url = new URL(values.url || "");
-  if (!url) {
+
+  if (!values.url) {
     console.error("Did not provide a site URI");
     process.exit(1);
+  }
+
+  try {
+	var url = new URL(values.url || "");
+  } catch (_) {
+	console.error("URL is invalid")
+	process.exit(1)
   }
 
   process.stdin.addListener("data", (stream) => {

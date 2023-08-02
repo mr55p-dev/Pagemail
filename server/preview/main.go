@@ -3,10 +3,9 @@ package preview
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"pagemail/server/models"
+	"pagemail/server/net"
 	"time"
 
 	"pagemail/server/readability"
@@ -16,24 +15,10 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/tools/hook"
 
-	// pb_models "github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/core"
 )
 
-func fetchUrlContents(url string) (*[]byte, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return &body, nil
-}
 
 type DocumentMeta struct {
 	Title       string
@@ -71,7 +56,7 @@ func FetchPreview(url string) (*models.Page, error) {
 		LastCrawled: time.Now(),
 		ReadabilityStatus: models.ReadabilityUnknown,
 	}
-	content, err := fetchUrlContents(url)
+	content, err := net.FetchUrlContents(url)
 	if err != nil {
 		log.Printf("fetch error, %s", err)
 		return out, err

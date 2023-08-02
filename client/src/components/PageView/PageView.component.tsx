@@ -1,5 +1,10 @@
 import React from "react";
-import { ContentCopy, DeleteOutline, OpenInNew } from "@mui/icons-material";
+import {
+  AudioFileOutlined,
+  ContentCopy,
+  DeleteOutline,
+  OpenInNew,
+} from "@mui/icons-material";
 import LinesEllipsis from "react-lines-ellipsis";
 import { pb } from "../../lib/pocketbase";
 import { PageRecord } from "../../lib/datamodels";
@@ -55,7 +60,10 @@ export const Page = (pageProps: PageRecord) => {
                 wordBreak: pageProps.title ? "break-word" : "break-all",
               }}
             >
-              <LinesEllipsis maxLine={pageProps.title ? "3" : "2"} text={title} />
+              <LinesEllipsis
+                maxLine={pageProps.title ? "3" : "2"}
+                text={title}
+              />
             </Typography>
           </Link>
           <Typography
@@ -83,7 +91,7 @@ export const Page = (pageProps: PageRecord) => {
             {dest.toString()}
           </Typography>
           <Typography level="body1" mt={1}>
-              <LinesEllipsis maxLine="4" text={pageProps.description} />
+            <LinesEllipsis maxLine="4" text={pageProps.description} />
           </Typography>
         </CardContent>
         <ButtonGroup
@@ -91,25 +99,21 @@ export const Page = (pageProps: PageRecord) => {
           color="neutral"
           sx={{ mx: "auto", width: 1, ["& > *"]: { flexGrow: 1 } }}
         >
-          <Button
+          <IconButton
             size="sm"
-            startDecorator={<OpenInNew />}
             color="primary"
             onClick={() => window.open(pageProps.url)}
           >
-            Open
-          </Button>
-          <Button size="sm" onClick={requestReadability}>
-            Readability
-          </Button>
-          <Button
-            size="sm"
-            startDecorator={<DeleteOutline />}
-            onClick={handleDelete}
-            color="danger"
-          >
-            Delete
-          </Button>
+            <OpenInNew />
+          </IconButton>
+          {pageProps.is_readable && (
+            <IconButton size="sm" onClick={requestReadability}>
+              <AudioFileOutlined />
+            </IconButton>
+          )}
+          <IconButton size="sm" onClick={handleDelete} color="danger">
+            <DeleteOutline />
+          </IconButton>
         </ButtonGroup>
 
         <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
