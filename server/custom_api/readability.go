@@ -48,7 +48,7 @@ func ReadabilityMiddleware(app *pocketbase.PocketBase) echo.MiddlewareFunc {
 				return apis.NewUnauthorizedError("Failed to find user", err)
 			}
 
-			if !record.GetBool("isReadabilityAllowed") {
+			if !record.GetBool("readability_enabled") {
 				return apis.NewForbiddenError("Account is not priviledged", nil)
 			}
 

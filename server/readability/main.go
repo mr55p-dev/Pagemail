@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"os/exec"
 	"pagemail/server/models"
 	"pagemail/server/net"
@@ -14,14 +15,17 @@ import (
 func StartReaderTask(app *pocketbase.PocketBase, record *models.Page) (*models.SynthesisTask, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
-	body, err := net.FetchUrlContents(url)
+	log.Print("Fetching url")
+	buf, err := net.FetchUrlContents(url)
 
+	log.Print("Starting reader task")
 	task_data := new(models.SynthesisTask)
-	raw_out, err := doReaderTask(url, body)
+	raw_out, err := doReaderTask(url, buf)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Print("Unmarshalling json")
 	err = json.Unmarshal(raw_out, task_data)
 	if err != nil {
 		return nil, err
@@ -31,28 +35,54 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page) (*models.S
 }
 
 func doReaderTask(url string, contents *[]byte) ([]byte, error) {
+	if len(*contents) == 0 {
+		log.Print("Zero bytes passed")
+		return nil, nil
+	}
 	r, w := io.Pipe()
 	defer r.Close()
 	defer w.Close()
+	out := new(bytes.Buffer)
+	// in := bytes.NewBufferString("This is some content").Bytes()
 
+
+	log.Printf("node main.js --url %s", url)
 	document_tsk := exec.Command("node", "main.js", "--url", url)
 	document_tsk.Dir = "/Users/ellis/Git/pagemail/readability/dist"
 	document_tsk.Stdout = w
 	document_tsk.Stdin = bytes.NewReader(*contents)
-	err := document_tsk.Start()
-	defer document_tsk.Wait()
-	if err != nil {
-		return []byte{}, err
-	}
 
 	parser_tsk := exec.Command("venv/bin/python3", "test.py")
 	parser_tsk.Dir = "/Users/ellis/Git/pagemail/readability"
 	parser_tsk.Stdin = r
-	raw_output, err := parser_tsk.Output()
+	parser_tsk.Stdout = out
+
+	err := document_tsk.Start()
 	if err != nil {
-		return []byte{}, err
+		log.Printf("Task1 start %s", err)
 	}
-	return raw_output, nil
+
+	err = parser_tsk.Start()
+	if err != nil {
+		log.Printf("Task2 start %s", err)
+	}
+
+	err = document_tsk.Wait()
+	log.Print("Finished 1")
+	if err != nil {
+		log.Printf("Task1 end %s", err)
+	}
+
+	w.Close()
+
+	err = parser_tsk.Wait()
+	log.Print("Finished 2")
+	if err != nil {
+		log.Printf("Errored with %s", err)
+		return out.Bytes(), err
+	}
+	log.Print("Completed without error")
+	return out.Bytes(), nil
 }
 
 func CheckIsReadable(url string, contents *[]byte) bool {
