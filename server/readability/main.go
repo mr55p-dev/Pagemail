@@ -2,6 +2,7 @@ package readability
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"io"
 	"io/fs"
@@ -34,6 +35,14 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page) (*models.S
 	}
 
 	return task_data, nil
+}
+
+func insertHeader(data *[]byte) *[]byte {
+	contentSize := len(*data)
+	newRef := make([]byte, contentSize + 4)
+	binary.BigEndian.PutUint32(newRef[0:4], uint32(contentSize))
+	copy(newRef[4:], *data)
+	return &newRef
 }
 
 func doReaderTask(url string, contents *[]byte) ([]byte, error) {
@@ -92,5 +101,5 @@ func CheckIsReadable(url string, contents *[]byte) bool {
 	check_tsk.Stdin = bytes.NewReader(*contents)
 	check_tsk.Start()
 
-	return check_tsk.Wait() == nil
+	return c]heck_tsk.Wait() == nil
 }
