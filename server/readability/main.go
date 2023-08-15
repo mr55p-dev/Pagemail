@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"io/fs"
 	"log"
+	"os"
 	"os/exec"
 	"pagemail/server/models"
 	"pagemail/server/net"
@@ -43,8 +45,7 @@ func doReaderTask(url string, contents *[]byte) ([]byte, error) {
 	defer r.Close()
 	defer w.Close()
 	out := new(bytes.Buffer)
-	// in := bytes.NewBufferString("This is some content").Bytes()
-
+	os.WriteFile("out", *contents, fs.FileMode(os.O_RDWR))
 
 	log.Printf("node main.js --url %s", url)
 	document_tsk := exec.Command("node", "main.js", "--url", url)

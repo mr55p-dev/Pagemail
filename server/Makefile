@@ -31,3 +31,6 @@ serve:
 
 clean:
 	rm $(SERVER_TGT)
+
+mail:
+	mailpit --smtp-auth-accept-any --smtp-auth-allow-insecure

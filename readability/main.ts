@@ -32,6 +32,73 @@ async function fetchReadableArticle(data: Buffer, url: URL) {
   process.exit(0);
 }
 
+class Message {
+  ready = false;
+  clHeaderSz = 4;
+  cl = 0;
+  buf: Buffer | undefined;
+  bufIdx = 0;
+  done = false;
+  onExit: VoidFunction | undefined;
+  frIdx = 0;
+
+  initialize(headerBytes: Buffer): number {
+    if (this.ready) {
+      return 0;
+    }
+
+    // Set the content length and buffer
+    this.cl = headerBytes.readUIntBE(0, this.clHeaderSz);
+    this.buf = Buffer.allocUnsafe(this.cl);
+    this.ready = true;
+    return this.clHeaderSz;
+  }
+
+  processFrame(data: Buffer, offset?: number) {
+    let bufOffset = offset || 0;
+
+    if (!this.buf) {
+      throw new Error("initialized and no buffer present");
+    }
+
+    for (; bufOffset < data.length; bufOffset++) {
+      const char = data.at(bufOffset);
+      if (char === undefined) {
+        throw new Error(`Undefined character of data at index ${bufOffset}`);
+      }
+
+      this.buf.writeUInt8(char, this.bufIdx);
+      this.bufIdx++;
+      if (this.bufIdx === this.cl) {
+        this.done = true;
+		return true
+      }
+    }
+    this.frIdx++;
+  }
+
+  attachStream(callback: (buf: Buffer) => void) {
+    process.stdin.addListener("readable", () => {
+      const data = process.stdin.read();
+      if (!data || this.done) {
+        process.stdin.destroy();
+        return;
+      }
+
+      let offset;
+      if (!this.ready) {
+        offset = this.initialize(data.subarray(0, this.clHeaderSz));
+      }
+
+      this.processFrame(data, offset);
+      process.stdin.emit("end");
+	  if (this.done) {
+		callback(this.buf!)
+	  }
+    });
+  }
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -52,19 +119,20 @@ async function main() {
   }
 
   try {
-	var url = new URL(values.url || "");
+    var url = new URL(values.url || "");
   } catch (_) {
-	console.error("URL is invalid")
-	process.exit(1)
+    console.error("URL is invalid");
+    process.exit(1);
   }
 
-  process.stdin.addListener("data", (stream) => {
-    if (values.check) {
-      fetchQuick(stream, url);
-    } else {
-      fetchReadableArticle(stream, url);
-    }
-  });
+  const msg = new Message()
+  msg.attachStream(buf => {
+	if (values.check) {
+	  fetchQuick(buf, url)
+	} else {
+	  fetchReadableArticle(buf, url)
+	}
+  })
 }
 
 main();
