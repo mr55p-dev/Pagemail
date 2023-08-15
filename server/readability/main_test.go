@@ -1,6 +1,7 @@
 package readability
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -41,4 +42,17 @@ func TestCheck(t *testing.T) {
 
 	is_readable := CheckIsReadable(url, &buf)
 	t.Logf("Completed with result %t", is_readable)
+}
+
+func TestHeaderAdd(t *testing.T) {
+	data := []byte{0x00, 0xFF, 0x1c}
+	out := insertHeader(&data)
+	if (len(*out) != len(data) + 4) {
+		t.FailNow()
+	}
+	headerVal := binary.BigEndian.Uint32((*out)[:4])
+	if (int(headerVal) != len(data)) {
+		t.FailNow()
+	} 
+	t.Log(out)
 }

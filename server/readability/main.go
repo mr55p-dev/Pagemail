@@ -101,5 +101,5 @@ func CheckIsReadable(url string, contents *[]byte) bool {
 	check_tsk.Stdin = bytes.NewReader(*contents)
 	check_tsk.Start()
 
-	return c]heck_tsk.Wait() == nil
+	return check_tsk.Wait() == nil
 }
