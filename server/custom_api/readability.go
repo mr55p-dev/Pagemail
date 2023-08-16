@@ -10,7 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 )
 
-func ReadabilityHandler(app *pocketbase.PocketBase) echo.HandlerFunc {
+func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig readability.ReaderConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page_id := c.QueryParam("page_id")
 		if page_id == "" {
@@ -27,7 +27,7 @@ func ReadabilityHandler(app *pocketbase.PocketBase) echo.HandlerFunc {
 			Created: raw_page_record.GetCreated().Time(),
 		}
 
-		task, err := readability.StartReaderTask(app, &page_record)
+		task, err := readability.StartReaderTask(app, &page_record, readerConfig)
 		if err != nil {
 			return err
 		}

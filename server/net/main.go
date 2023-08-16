@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func FetchUrlContents(url string) (*[]byte, error) {
+func FetchUrlContents(url string) ([]byte, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -17,5 +17,5 @@ func FetchUrlContents(url string) (*[]byte, error) {
 		return nil, err
 	}
 
-	return &body, nil
+	return body, nil
 }

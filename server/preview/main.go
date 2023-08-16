@@ -26,8 +26,8 @@ type DocumentMeta struct {
 	ImageUrl    string
 }
 
-func FetchDocumentMeta(contents *[]byte) (*DocumentMeta, error) {
-	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(*contents))
+func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(contents))
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func FetchDocumentMeta(contents *[]byte) (*DocumentMeta, error) {
 	return page_data, nil
 }
 
-func FetchPreview(url string) (*models.Page, error) {
+func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error) {
 	out := &models.Page{
 		LastCrawled: time.Now(),
 		ReadabilityStatus: models.ReadabilityUnknown,
@@ -72,7 +72,7 @@ func FetchPreview(url string) (*models.Page, error) {
 	}()
 
 	go func() {
-		is_readable_ch <- readability.CheckIsReadable(url, content)
+		is_readable_ch <- readability.CheckIsReadable(cfg, url, content)
 	}()
 
 	out.IsReadable = <-is_readable_ch
@@ -91,14 +91,14 @@ func FetchPreview(url string) (*models.Page, error) {
 }
 
 
-func PagePreviewHook(app *pocketbase.PocketBase) hook.Handler[*core.RecordCreateEvent] {
+func PagePreviewHook(app *pocketbase.PocketBase, cfg readability.ReaderConfig) hook.Handler[*core.RecordCreateEvent] {
 	return func(e *core.RecordCreateEvent) error {
 		// Fetches and inserts page metadata
 		url := e.Record.GetString("url")
 		if url == "" {
 			return fmt.Errorf("Failed to fetch URL")
 		}
-		res, err := FetchPreview(url)
+		res, err := FetchPreview(url, cfg)
 		if err != nil {
 			log.Printf("Failed to fetch preview, %s", err)
 			return err

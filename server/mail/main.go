@@ -10,6 +10,7 @@ import (
 	"os"
 	"pagemail/server/models"
 	"pagemail/server/preview"
+	"pagemail/server/readability"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -53,8 +54,8 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 	return pages, nil
 }
 
-func GetPageData(page models.Page) models.Page {
-	data, err := preview.FetchPreview(page.Url)
+func GetPageData(page models.Page, cfg readability.ReaderConfig) models.Page {
+	data, err := preview.FetchPreview(page.Url, cfg)
 	if err != nil {
 		return page
 	}
@@ -91,7 +92,7 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
-func Mailer(app *pocketbase.PocketBase) error {
+func Mailer(app *pocketbase.PocketBase, cfg readability.ReaderConfig) error {
 	log.Print("Running mailer")
 
 	// Setup clients
@@ -120,7 +121,7 @@ func Mailer(app *pocketbase.PocketBase) error {
 		// Enrich page data with previews
 		var enrichedPages []models.Page
 		for _, page := range pages {
-			enrichedPages = append(enrichedPages, GetPageData(page))
+			enrichedPages = append(enrichedPages, GetPageData(page, cfg))
 		}
 
 		// Skip if the user does not have any pages after enriching
@@ -156,40 +157,43 @@ func Mailer(app *pocketbase.PocketBase) error {
 	return nil
 }
 
-func TestMailBody(c echo.Context) error {
-	urls := []models.Page{
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_title.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_description.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_everything.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/nothing.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
-		},
-	}
+func TestMailBody(cfg readability.ReaderConfig) echo.HandlerFunc {
+	return func(c echo.Context) error {
 
-	data := []models.Page{}
-	for _, url := range urls {
-		data = append(data, GetPageData(url))
-	}
-	templateData := MailTemplateData{
-		UserIdentifier: "Test user",
-		DateStart:      time.Now().Format("02-01-2006"),
-		Pages:          data,
-	}
+		urls := []models.Page{
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_title.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_description.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_everything.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/nothing.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
+			},
+		}
 
-	mailHTML := GetMailBody(templateData)
-	return c.HTML(http.StatusOK, mailHTML)
+		data := []models.Page{}
+		for _, url := range urls {
+			data = append(data, GetPageData(url, cfg))
+		}
+		templateData := MailTemplateData{
+			UserIdentifier: "Test user",
+			DateStart:      time.Now().Format("02-01-2006"),
+			Pages:          data,
+		}
+
+		mailHTML := GetMailBody(templateData)
+		return c.HTML(http.StatusOK, mailHTML)
+	}
 }

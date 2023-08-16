@@ -7,6 +7,7 @@ import (
 	"os"
 	"pagemail/server/custom_api"
 	"pagemail/server/preview"
+	"pagemail/server/readability"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -33,6 +34,13 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
+	// Fetch readability config
+	readerConfig := readability.ReaderConfig{
+		NodeScript: "main.js",
+		PythonScript: "test.py",
+		ContextDir: "/Users/ellis/Git/pagemail/readability/",
+	}
+
 	// Register the terminate handler
 	app.OnTerminate().PreAdd(func(e *core.TerminateEvent) error { c.Stop(); return nil })
 
@@ -47,7 +55,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/preview",
-			Handler: custom_api.Preview,
+			Handler: custom_api.PreviewHandler(readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireRecordAuth("users"),
@@ -65,7 +73,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodPost,
 			Path:    "/api/admin/mail/triggerAll",
-			Handler: custom_api.MailTriggerAllFactory(app),
+			Handler: custom_api.MailTriggerAllFactory(app, readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireAdminAuth(),
@@ -83,7 +91,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/admin/mail/previewTemplate",
-			Handler: mail.TestMailBody,
+			Handler: mail.TestMailBody(readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireAdminAuth(),
@@ -92,7 +100,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/page/readability",
-			Handler: custom_api.ReadabilityHandler(app),
+			Handler: custom_api.ReadabilityHandler(app, readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				custom_api.ReadabilityMiddleware(app),
@@ -103,12 +111,12 @@ func main() {
 	})
 
 	// Register pre-write hooks
-	app.OnRecordBeforeCreateRequest("pages").Add(preview.PagePreviewHook(app))
+	app.OnRecordBeforeCreateRequest("pages").Add(preview.PagePreviewHook(app, readerConfig))
 
 	// Register the server cron jobs
 	if _, err := c.AddFunc(
 		"0 7 * * *",
-		func() { mail.Mailer(app) },
+		func() { mail.Mailer(app, readerConfig) },
 	); err != nil {
 		log.Fatal(err)
 	}
