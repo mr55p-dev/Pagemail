@@ -16,6 +16,7 @@ import {
   Grid,
   IconButton,
   Link,
+  Stack,
   Typography,
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
@@ -53,7 +54,7 @@ export const Page = (pageProps: PageRecord) => {
         <CardContent>
           <Link href={pageProps.url} target="_blank" maxWidth="100%">
             <Typography
-              level="h4"
+              level="h5"
               sx={{
                 maxWidth: "100%",
                 wordBreak: pageProps.title ? "break-word" : "break-all",
@@ -90,7 +91,7 @@ export const Page = (pageProps: PageRecord) => {
             {dest.toString()}
           </Typography>
           <Typography level="body1" mt={1}>
-            <LinesEllipsis maxLine="4" text={pageProps.description} />
+			{pageProps.description && <LinesEllipsis maxLine="4" text={pageProps.description} />}
           </Typography>
         </CardContent>
         <ButtonGroup
@@ -117,13 +118,42 @@ export const Page = (pageProps: PageRecord) => {
 
         <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
           <Typography level="body3" sx={{ py: 1 }}>
-            {dt.toLocaleDateString()} @ {dt.toLocaleTimeString()}
+            {dt.getHours().toString().padStart(2, "0") +
+              ":" +
+              dt.getMinutes().toString().padStart(2, "0")}
           </Typography>
         </CardOverflow>
       </Card>
     </Grid>
   );
 };
+
+interface PageGroup {
+  date: string;
+  pages: PageRecord[];
+}
+
+function groupPages(pages: PageRecord[]): PageGroup[] {
+  const groups = {} as Record<string, PageRecord[]>;
+  pages.forEach((page) => {
+    const dt = new Date(page.created).toLocaleDateString("en-gb") ?? "unknown";
+    const grp = groups[dt];
+    if (!grp) {
+      groups[dt] = [];
+    }
+    groups[dt].push(page);
+  });
+  const today = new Date().toLocaleDateString("en-gb");
+  const yesterday_dt = new Date();
+  yesterday_dt.setDate(yesterday_dt.getDate() - 1);
+  const yesterday = yesterday_dt.toLocaleDateString("en-gb");
+  return Object.keys(groups)
+    .sort((l, r) => new Date(r).getTime() - new Date(l).getTime())
+    .map((k) => ({
+      date: k === today ? "Today" : k === yesterday ? "Yesterday" : k,
+      pages: groups[k],
+    }));
+}
 
 export const PageView = () => {
   const [pages, setPages] = React.useState<PageRecord[]>([]);
@@ -158,10 +188,40 @@ export const PageView = () => {
   }, []);
 
   return (
+<<<<<<< HEAD
     <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
       {pages.map((e) => (
         <Page {...e} key={e.id} />
+||||||| 3e207a0
+    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
+      {pages.map((e) => (
+        <Page url={e.url} id={e.id} created={e.created} key={e.id} />
+=======
+    <Stack spacing={1} mt={2}>
+      {groupPages(pages).map((g) => (
+        <PageGroup {...g} />
+>>>>>>> main
       ))}
-    </Grid>
+    </Stack>
   );
 };
+
+function PageGroup({ pages, date }: PageGroup) {
+  return (
+    <>
+      <Stack direction="row" px={0.5}>
+        <Typography level="body3" sx={{ pr: 1 }}>
+          {date}
+        </Typography>
+        <div style={{ width: "100%" }}>
+          <hr />
+        </div>
+      </Stack>
+      <Grid container spacing={1} sx={{ flexGroup: 1, mt: 1 }}>
+        {pages.map((e) => (
+          <Page url={e.url} id={e.id} created={e.created} key={e.id} />
+        ))}
+      </Grid>
+    </>
+  );
+}
