@@ -188,19 +188,9 @@ export const PageView = () => {
   }, []);
 
   return (
-<<<<<<< HEAD
-    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
-      {pages.map((e) => (
-        <Page {...e} key={e.id} />
-||||||| 3e207a0
-    <Grid container spacing={1} sx={{ flexGrow: 1, mt: 1 }}>
-      {pages.map((e) => (
-        <Page url={e.url} id={e.id} created={e.created} key={e.id} />
-=======
     <Stack spacing={1} mt={2}>
       {groupPages(pages).map((g) => (
         <PageGroup {...g} />
->>>>>>> main
       ))}
     </Stack>
   );
@@ -219,7 +209,7 @@ function PageGroup({ pages, date }: PageGroup) {
       </Stack>
       <Grid container spacing={1} sx={{ flexGroup: 1, mt: 1 }}>
         {pages.map((e) => (
-          <Page url={e.url} id={e.id} created={e.created} key={e.id} />
+          <Page {...e} key={e.id} />
         ))}
       </Grid>
     </>
