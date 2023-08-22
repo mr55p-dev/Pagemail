@@ -76,12 +76,12 @@ func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error)
 	out := new(bytes.Buffer)
 
 	ctxPath := cfg.GetContextDir()
-	document_tsk := exec.Command("node", "main.js", "--url", url)
+	document_tsk := exec.Command("node", cfg.NodeScript, "--url", url)
 	document_tsk.Dir = filepath.Join(ctxPath, "dist")
 	document_tsk.Stdout = w
 	document_tsk.Stdin = bytes.NewReader(contents)
 
-	parser_tsk := exec.Command("venv/bin/python3", "test.py")
+	parser_tsk := exec.Command("venv/bin/python3", cfg.PythonScript)
 	parser_tsk.Dir = ctxPath
 	parser_tsk.Stdin = r
 	parser_tsk.Stdout = out

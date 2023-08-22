@@ -35,10 +35,14 @@ func main() {
 	})
 
 	// Fetch readability config
+	readerConfigDir := os.Getenv("PAGEMAIL_READABILITY_CONTEXT_DIR")
+	if readerConfigDir == "" {
+		panic("readability config directory not set")
+	}
 	readerConfig := readability.ReaderConfig{
 		NodeScript: "main.js",
 		PythonScript: "test.py",
-		ContextDir: "/Users/ellis/Git/pagemail/readability/",
+		ContextDir: readerConfigDir,
 	}
 
 	// Register the terminate handler
