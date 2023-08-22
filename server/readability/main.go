@@ -54,11 +54,16 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg Reader
 func CheckIsReadable(cfg ReaderConfig, url string, contents []byte) bool {
 	log.Print("Running url readability checks")
 	ctxPath := cfg.GetContextDir()
-	out_buf := bytes.Buffer{}
+
+	out_buf := new(bytes.Buffer)
+	inp_with_header := insertHeader(contents)
+	inp_buf := bytes.NewReader(inp_with_header)
+
 	check_tsk := exec.Command("node", cfg.NodeScript, "--check", "--url", url)
 	check_tsk.Dir = ctxPath
-	check_tsk.Stdin = bytes.NewReader(contents)
-	check_tsk.Stdout = &out_buf
+	check_tsk.Stdin = inp_buf
+	check_tsk.Stdout = out_buf
+
 	check_tsk.Start()
 	log.Print("Running url readability checks")
 
@@ -68,12 +73,12 @@ func CheckIsReadable(cfg ReaderConfig, url string, contents []byte) bool {
 	return success
 }
 
-func insertHeader(data *[]byte) *[]byte {
-	contentSize := len(*data)
+func insertHeader(data []byte) []byte {
+	contentSize := len(data)
 	newRef := make([]byte, contentSize+4)
 	binary.BigEndian.PutUint32(newRef[0:4], uint32(contentSize))
-	copy(newRef[4:], *data)
-	return &newRef
+	copy(newRef[4:], data)
+	return newRef
 }
 
 func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error) {
@@ -81,12 +86,13 @@ func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error)
 	defer r.Close()
 	defer w.Close()
 	out := new(bytes.Buffer)
+	input := insertHeader(contents)
 
 	ctxPath := cfg.GetContextDir()
 	document_tsk := exec.Command("node", cfg.NodeScript, "--url", url)
 	document_tsk.Dir = filepath.Join(ctxPath, "dist")
 	document_tsk.Stdout = w
-	document_tsk.Stdin = bytes.NewReader(contents)
+	document_tsk.Stdin = bytes.NewReader(input)
 
 	parser_tsk := exec.Command("venv/bin/python3", cfg.PythonScript)
 	parser_tsk.Dir = ctxPath

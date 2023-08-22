@@ -65,11 +65,11 @@ func TestCheck(t *testing.T) {
 
 func TestHeaderAdd(t *testing.T) {
 	data := []byte{0x00, 0xFF, 0x1c}
-	out := insertHeader(&data)
-	if len(*out) != len(data)+4 {
+	out := insertHeader(data)
+	if len(out) != len(data)+4 {
 		t.FailNow()
 	}
-	headerVal := binary.BigEndian.Uint32((*out)[:4])
+	headerVal := binary.BigEndian.Uint32((out)[:4])
 	if int(headerVal) != len(data) {
 		t.FailNow()
 	}
