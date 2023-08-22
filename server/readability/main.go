@@ -52,13 +52,20 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg Reader
 }
 
 func CheckIsReadable(cfg ReaderConfig, url string, contents []byte) bool {
+	log.Print("Running url readability checks")
 	ctxPath := cfg.GetContextDir()
+	out_buf := bytes.Buffer{}
 	check_tsk := exec.Command("node", cfg.NodeScript, "--check", "--url", url)
-	check_tsk.Dir = filepath.Join(ctxPath, "/dist")
+	check_tsk.Dir = ctxPath
 	check_tsk.Stdin = bytes.NewReader(contents)
+	check_tsk.Stdout = &out_buf
 	check_tsk.Start()
+	log.Print("Running url readability checks")
 
-	return check_tsk.Wait() == nil
+	success := check_tsk.Wait() == nil
+	log.Printf("Readability checks for %s successful %t", url, success)
+	log.Print(string(out_buf.Bytes()))
+	return success
 }
 
 func insertHeader(data *[]byte) *[]byte {
