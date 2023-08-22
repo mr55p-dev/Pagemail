@@ -17,7 +17,7 @@ async function fetchQuick(data: Buffer, url: URL) {
     console.log("checks passed");
     process.exit(0);
   } else {
-    console.log("checks failed");
+    console.error("checks failed");
     process.exit(1);
   }
 }
