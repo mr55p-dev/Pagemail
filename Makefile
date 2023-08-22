@@ -48,10 +48,22 @@ install-prod-backend:
 	sudo chmod a+x $(PROD_DIR)/server
 	sudo systemctl daemon-reload
 
-# Full installations
-install-stage: install-stage-frontend install-stage-backend
+# Readability installations
+install-stage-readability:
+	sudo cp $(BASE_DIR)/readability/dist/* $(STAGE_DIR)/readability/
+	npm --prefix ...
 
-install-prod: install-prod-frontend install-prod-backend
+
+install-prod-readability:
+	sudo cp \
+		$(BASE_DIR)/readability/dist/main.py \
+		$(BASE_DIR)/readability/dist/main.js \
+		$(PROD_DIR)/readability/
+
+# Full installations
+install-stage: install-stage-frontend install-stage-backend install-stage-readability
+
+install-prod: install-prod-frontend install-prod-backend install-prod-readability
 
 # Pre install scripts
 pre-install-stage:

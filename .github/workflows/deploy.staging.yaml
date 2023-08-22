@@ -91,10 +91,36 @@ jobs:
           name: dist-backend
           path: ${{ github.workspace }}/server/dist/
 
+  build-readability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.3.x
+          cache: npm
+          cache-dependency-path: "readability/package-lock.json"
+
+      - name: Initialize environment
+        run: make -C readability init
+
+      - name: Build code
+        run: make -C readability build
+
+      - name: Store dist artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: dist-readability
+          path: ${{ github.workspace }}/readability/dist/
+
+
   deploy:
     runs-on: ubuntu-latest
     environment: Preview
-    needs: [build-frontend, build-backend]
+    needs: [build-frontend, build-backend, build-readability]
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
@@ -115,6 +141,12 @@ jobs:
         with:
           name: dist-backend
           path: server-dist/
+
+      - name: Download readability
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-readability
+          path: readability-dist/
 
       - name: Copy makefile to server
         uses: appleboy/scp-action@v0.1.4
@@ -157,6 +189,17 @@ jobs:
           port: ${{ secrets.PORT }}
           source: "server-dist/server"
           target: /home/ec2-user/pagemail/server/dist
+          strip_components: 1
+
+      - name: Copy readability artifacts onto server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          source: "readability-dist/*"
+          target: /home/ec2-user/pagemail/readability/dist
           strip_components: 1
 
       - name: Copy server files onto server
