@@ -30,7 +30,7 @@ func getConfig() ReaderConfig {
 	return ReaderConfig{
 		NodeScript: "main.js",
 		PythonScript: "test.py",
-		ContextDir: "/Users/ellis/Git/pagemail/readability/dist",
+		ContextDir: "../../readability/dist",
 	}
 }
 

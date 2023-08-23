@@ -8,6 +8,7 @@ import (
 	"pagemail/server/custom_api"
 	"pagemail/server/preview"
 	"pagemail/server/readability"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v5"
@@ -39,10 +40,18 @@ func main() {
 	if readerConfigDir == "" {
 		panic("readability config directory not set")
 	}
+	readerPath, err := filepath.Abs(readerConfigDir)
+	if err != nil {
+		log.Panicf("Could recognise reader config dir given: %s", err)
+	}
+	_, err = os.Stat(readerPath)
+	if err != nil {
+		log.Panicf("Could not stat reader context path: %s", err)
+	}
 	readerConfig := readability.ReaderConfig{
-		NodeScript: "main.js",
+		NodeScript:   "main.js",
 		PythonScript: "test.py",
-		ContextDir: readerConfigDir,
+		ContextDir:   readerConfigDir,
 	}
 
 	// Register the terminate handler

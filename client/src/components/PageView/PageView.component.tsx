@@ -92,7 +92,9 @@ export function Page(pageProps: PageRecord) {
             {dest.toString()}
           </Typography>
           <Typography level="body1" mt={1}>
-			{pageProps.description && <LinesEllipsis maxLine="4" text={pageProps.description} />}
+            {pageProps.description && (
+              <LinesEllipsis maxLine="4" text={pageProps.description} />
+            )}
           </Typography>
         </CardContent>
         <ButtonGroup
@@ -127,7 +129,7 @@ export function Page(pageProps: PageRecord) {
       </Card>
     </Grid>
   );
-};
+}
 
 interface PageGroup {
   date: string;
@@ -156,7 +158,8 @@ function groupPages(pages: PageRecord[]): PageGroup[] {
     }));
 }
 
-export const PageView = () => {
+export function PageView() {
+  const { notifErr } = React.useContext(NotificationCtx);
   const [pages, setPages] = React.useState<PageRecord[]>([]);
 
   React.useEffect(() => {
@@ -164,7 +167,8 @@ export const PageView = () => {
       .getList<PageRecord>(1, 50, {
         sort: "-created",
       })
-      .then((records) => setPages(records.items));
+      .then((records) => setPages(records.items))
+      .catch((e) => notifErr("Failed to fetch records", e));
 
     pb.collection("pages").subscribe<PageRecord>("*", function (e) {
       setPages((prev) => {
@@ -186,7 +190,7 @@ export const PageView = () => {
         console.error(e);
       }
     };
-  }, []);
+  }, [notifErr]);
 
   return (
     <Stack spacing={1} mt={2}>
@@ -195,7 +199,7 @@ export const PageView = () => {
       ))}
     </Stack>
   );
-};
+}
 
 function PageGroup({ pages, date }: PageGroup) {
   return (
