@@ -29,20 +29,20 @@ func getExample() []byte {
 func getConfig() ReaderConfig {
 	return ReaderConfig{
 		NodeScript: "main.js",
-		PythonScript: "test.js",
-		ContextDir: "/Users/ellis/Git/pagemail/readability/",
+		PythonScript: "test.py",
+		ContextDir: "/Users/ellis/Git/pagemail/readability/dist",
 	}
 }
 
 func TestPipeline(t *testing.T) {
-	// url := "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio"
-	// url := "https://www.allthingsdistributed.com/2023/07/building-and-operating-a-pretty-big-storage-system.html"
-	url := "https://www.example.com"
+	url := "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio"
 	data := getExample()
 	config := getConfig()
 	out, err := doReaderTask(config, url, data)
 	if err != nil {
 		t.Errorf("Failed test: %s", err)
+		t.Error(out)
+		t.FailNow()
 	}
 	taskout := new(models.ReadabilityResponse)
 	err = json.Unmarshal(out, taskout)
@@ -54,10 +54,9 @@ func TestPipeline(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	// url := "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio"
-	// url := "https://www.allthingsdistributed.com/2023/07/building-and-operating-a-pretty-big-storage-system.html"
-	url := "https://www.google.com"
+	url := "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio"
 	data := getExample()
+	data = insertHeader(data)
 	cfg := getConfig()
 	is_readable := CheckIsReadable(cfg, url, data)
 	t.Logf("Completed with result %t", is_readable)

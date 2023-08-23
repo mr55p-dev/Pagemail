@@ -1,7 +1,8 @@
 init:
+	mkdir dist
 	npm install
-	python3 -m venv venv
-	venv/bin/python -m pip install -r requirements.txt
+	python3 -m venv dist/venv
+	dist/venv/bin/python -m pip install -r requirements.txt
 
 build:
 	npx tsc 
@@ -11,6 +12,9 @@ build:
 		package.json \
 		package-lock.json \
 		dist/
+
+clean:
+	rm -rf dist/
 
 run:
 	@npx tsc 

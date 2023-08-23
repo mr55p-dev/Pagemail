@@ -90,7 +90,7 @@ func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error)
 
 	ctxPath := cfg.GetContextDir()
 	document_tsk := exec.Command("node", cfg.NodeScript, "--url", url)
-	document_tsk.Dir = filepath.Join(ctxPath, "dist")
+	document_tsk.Dir = ctxPath
 	document_tsk.Stdout = w
 	document_tsk.Stdin = bytes.NewReader(input)
 
