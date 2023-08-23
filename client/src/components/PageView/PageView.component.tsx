@@ -4,6 +4,7 @@ import {
   ContentCopy,
   DeleteOutline,
   OpenInNew,
+  Refresh,
 } from "@mui/icons-material";
 import LinesEllipsis from "react-lines-ellipsis";
 import { pb } from "../../lib/pocketbase";
@@ -23,6 +24,7 @@ import { NotificationCtx } from "../../lib/notif";
 
 export function Page(pageProps: PageRecord) {
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const dt = new Date(pageProps.created);
   const dest = new URL(pageProps.url);
@@ -46,6 +48,17 @@ export function Page(pageProps: PageRecord) {
     }).then((res) => console.log(res));
   }
 
+  function requestReload() {
+    setIsLoading(true);
+    pb.send("/api/page/reload", {
+      method: "GET",
+      params: {
+        page_id: pageProps.id,
+      },
+      cache: "no-cache",
+    }).finally(() => setIsLoading(false));
+  }
+
   const title = pageProps.title || dest.host + dest.pathname;
 
   return (
@@ -65,8 +78,18 @@ export function Page(pageProps: PageRecord) {
                 text={title}
               />
             </Typography>
-			{pageProps.is_readable ? <Typography>Page is readable</Typography> : undefined}
           </Link>
+          <IconButton
+            aria-label="bookmark Bahamas Islands"
+            variant="plain"
+            color="neutral"
+            size="sm"
+            sx={{ position: "absolute", top: "0.875rem", right: "0.5rem" }}
+			disabled={isLoading}
+            onClick={requestReload}
+          >
+            <Refresh />
+          </IconButton>
           <Typography
             level="body3"
             sx={{
@@ -168,18 +191,24 @@ export function PageView() {
         sort: "-created",
       })
       .then((records) => setPages(records.items))
-      .catch((e) => notifErr("Failed to fetch records", e));
+      .catch(() => notifErr("Failed to fetch records"));
 
     pb.collection("pages").subscribe<PageRecord>("*", function (e) {
       setPages((prev) => {
+        let idx;
         switch (e.action) {
           case "create":
-            return [e.record, ...prev];
+            prev.unshift(e.record);
+            break;
           case "delete":
             return [...prev.filter((i) => i.id !== e.record.id)];
-          default:
-            return [...prev];
+          case "update":
+            idx = prev.findIndex((i) => e.record.id === i.id);
+            if (idx === -1) return prev;
+            prev[idx] = e.record;
+            break;
         }
+        return [...prev];
       });
     });
 
