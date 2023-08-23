@@ -62,10 +62,16 @@ install-stage-readability:
 	$(STAGE_DIR)/readability/venv/bin/pip install -r $(STAGE_DIR)/readability/requirements.txt
 
 install-prod-readability:
-	sudo cp \
-		$(BASE_DIR)/readability/dist/main.py \
-		$(BASE_DIR)/readability/dist/main.js \
+	cd $(BASE_DIR)/readability/dist/ && sudo cp \
+		main.py \
+		main.js \
+		package.json \
+		package-lock.json \
+		requirements.txt \
 		$(PROD_DIR)/readability/
+	npm --prefix $(PROD_DIR)/readability/ ci
+	python3 -m venv $(PROD_DIR)/readability/venv
+	$(PROD_DIR)/readability/venv/bin/pip install -r $(PROD_DIR)/readability/requirements.txt
 
 # Full installations
 install-stage: install-stage-frontend install-stage-backend install-stage-readability
