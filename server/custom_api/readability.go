@@ -1,13 +1,17 @@
 package custom_api
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"pagemail/server/models"
+	"pagemail/server/preview"
 	"pagemail/server/readability"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/forms"
 )
 
 func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig readability.ReaderConfig) echo.HandlerFunc {
@@ -33,6 +37,36 @@ func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig readability.Rea
 		}
 
 		return c.JSON(http.StatusOK, task)
+	}
+}
+
+func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig readability.ReaderConfig) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		page_id := c.QueryParam("page_id")
+		if page_id == "" {
+			return c.String(http.StatusBadRequest, "Must include page_id")
+		}
+
+		rawPage, err := app.Dao().FindRecordById("pages", page_id)
+		if err != nil {
+			return err
+		}
+
+		url := rawPage.GetString("url")
+		if url == "" {
+			return fmt.Errorf("Failed to fetch URL")
+		}
+		res, err := preview.FetchPreview(url, readerConfig)
+		if err != nil {
+			log.Printf("Failed to fetch preview, %s", err)
+			return c.String(http.StatusInternalServerError, "Failed generating preview")
+		}
+
+		form := forms.NewRecordUpsert(app, rawPage)
+		form.LoadData(res.ToMap())
+		err = form.Submit()
+
+		return c.JSON(http.StatusOK, "Done")
 	}
 }
 

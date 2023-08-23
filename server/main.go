@@ -119,6 +119,15 @@ func main() {
 				custom_api.ReadabilityMiddleware(app),
 			},
 		})
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodGet,
+			Path:    "/api/page/reload",
+			Handler: custom_api.ReadabilityReloadHandler(app, readerConfig),
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				custom_api.ReadabilityMiddleware(app),
+			},
+		})
 
 		return nil
 	})
