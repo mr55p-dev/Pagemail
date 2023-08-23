@@ -21,7 +21,7 @@ import {
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
 
-export const Page = (pageProps: PageRecord) => {
+export function Page(pageProps: PageRecord) {
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
 
   const dt = new Date(pageProps.created);
@@ -65,6 +65,7 @@ export const Page = (pageProps: PageRecord) => {
                 text={title}
               />
             </Typography>
+			{pageProps.is_readable ? <Typography>Page is readable</Typography> : undefined}
           </Link>
           <Typography
             level="body3"
