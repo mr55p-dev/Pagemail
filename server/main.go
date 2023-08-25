@@ -143,6 +143,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Register commands
+	app.RootCmd.AddCommand(cmd)
+
 	// Start the app and cron
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
