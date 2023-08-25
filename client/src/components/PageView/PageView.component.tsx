@@ -132,11 +132,11 @@ export function Page(pageProps: PageRecord) {
           >
             <OpenInNew />
           </IconButton>
-          {pageProps.is_readable && (
+          {/* pageProps.is_readable && (
             <IconButton size="sm" onClick={requestReadability}>
               <AudioFileOutlined />
             </IconButton>
-          )}
+          ) */}
           <IconButton size="sm" onClick={handleDelete} color="danger">
             <DeleteOutline />
           </IconButton>
