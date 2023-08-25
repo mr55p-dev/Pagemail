@@ -18,8 +18,6 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-
-
 type DocumentMeta struct {
 	Title       string
 	Description string
@@ -53,7 +51,7 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 
 func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error) {
 	out := &models.Page{
-		LastCrawled: time.Now(),
+		LastCrawled:       time.Now(),
 		ReadabilityStatus: models.ReadabilityUnknown,
 	}
 	content, err := net.FetchUrlContents(url)
@@ -90,22 +88,33 @@ func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error
 	return out, nil
 }
 
-
 func PagePreviewHook(app *pocketbase.PocketBase, cfg readability.ReaderConfig) hook.Handler[*core.RecordCreateEvent] {
 	return func(e *core.RecordCreateEvent) error {
-		// Fetches and inserts page metadata
 		url := e.Record.GetString("url")
 		if url == "" {
-			return fmt.Errorf("Failed to fetch URL")
-		}
-		res, err := FetchPreview(url, cfg)
-		if err != nil {
-			log.Printf("Failed to fetch preview, %s", err)
-			return err
+			return fmt.Errorf("url parameter not present in request header")
 		}
 
-		form := forms.NewRecordUpsert(app, e.Record)
-		form.LoadData(res.ToMap())
-		return form.Submit()
+		go func() {
+			res, err := FetchPreview(url, cfg)
+			if err != nil {
+				log.Printf("Failed to fetch preview, %s", err)
+				return
+			}
+
+			form := forms.NewRecordUpsert(app, e.Record)
+			err = form.LoadData(res.ToMap())
+			if err != nil {
+				log.Printf("Failed to prepare page preview record update for url %s: %s", url, err)
+				return
+			}
+			err = form.Submit()
+			if err != nil {
+				log.Printf("Failed to commit page preview record update for url %s: %s", url, err)
+				return
+			}
+		}()
+
+		return nil
 	}
 }
