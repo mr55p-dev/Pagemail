@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  AudioFileOutlined,
+  // AudioFileOutlined,
   ContentCopy,
   DeleteOutline,
   OpenInNew,
@@ -40,13 +40,13 @@ export function Page(pageProps: PageRecord) {
       });
   };
 
-  function requestReadability() {
-    pb.send("/api/page/readability", {
-      method: "GET",
-      params: { page_id: pageProps.id },
-      cache: "no-cache",
-    }).then((res) => console.log(res));
-  }
+  // function requestReadability() {
+  //   pb.send("/api/page/readability", {
+  //     method: "GET",
+  //     params: { page_id: pageProps.id },
+  //     cache: "no-cache",
+  //   }).then((res) => console.log(res));
+  // }
 
   function requestReload() {
     setIsLoading(true);
