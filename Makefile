@@ -48,10 +48,35 @@ install-prod-backend:
 	sudo chmod a+x $(PROD_DIR)/server
 	sudo systemctl daemon-reload
 
-# Full installations
-install-stage: install-stage-frontend install-stage-backend
+# Readability installations
+install-stage-readability:
+	cd $(BASE_DIR)/readability/dist/ && sudo cp \
+		main.py \
+		main.js \
+		package.json \
+		package-lock.json \
+		requirements.txt \
+		$(STAGE_DIR)/readability/
+	npm --prefix $(STAGE_DIR)/readability/ ci
+	python3 -m venv $(STAGE_DIR)/readability/venv
+	$(STAGE_DIR)/readability/venv/bin/pip install -r $(STAGE_DIR)/readability/requirements.txt
 
-install-prod: install-prod-frontend install-prod-backend
+install-prod-readability:
+	cd $(BASE_DIR)/readability/dist/ && sudo cp \
+		main.py \
+		main.js \
+		package.json \
+		package-lock.json \
+		requirements.txt \
+		$(PROD_DIR)/readability/
+	npm --prefix $(PROD_DIR)/readability/ ci
+	python3 -m venv $(PROD_DIR)/readability/venv
+	$(PROD_DIR)/readability/venv/bin/pip install -r $(PROD_DIR)/readability/requirements.txt
+
+# Full installations
+install-stage: install-stage-frontend install-stage-backend install-stage-readability
+
+install-prod: install-prod-frontend install-prod-backend install-prod-readability
 
 # Pre install scripts
 pre-install-stage:

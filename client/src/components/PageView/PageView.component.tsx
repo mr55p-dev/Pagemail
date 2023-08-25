@@ -1,11 +1,15 @@
 import React from "react";
-import { ContentCopy, DeleteOutline, OpenInNew } from "@mui/icons-material";
+import {
+  // AudioFileOutlined,
+  ContentCopy,
+  DeleteOutline,
+  OpenInNew,
+  Refresh,
+} from "@mui/icons-material";
 import LinesEllipsis from "react-lines-ellipsis";
 import { pb } from "../../lib/pocketbase";
-import { DataState } from "../../lib/data";
 import { PageRecord } from "../../lib/datamodels";
 import {
-  Button,
   ButtonGroup,
   Card,
   CardContent,
@@ -18,55 +22,16 @@ import {
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
 
-export interface PageProps {
-  url: string;
-  id: string;
-  created: string;
-}
-
-export interface PageMetadataResponse {
-  title?: string;
-  description?: string;
-}
-
-export const Page = ({ url, id, created }: PageProps) => {
-  const [previewState, setPreviewState] = React.useState<DataState>(
-    DataState.UNKNOWN
-  );
-  const [previewData, setPreviewData] = React.useState<
-    PageMetadataResponse | undefined
-  >(undefined);
+export function Page(pageProps: PageRecord) {
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const dt = new Date(created);
-  const dest = new URL(url);
-
-  React.useEffect(() => {
-    setPreviewState(DataState.PENDING);
-    const fetchLocal = async () => {
-      try {
-        const res = await pb.send<PageMetadataResponse>("/api/preview", {
-          method: "GET",
-          params: { target: url },
-          // mode: "same-origin",
-          cache: "default",
-        });
-        if (!res.title && !res.description) {
-          throw new Error("Service returned no title or description");
-        }
-        setPreviewData(res);
-        setPreviewState(DataState.SUCCESS);
-      } catch (e) {
-        console.error(e);
-        setPreviewState(DataState.FAILED);
-      }
-    };
-    fetchLocal();
-  }, [url]);
+  const dt = new Date(pageProps.created);
+  const dest = new URL(pageProps.url);
 
   const handleDelete = () => {
     pb.collection("pages")
-      .delete(id)
+      .delete(pageProps.id)
       .then(() => {
         notifOk("Deleted", `Page at ${dest.hostname} removed.`);
       })
@@ -75,24 +40,56 @@ export const Page = ({ url, id, created }: PageProps) => {
       });
   };
 
-  const previewTitle = previewData?.title;
-  const ttl = previewData?.title ?? dest.host + dest.pathname;
+  // function requestReadability() {
+  //   pb.send("/api/page/readability", {
+  //     method: "GET",
+  //     params: { page_id: pageProps.id },
+  //     cache: "no-cache",
+  //   }).then((res) => console.log(res));
+  // }
+
+  function requestReload() {
+    setIsLoading(true);
+    pb.send("/api/page/reload", {
+      method: "GET",
+      params: {
+        page_id: pageProps.id,
+      },
+      cache: "no-cache",
+    }).finally(() => setIsLoading(false));
+  }
+
+  const title = pageProps.title || dest.host + dest.pathname;
 
   return (
     <Grid xs={12} sm={6} md={4} maxHeight="400px">
       <Card variant="outlined" sx={{ height: "100%", boxShadow: "md" }}>
         <CardContent>
-          <Link href={url} target="_blank" maxWidth="100%">
+          <Link href={pageProps.url} target="_blank" maxWidth="100%">
             <Typography
               level="h5"
               sx={{
                 maxWidth: "100%",
-                wordBreak: previewTitle ? "break-word" : "break-all",
+                wordBreak: pageProps.title ? "break-word" : "break-all",
               }}
             >
-              <LinesEllipsis maxLine={previewTitle ? "3" : "2"} text={ttl} />
+              <LinesEllipsis
+                maxLine={pageProps.title ? "3" : "2"}
+                text={title}
+              />
             </Typography>
           </Link>
+          <IconButton
+            aria-label="bookmark Bahamas Islands"
+            variant="plain"
+            color="neutral"
+            size="sm"
+            sx={{ position: "absolute", top: "0.875rem", right: "0.5rem" }}
+			disabled={isLoading}
+            onClick={requestReload}
+          >
+            <Refresh />
+          </IconButton>
           <Typography
             level="body3"
             sx={{
@@ -117,11 +114,9 @@ export const Page = ({ url, id, created }: PageProps) => {
           >
             {dest.toString()}
           </Typography>
-          <Typography level="body2" mt={1}>
-            {previewState === DataState.PENDING ? (
-              "Loading preview..."
-            ) : (
-              <LinesEllipsis maxLine="4" text={previewData?.description} />
+          <Typography level="body1" mt={1}>
+            {pageProps.description && (
+              <LinesEllipsis maxLine="4" text={pageProps.description} />
             )}
           </Typography>
         </CardContent>
@@ -130,20 +125,21 @@ export const Page = ({ url, id, created }: PageProps) => {
           color="neutral"
           sx={{ mx: "auto", width: 1, ["& > *"]: { flexGrow: 1 } }}
         >
-          <Button
-            startDecorator={<OpenInNew />}
+          <IconButton
+            size="sm"
             color="primary"
-            onClick={() => window.open(url)}
+            onClick={() => window.open(pageProps.url)}
           >
-            Open
-          </Button>
-          <Button
-            startDecorator={<DeleteOutline />}
-            onClick={handleDelete}
-            color="danger"
-          >
-            Delete
-          </Button>
+            <OpenInNew />
+          </IconButton>
+          {/* pageProps.is_readable && (
+            <IconButton size="sm" onClick={requestReadability}>
+              <AudioFileOutlined />
+            </IconButton>
+          ) */}
+          <IconButton size="sm" onClick={handleDelete} color="danger">
+            <DeleteOutline />
+          </IconButton>
         </ButtonGroup>
 
         <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
@@ -156,7 +152,7 @@ export const Page = ({ url, id, created }: PageProps) => {
       </Card>
     </Grid>
   );
-};
+}
 
 interface PageGroup {
   date: string;
@@ -185,7 +181,8 @@ function groupPages(pages: PageRecord[]): PageGroup[] {
     }));
 }
 
-export const PageView = () => {
+export function PageView() {
+  const { notifErr } = React.useContext(NotificationCtx);
   const [pages, setPages] = React.useState<PageRecord[]>([]);
 
   React.useEffect(() => {
@@ -193,18 +190,25 @@ export const PageView = () => {
       .getList<PageRecord>(1, 50, {
         sort: "-created",
       })
-      .then((records) => setPages(records.items));
+      .then((records) => setPages(records.items))
+      .catch(() => notifErr("Failed to fetch records"));
 
     pb.collection("pages").subscribe<PageRecord>("*", function (e) {
       setPages((prev) => {
+        let idx;
         switch (e.action) {
           case "create":
-            return [e.record, ...prev];
+            prev.unshift(e.record);
+            break;
           case "delete":
             return [...prev.filter((i) => i.id !== e.record.id)];
-          default:
-            return [...prev];
+          case "update":
+            idx = prev.findIndex((i) => e.record.id === i.id);
+            if (idx === -1) return prev;
+            prev[idx] = e.record;
+            break;
         }
+        return [...prev];
       });
     });
 
@@ -215,7 +219,7 @@ export const PageView = () => {
         console.error(e);
       }
     };
-  }, []);
+  }, [notifErr]);
 
   return (
     <Stack spacing={1} mt={2}>
@@ -224,7 +228,7 @@ export const PageView = () => {
       ))}
     </Stack>
   );
-};
+}
 
 function PageGroup({ pages, date }: PageGroup) {
   return (
@@ -239,7 +243,7 @@ function PageGroup({ pages, date }: PageGroup) {
       </Stack>
       <Grid container spacing={1} sx={{ flexGroup: 1, mt: 1 }}>
         {pages.map((e) => (
-          <Page url={e.url} id={e.id} created={e.created} key={e.id} />
+          <Page {...e} key={e.id} />
         ))}
       </Grid>
     </>
