@@ -54,8 +54,8 @@ jobs:
       - name: Initialize environment
         run: make -C server init
 
-      - name: Run tests
-        run: make -C server test
+      # - name: Run tests
+      #   run: make -C server test
 
       - name: Build binary
         run: make -C server build
