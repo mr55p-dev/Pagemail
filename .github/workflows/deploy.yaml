@@ -27,11 +27,26 @@ jobs:
           cache: npm
           cache-dependency-path: "client/package-lock.json"
 
+      - uses: actions/cache/restore@v3
+        id: cache-restore
+        with:
+          path: ${{ github.workspace }}/client/dist
+          key: ${{ runner.os }}-${{ hashFiles('client/**')}}
+
       - name: Initialize environment
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client init
 
       - name: Build code
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client build
+
+      - uses: actions/cache/save@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        id: cache-save
+        with:
+          path: ${{ github.workspace }}/client/dist
+          key: ${{ runner.os }}-${{ hashFiles('client/**')}}
 
       - name: Store dist artifact
         uses: actions/upload-artifact@master
@@ -51,14 +66,26 @@ jobs:
           cache: true
           cache-dependency-path: server/go.sum
 
+      - uses: actions/cache/restore@v3
+        id: cache-restore
+        with:
+          path: ${{ github.workspace }}/server/dist
+          key: ${{ runner.os }}-${{ hashFiles('server/**')}}
+
       - name: Initialize environment
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server init
 
-      # - name: Run tests
-      #   run: make -C server test
-
       - name: Build binary
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server build
+
+      - uses: actions/cache/save@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        id: cache-save
+        with:
+          path: ${{ github.workspace }}/server/dist
+          key: ${{ runner.os }}-${{ hashFiles('server/**')}}
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
@@ -66,38 +93,10 @@ jobs:
           name: dist-backend
           path: ${{ github.workspace }}/server/dist/
 
-  build-readability:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.3.x
-          cache: npm
-          cache-dependency-path: "readability/package-lock.json"
-
-      - name: Initialize environment
-        run: make -C readability init
-
-      - name: Build code
-        run: make -C readability build
-
-      - name: Remove virtual env
-        run: make -C readability clean-venv
-
-      - name: Store dist artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: dist-readability
-          path: ${{ github.workspace }}/readability/dist/
-
   deploy:
     runs-on: ubuntu-latest
     environment: Production
-    needs: [build-frontend, build-backend, build-readability]
+    needs: [build-frontend, build-backend]
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
@@ -118,12 +117,6 @@ jobs:
         with:
           name: dist-backend
           path: server-dist/
-
-      - name: Download readability
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-readability
-          path: readability-dist/
 
       - name: Copy makefile to server
         uses: appleboy/scp-action@v0.1.4
@@ -166,17 +159,6 @@ jobs:
           port: ${{ secrets.PORT }}
           source: "server-dist/server"
           target: /home/ec2-user/pagemail/server/dist
-          strip_components: 1
-
-      - name: Copy readability artifacts onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "readability-dist/*"
-          target: /home/ec2-user/pagemail/readability/dist
           strip_components: 1
 
       - name: Copy server files onto server
