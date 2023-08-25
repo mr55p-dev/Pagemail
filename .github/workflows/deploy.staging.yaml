@@ -25,26 +25,11 @@ jobs:
           cache: npm
           cache-dependency-path: "client/package-lock.json"
 
-      - uses: actions/cache/restore@v3
-        id: cache-restore
-        with:
-          path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-stage-${{ hashFiles('client/**')}}
-
       - name: Initialize environment
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client init
 
       - name: Build code
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C client build
-
-      - uses: actions/cache/save@v3
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        id: cache-save
-        with:
-          path: ${{ github.workspace }}/client/dist
-          key: ${{ runner.os }}-stage-${{ hashFiles('client/**')}}
 
       - name: Store dist artifact
         uses: actions/upload-artifact@master
@@ -64,26 +49,14 @@ jobs:
           cache: true
           cache-dependency-path: server/go.sum
 
-      - uses: actions/cache/restore@v3
-        id: cache-restore
-        with:
-          path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-stage-${{ hashFiles('server/**')}}
-
       - name: Initialize environment
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: make -C server init
 
-      - name: Build binary
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: make -C server build
+      - name: Run tests
+        run: make -C server test
 
-      - uses: actions/cache/save@v3
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        id: cache-save
-        with:
-          path: ${{ github.workspace }}/server/dist
-          key: ${{ runner.os }}-stage-${{ hashFiles('server/**')}}
+      - name: Build binary
+        run: make -C server build
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
@@ -115,7 +88,6 @@ jobs:
         with:
           name: dist-readability
           path: ${{ github.workspace }}/readability/dist/
-
 
   deploy:
     runs-on: ubuntu-latest
