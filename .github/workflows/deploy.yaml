@@ -85,6 +85,9 @@ jobs:
       - name: Build code
         run: make -C readability build
 
+      - name: Remove virtual env
+        run: make -C readability clean-venv
+
       - name: Store dist artifact
         uses: actions/upload-artifact@master
         with:

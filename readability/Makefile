@@ -13,6 +13,9 @@ build:
 		package-lock.json \
 		dist/
 
+clean-venv:
+	rm -rf dist/venv
+
 clean:
 	rm -rf dist/
 
