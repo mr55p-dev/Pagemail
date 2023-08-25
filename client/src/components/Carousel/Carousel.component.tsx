@@ -28,7 +28,7 @@ export const CarouselItem = ({
           }}
         >
           {children}
-          {image ? image : undefined}
+          {!!image ? image : undefined}
         </Card>
       </Box>
     </>

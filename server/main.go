@@ -2,57 +2,22 @@
 package main
 
 import (
+	"github.com/labstack/echo/v5"
 	"log"
 	"net/http"
-	"os"
 	"pagemail/server/custom_api"
-	"pagemail/server/preview"
-	"pagemail/server/readability"
-	"path/filepath"
-	"strings"
-
-	"github.com/labstack/echo/v5"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/plugins/migratecmd"
-
-	"pagemail/server/mail"
-
-	_ "pagemail/server/migrations"
 
 	"github.com/robfig/cron/v3"
+	"pagemail/server/mail"
 )
 
 func main() {
 	app := pocketbase.New()
 	c := cron.New()
-
-	// loosely check if it was executed using "go run"
-	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
-	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
-		Automigrate: isGoRun,
-	})
-
-	// Fetch readability config
-	readerConfigDir := os.Getenv("PAGEMAIL_READABILITY_CONTEXT_DIR")
-	if readerConfigDir == "" {
-		panic("readability config directory not set")
-	}
-	readerPath, err := filepath.Abs(readerConfigDir)
-	if err != nil {
-		log.Panicf("Could recognise reader config dir given: %s", err)
-	}
-	_, err = os.Stat(readerPath)
-	if err != nil {
-		log.Panicf("Could not stat reader context path: %s", err)
-	}
-	readerConfig := readability.ReaderConfig{
-		NodeScript:   "main.js",
-		PythonScript: "test.py",
-		ContextDir:   readerConfigDir,
-	}
 
 	// Register the terminate handler
 	app.OnTerminate().PreAdd(func(e *core.TerminateEvent) error { c.Stop(); return nil })
@@ -68,7 +33,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/preview",
-			Handler: custom_api.PreviewHandler(readerConfig),
+			Handler: custom_api.Preview,
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireRecordAuth("users"),
@@ -86,7 +51,7 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodPost,
 			Path:    "/api/admin/mail/triggerAll",
-			Handler: custom_api.MailTriggerAllFactory(app, readerConfig),
+			Handler: custom_api.MailTriggerAllFactory(app),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireAdminAuth(),
@@ -104,41 +69,20 @@ func main() {
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/admin/mail/previewTemplate",
-			Handler: mail.TestMailBody(readerConfig),
+			Handler: mail.TestMailBody,
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
 				apis.RequireAdminAuth(),
-			},
-		})
-		e.Router.AddRoute(echo.Route{
-			Method:  http.MethodGet,
-			Path:    "/api/page/readability",
-			Handler: custom_api.ReadabilityHandler(app, readerConfig),
-			Middlewares: []echo.MiddlewareFunc{
-				apis.ActivityLogger(app),
-				custom_api.ReadabilityMiddleware(app),
-			},
-		})
-		e.Router.AddRoute(echo.Route{
-			Method:  http.MethodGet,
-			Path:    "/api/page/reload",
-			Handler: custom_api.ReadabilityReloadHandler(app, readerConfig),
-			Middlewares: []echo.MiddlewareFunc{
-				apis.ActivityLogger(app),
-				custom_api.ReadabilityMiddleware(app),
 			},
 		})
 
 		return nil
 	})
 
-	// Register pre-write hooks
-	app.OnRecordAfterCreateRequest("pages").Add(preview.PagePreviewHook(app, readerConfig))
-
 	// Register the server cron jobs
 	if _, err := c.AddFunc(
 		"0 7 * * *",
-		func() { mail.Mailer(app, readerConfig) },
+		func() { mail.Mailer(app) },
 	); err != nil {
 		log.Fatal(err)
 	}
