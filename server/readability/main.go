@@ -48,7 +48,6 @@ func CheckIsReadable(cfg models.ReaderConfig, url string, contents []byte) bool 
 	check_tsk.Start()
 
 	success := check_tsk.Wait() == nil
-	log.Printf("Readability checks for %s successful %t", url, success)
 	return success
 }
 

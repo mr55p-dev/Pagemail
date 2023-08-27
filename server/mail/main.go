@@ -91,6 +91,9 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
+
+
+
 func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 	log.Print("Running mailer")
 

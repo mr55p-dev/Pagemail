@@ -31,8 +31,11 @@ deploy:
 run:
 	go run main.go --debug --dir=pb_data_test serve
 
+run-mail:
+	go run main.go --debug --dir=pb_data_test mail-all
+
 run-scrape:
-	go run main.go scrape-all --dir=pb_data_test
+	go run main.go --debug --dir=pb_data_test scrape-all 
 
 serve:
 	dist/server --dir pb_data_test/ serve

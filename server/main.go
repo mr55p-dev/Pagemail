@@ -84,15 +84,6 @@ func main() {
 			},
 		})
 		e.Router.AddRoute(echo.Route{
-			Method:  http.MethodPost,
-			Path:    "/api/admin/mail/triggerAll",
-			Handler: custom_api.MailTriggerAllFactory(app, readerConfig),
-			Middlewares: []echo.MiddlewareFunc{
-				apis.ActivityLogger(app),
-				apis.RequireAdminAuth(),
-			},
-		})
-		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
 			Path:    "/api/user/token/new",
 			Handler: custom_api.NewTokenRoute(app),
@@ -144,6 +135,7 @@ func main() {
 	}
 
 	// Register commands
+	app.RootCmd.AddCommand(mail.MailCommand(app, &readerConfig))
 	app.RootCmd.AddCommand(readability.CrawlAll(app, readerConfig))
 
 	// Start the app and cron
