@@ -3,12 +3,9 @@ package readability
 import (
 	"log"
 	"pagemail/server/models"
-	"time"
 
-	// "github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/forms"
-	// "github.com/pocketbase/pocketbase/forms"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +22,15 @@ func CrawlAll(app *pocketbase.PocketBase, cfg models.ReaderConfig) *cobra.Comman
 		}
 		log.Printf("Collected %d ids", len(ids))
 
-		nullTime := time.Time{}
 		for _, id := range ids {
 			log.Print(id.Id)
 			record, err := app.Dao().FindRecordById("pages", id.Id)
-			last_crawled := record.GetTime("last_crawled")
-			if last_crawled == nullTime {
-				log.Printf("record %s has last crawled time %s (null)", record.Id, last_crawled)
+			last_crawled := record.GetDateTime("last_crawled")
+			if !last_crawled.IsZero() {
+				log.Printf("record %s has been crawled at %s", record.Id, last_crawled)
 				continue
 			}
+			log.Printf("record %s has never been crawled (last crawled %s)", record.Id, last_crawled)
 
 			url := record.GetString("url")
 			res, err := FetchPreview(url, cfg)
