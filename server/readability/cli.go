@@ -2,43 +2,60 @@ package readability
 
 import (
 	"log"
-	"pagemail/server/preview"
-	"pagemail/server/readability"
+	"pagemail/server/models"
+	"time"
 
-	"github.com/pocketbase/dbx"
+	// "github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/forms"
 	// "github.com/pocketbase/pocketbase/forms"
+	"github.com/spf13/cobra"
 )
 
 // Function which crawls all pages in the database
 // Something like page preview hook
-func CrawlAll(app *pocketbase.PocketBase, cfg *readability.ReaderConfig) error {
-	// Select * from pages
-	// go fetch preview (FetchPreview)
-	// update record
-	records, err := app.Dao().FindRecordsByExpr("pages", dbx.NewExp(""))
-	if err != nil {
-		return err
+func CrawlAll(app *pocketbase.PocketBase, cfg models.ReaderConfig) *cobra.Command {
+	cmd := func(c *cobra.Command, args []string) {
+		ids := []models.Page{}
+		err := app.Dao().DB().Select("id").From("pages").Build().All(&ids)
+		if err != nil || len(ids) == 0 {
+			log.Print(err)
+			log.Print("No ids found")
+			return
+		}
+		log.Printf("Collected %d ids", len(ids))
+
+		nullTime := time.Time{}
+		for _, id := range ids {
+			log.Print(id.Id)
+			record, err := app.Dao().FindRecordById("pages", id.Id)
+			last_crawled := record.GetTime("last_crawled")
+			if last_crawled == nullTime {
+				log.Printf("record %s has last crawled time %s (null)", record.Id, last_crawled)
+				continue
+			}
+
+			url := record.GetString("url")
+			res, err := FetchPreview(url, cfg)
+			if err != nil {
+				log.Panic(err)
+			}
+			form := forms.NewRecordUpsert(app, record)
+			if err := form.LoadData(res.ToMap()); err != nil {
+				log.Panic(err)
+			}
+			if err := form.Submit(); err != nil {
+				log.Panic(err)
+			}
+			log.Printf("Finished updates for %s", id.Id)
+		}
+		return
 	}
-	log.Printf("Collected %d records", len(records))
 
-	// for _, record := range records {
-	// 	url := record.Get("url")
-	// 	if url == nil {
-	// 		continue
-	// 	}
-	// 	res, err := preview.FetchPreview(url, cfg &readability.ReaderConfig)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	form := forms.NewRecordUpsert(app, record)
-	// 	if err := form.LoadData(res.ToMap()); err != nil {
-	// 		return err
-	// 	}
-	// 	if err := form.Submit(); err != nil {
-	// 		return err
-	// 	}
-	// }
+	out := cobra.Command{
+		Use: "scrape-all",
+		Run: cmd,
+	}
 
-	return nil
+	return &out
 }

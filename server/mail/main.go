@@ -9,7 +9,6 @@ import (
 	"net/mail"
 	"os"
 	"pagemail/server/models"
-	"pagemail/server/preview"
 	"pagemail/server/readability"
 	"time"
 
@@ -54,8 +53,8 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 	return pages, nil
 }
 
-func GetPageData(page models.Page, cfg readability.ReaderConfig) models.Page {
-	data, err := preview.FetchPreview(page.Url, cfg)
+func GetPageData(page models.Page, cfg models.ReaderConfig) models.Page {
+	data, err := readability.FetchPreview(page.Url, cfg)
 	if err != nil {
 		return page
 	}
@@ -92,7 +91,7 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
-func Mailer(app *pocketbase.PocketBase, cfg readability.ReaderConfig) error {
+func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 	log.Print("Running mailer")
 
 	// Setup clients
@@ -157,7 +156,7 @@ func Mailer(app *pocketbase.PocketBase, cfg readability.ReaderConfig) error {
 	return nil
 }
 
-func TestMailBody(cfg readability.ReaderConfig) echo.HandlerFunc {
+func TestMailBody(cfg models.ReaderConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		urls := []models.Page{

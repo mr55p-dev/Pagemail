@@ -10,39 +10,21 @@ import (
 	"os/exec"
 	"pagemail/server/models"
 	"pagemail/server/net"
-	"path/filepath"
 
 	"github.com/pocketbase/pocketbase"
 )
 
-type ReaderConfig struct {
-	NodeScript   string
-	PythonScript string
-	ContextDir   string
-}
-
-func (r *ReaderConfig) GetContextDir() string {
-	ctxPath, err := filepath.Abs(r.ContextDir)
-	if err != nil {
-		log.Panic(err)
-	}
-	return ctxPath
-}
-
-func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg ReaderConfig) (*models.SynthesisTask, error) {
+func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*models.SynthesisTask, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
-	log.Print("Fetching url")
 	buf, err := net.FetchUrlContents(url)
 
-	log.Print("Starting reader task")
 	task_data := new(models.SynthesisTask)
 	raw_out, err := doReaderTask(cfg, url, buf)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Print("Unmarshalling json")
 	err = json.Unmarshal(raw_out, task_data)
 	if err != nil {
 		return nil, err
@@ -51,8 +33,7 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg Reader
 	return task_data, nil
 }
 
-func CheckIsReadable(cfg ReaderConfig, url string, contents []byte) bool {
-	log.Print("Running url readability checks")
+func CheckIsReadable(cfg models.ReaderConfig, url string, contents []byte) bool {
 	ctxPath := cfg.GetContextDir()
 
 	out_buf := new(bytes.Buffer)
@@ -65,11 +46,9 @@ func CheckIsReadable(cfg ReaderConfig, url string, contents []byte) bool {
 	check_tsk.Stdout = out_buf
 
 	check_tsk.Start()
-	log.Print("Running url readability checks")
 
 	success := check_tsk.Wait() == nil
 	log.Printf("Readability checks for %s successful %t", url, success)
-	log.Print(string(out_buf.Bytes()))
 	return success
 }
 
@@ -81,7 +60,7 @@ func insertHeader(data []byte) []byte {
 	return newRef
 }
 
-func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error) {
+func doReaderTask(cfg models.ReaderConfig, url string, contents []byte) ([]byte, error) {
 	r, w := io.Pipe()
 	defer r.Close()
 	defer w.Close()
@@ -120,6 +99,5 @@ func doReaderTask(cfg ReaderConfig, url string, contents []byte) ([]byte, error)
 	if err != nil {
 		return nil, fmt.Errorf("Node task exited with error: %s", err)
 	}
-	log.Printf("Completed reader task for %s", url)
 	return out.Bytes(), nil
 }

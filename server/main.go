@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"pagemail/server/custom_api"
-	"pagemail/server/preview"
+	"pagemail/server/models"
 	"pagemail/server/readability"
 	"path/filepath"
 	"strings"
@@ -48,7 +48,7 @@ func main() {
 	if err != nil {
 		log.Panicf("Could not stat reader context path: %s", err)
 	}
-	readerConfig := readability.ReaderConfig{
+	readerConfig := models.ReaderConfig{
 		NodeScript:   "main.js",
 		PythonScript: "test.py",
 		ContextDir:   readerConfigDir,
@@ -133,7 +133,7 @@ func main() {
 	})
 
 	// Register pre-write hooks
-	app.OnRecordAfterCreateRequest("pages").Add(preview.PagePreviewHook(app, readerConfig))
+	app.OnRecordAfterCreateRequest("pages").Add(readability.PagePreviewHook(app, readerConfig))
 
 	// Register the server cron jobs
 	if _, err := c.AddFunc(
@@ -144,7 +144,7 @@ func main() {
 	}
 
 	// Register commands
-	app.RootCmd.AddCommand(cmd)
+	app.RootCmd.AddCommand(readability.CrawlAll(app, readerConfig))
 
 	// Start the app and cron
 	if err := app.Start(); err != nil {

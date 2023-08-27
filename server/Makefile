@@ -31,6 +31,9 @@ deploy:
 run:
 	go run main.go --debug --dir=pb_data_test serve
 
+run-scrape:
+	go run main.go scrape-all --dir=pb_data_test
+
 serve:
 	dist/server --dir pb_data_test/ serve
 

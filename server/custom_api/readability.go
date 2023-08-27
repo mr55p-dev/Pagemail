@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"pagemail/server/models"
-	"pagemail/server/preview"
 	"pagemail/server/readability"
 
 	"github.com/labstack/echo/v5"
@@ -14,7 +13,7 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 )
 
-func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig readability.ReaderConfig) echo.HandlerFunc {
+func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig models.ReaderConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page_id := c.QueryParam("page_id")
 		if page_id == "" {
@@ -40,7 +39,7 @@ func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig readability.Rea
 	}
 }
 
-func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig readability.ReaderConfig) echo.HandlerFunc {
+func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig models.ReaderConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page_id := c.QueryParam("page_id")
 		if page_id == "" {
@@ -56,7 +55,7 @@ func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig readabili
 		if url == "" {
 			return fmt.Errorf("Failed to fetch URL")
 		}
-		res, err := preview.FetchPreview(url, readerConfig)
+		res, err := readability.FetchPreview(url, readerConfig)
 		if err != nil {
 			log.Printf("Failed to fetch preview, %s", err)
 			return c.String(http.StatusInternalServerError, "Failed generating preview")

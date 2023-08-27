@@ -1,6 +1,8 @@
 package models
 
 import (
+	"log"
+	"path/filepath"
 	"reflect"
 	"time"
 )
@@ -42,6 +44,20 @@ type ReadabilityResponseMetadata struct {
 type ReadabilityResponse struct {
 	ResponseMetadata ReadabilityResponseMetadata
 	SynthesisTask    SynthesisTask
+}
+
+type ReaderConfig struct {
+	NodeScript   string
+	PythonScript string
+	ContextDir   string
+}
+
+func (r *ReaderConfig) GetContextDir() string {
+	ctxPath, err := filepath.Abs(r.ContextDir)
+	if err != nil {
+		log.Panic(err)
+	}
+	return ctxPath
 }
 
 type Page struct {

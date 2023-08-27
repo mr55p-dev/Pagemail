@@ -1,14 +1,13 @@
-package preview
+package readability
 
 import (
 	"bytes"
 	"fmt"
 	"log"
-	"pagemail/server/models"
-	"pagemail/server/net"
 	"time"
 
-	"pagemail/server/readability"
+	"pagemail/server/models"
+	"pagemail/server/net"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/pocketbase/pocketbase"
@@ -49,7 +48,7 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 	return page_data, nil
 }
 
-func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error) {
+func FetchPreview(url string, cfg models.ReaderConfig) (*models.Page, error) {
 	out := &models.Page{
 		LastCrawled:       time.Now(),
 		ReadabilityStatus: models.ReadabilityUnknown,
@@ -70,7 +69,7 @@ func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error
 	}()
 
 	go func() {
-		is_readable_ch <- readability.CheckIsReadable(cfg, url, content)
+		is_readable_ch <- CheckIsReadable(cfg, url, content)
 	}()
 
 	out.IsReadable = <-is_readable_ch
@@ -88,7 +87,7 @@ func FetchPreview(url string, cfg readability.ReaderConfig) (*models.Page, error
 	return out, nil
 }
 
-func PagePreviewHook(app *pocketbase.PocketBase, cfg readability.ReaderConfig) hook.Handler[*core.RecordCreateEvent] {
+func PagePreviewHook(app *pocketbase.PocketBase, cfg models.ReaderConfig) hook.Handler[*core.RecordCreateEvent] {
 	return func(e *core.RecordCreateEvent) error {
 		url := e.Record.GetString("url")
 		if url == "" {

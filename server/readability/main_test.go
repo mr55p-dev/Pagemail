@@ -26,8 +26,8 @@ func getExample() []byte {
 	`)
 }
 
-func getConfig() ReaderConfig {
-	return ReaderConfig{
+func getConfig() models.ReaderConfig {
+	return models.ReaderConfig{
 		NodeScript: "main.js",
 		PythonScript: "test.py",
 		ContextDir: "../../readability/dist",
@@ -73,4 +73,8 @@ func TestHeaderAdd(t *testing.T) {
 		t.FailNow()
 	}
 	t.Log(out)
+}
+
+func TestCrawlAll(t * testing.T) {
+	// CrawlAll()
 }
