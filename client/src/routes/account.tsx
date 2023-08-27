@@ -58,7 +58,8 @@ export const AccountPage = () => {
   };
 
   const handleAccountDelete = () => {
-    if (user?.id) {
+	const confirm = window.confirm("Are you sure you want to delete your account?")
+    if (confirm && user?.id) {
       pb.collection("users")
         .delete(user.id)
         .then(() => notifOk("Account deleted"))
@@ -129,7 +130,7 @@ export const AccountPage = () => {
             <Button
               endDecorator={<Delete />}
               color="danger"
-              onClick={handleAccountDelete}
+			  onClick={handleAccountDelete}
             >
               Delete Account
             </Button>
