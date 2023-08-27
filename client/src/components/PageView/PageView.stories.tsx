@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Page, PageMetadataResponse } from "./PageView.component";
+import { Page } from "./PageView.component";
 import { Grid } from "@mui/joy";
 
-const pagePreviewData: PageMetadataResponse = JSON.parse(
+const pagePreviewData = JSON.parse(
   `{
     "title": "Using Service Workers - Web APIs | MDN",
     "description": "This article provides information on getting started with service workers, including basic architecture, registering a service worker, the installation and activation process for a new service worker, updating your service worker, cache control and custom responses, all in the context of a simple app with offline functionality.",

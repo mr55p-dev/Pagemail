@@ -5,21 +5,22 @@ import (
 
 	"github.com/labstack/echo/v5"
 
-	"pagemail/server/preview"
+	"pagemail/server/models"
+	"pagemail/server/readability"
 )
 
-
-
-func Preview(c echo.Context) error {
-	// Fetch the page contents
-	uri := c.QueryParam("target")
-	if uri == "" {
-		return c.String(http.StatusBadRequest, "Must include a URL")
+func PreviewHandler(cfg models.ReaderConfig) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Fetch the page contents
+		uri := c.QueryParam("target")
+		if uri == "" {
+			return c.String(http.StatusBadRequest, "Must include a URL")
+		}
+		data, err := readability.FetchPreview(uri, cfg)
+		if err != nil {
+			return c.String(http.StatusServiceUnavailable, "Failed to fetch the external resource")
+		}
+		c.Response().Header().Set("Cache-Control", "private, max-age=432000")
+		return c.JSON(http.StatusOK, data)
 	}
-	data, err := preview.FetchPreview(uri)
-	if err != nil {
-		return c.String(http.StatusServiceUnavailable, "Failed to fetch the external resource")
-	}
-	c.Response().Header().Set("Cache-Control", "private, max-age=432000")
-	return c.JSON(http.StatusOK, data)
 }

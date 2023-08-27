@@ -9,7 +9,6 @@ import (
 	"net/mail"
 	"os"
 	"pagemail/server/models"
-	"pagemail/server/preview"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -22,7 +21,7 @@ import (
 type MailTemplateData struct {
 	UserIdentifier string
 	DateStart      string
-	Pages          []models.PageData
+	Pages          []models.Page
 }
 
 func GetUsers(db *dbx.Builder) ([]models.User, error) {
@@ -32,10 +31,10 @@ func GetUsers(db *dbx.Builder) ([]models.User, error) {
 	return users, err
 }
 
-func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.Time) ([]models.PageRecord, error) {
+func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.Time) ([]models.Page, error) {
 	//// Fetch all records which have created BETWEEN now-24hrs AND now
 	// Write a query which selects all the records where user_id == usr.id and created > 7am yesterday
-	var pages []models.PageRecord
+	var pages []models.Page
 	records, err := app.Dao().FindRecordsByExpr("pages",
 		dbx.HashExp{"user_id": user.Id},
 		dbx.NewExp("created BETWEEN {:start} AND {:end}", dbx.Params{"start": startTime, "end": time.Now()}))
@@ -44,27 +43,13 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 		return pages, err
 	}
 	for _, row := range records {
-		pages = append(pages, models.PageRecord{
+		pages = append(pages, models.Page{
 			Url:     row.GetString("url"),
 			Created: row.GetCreated().Time(),
 		})
 	}
 
 	return pages, nil
-}
-
-func GetPageData(page models.PageRecord) models.PageData {
-	data, err := preview.FetchPreview(page.Url)
-	if err != nil {
-		return models.PageData{
-			PageRecord: page,
-		}
-	}
-
-	return models.PageData{
-		PageRecord:  page,
-		PreviewData: *data,
-	}
 }
 
 func GetMailBody(data MailTemplateData) string {
@@ -97,7 +82,7 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
-func Mailer(app *pocketbase.PocketBase) error {
+func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 	log.Print("Running mailer")
 
 	// Setup clients
@@ -121,25 +106,17 @@ func Mailer(app *pocketbase.PocketBase) error {
 		if err != nil {
 			log.Print(fmt.Errorf("Failed to fetch pages for user %s: %s", usr.Id, err))
 		}
-		log.Printf("Found %d records", len(pages))
-
-		// Enrich page data with previews
-		var enrichedPages []models.PageData
-		for _, page := range pages {
-			enrichedPages = append(enrichedPages, GetPageData(page))
-		}
-
-		// Skip if the user does not have any pages after enriching
-		if len(enrichedPages) == 0 {
+		if len(pages) == 0 {
 			continue
 		}
+		log.Printf("Found %d records", len(pages))
 
 		// Create mail template data
 		identifier := getUserIdentifier(usr)
 		data := MailTemplateData{
 			UserIdentifier: identifier,
 			DateStart:      startDate.Format("02/01/06"),
-			Pages:          enrichedPages,
+			Pages:          pages,
 		}
 
 		// Send an email with the links
@@ -162,40 +139,41 @@ func Mailer(app *pocketbase.PocketBase) error {
 	return nil
 }
 
-func TestMailBody(c echo.Context) error {
-	urls := []models.PageRecord{
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_title.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_description.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/long_everything.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/nothing.html",
-		},
-		{
-			Created: time.Now(),
-			Url:     "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
-		},
-	}
+func TestMailBody(cfg models.ReaderConfig) echo.HandlerFunc {
+	return func(c echo.Context) error {
 
-	data := []models.PageData{}
-	for _, url := range urls {
-		data = append(data, GetPageData(url))
-	}
-	templateData := MailTemplateData{
-		UserIdentifier: "Test user",
-		DateStart:      time.Now().Format("02-01-2006"),
-		Pages:          data,
-	}
+		pages := []models.Page{
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_title.html",
+				Title:   "Test title",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_description.html",
+				Description: "Test description",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/long_everything.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/nothing.html",
+			},
+			{
+				Created: time.Now(),
+				Url:     "http://testsite.pagemail.io/this/is/a/very/very/long/url/which/will/show/up/as/pretty/stupidly/long/inside/of/pagemail/which/is/kind/of/the/point/of/having/it/otherwise/we/would/not/bother",
+			},
+		}
 
-	mailHTML := GetMailBody(templateData)
-	return c.HTML(http.StatusOK, mailHTML)
+		templateData := MailTemplateData{
+			UserIdentifier: "Test user",
+			DateStart:      time.Now().Format("02-01-2006"),
+			Pages:          pages,
+		}
+
+		mailHTML := GetMailBody(templateData)
+		return c.HTML(http.StatusOK, mailHTML)
+	}
 }
