@@ -94,7 +94,7 @@ func main() {
 		})
 		e.Router.AddRoute(echo.Route{
 			Method:  http.MethodGet,
-			Path:    "/api/admin/mail/previewTemplate",
+			Path:    "/api/admin/mail/preview-template",
 			Handler: mail.TestMailBody(readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),

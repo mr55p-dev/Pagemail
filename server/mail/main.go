@@ -9,7 +9,6 @@ import (
 	"net/mail"
 	"os"
 	"pagemail/server/models"
-	"pagemail/server/readability"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -53,14 +52,6 @@ func GetUserPages(app *pocketbase.PocketBase, user models.User, startTime time.T
 	return pages, nil
 }
 
-func GetPageData(page models.Page, cfg models.ReaderConfig) models.Page {
-	data, err := readability.FetchPreview(page.Url, cfg)
-	if err != nil {
-		return page
-	}
-	return *data
-}
-
 func GetMailBody(data MailTemplateData) string {
 	templatePath := os.Getenv("PAGEMAIL_EMAIL_TEMPLATE_PATH")
 	var w bytes.Buffer
@@ -91,9 +82,6 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
-
-
-
 func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 	log.Print("Running mailer")
 
@@ -118,25 +106,17 @@ func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 		if err != nil {
 			log.Print(fmt.Errorf("Failed to fetch pages for user %s: %s", usr.Id, err))
 		}
-		log.Printf("Found %d records", len(pages))
-
-		// Enrich page data with previews
-		var enrichedPages []models.Page
-		for _, page := range pages {
-			enrichedPages = append(enrichedPages, GetPageData(page, cfg))
-		}
-
-		// Skip if the user does not have any pages after enriching
-		if len(enrichedPages) == 0 {
+		if len(pages) == 0 {
 			continue
 		}
+		log.Printf("Found %d records", len(pages))
 
 		// Create mail template data
 		identifier := getUserIdentifier(usr)
 		data := MailTemplateData{
 			UserIdentifier: identifier,
 			DateStart:      startDate.Format("02/01/06"),
-			Pages:          enrichedPages,
+			Pages:          pages,
 		}
 
 		// Send an email with the links
@@ -162,14 +142,16 @@ func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 func TestMailBody(cfg models.ReaderConfig) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		urls := []models.Page{
+		pages := []models.Page{
 			{
 				Created: time.Now(),
 				Url:     "http://testsite.pagemail.io/long_title.html",
+				Title:   "Test title",
 			},
 			{
 				Created: time.Now(),
 				Url:     "http://testsite.pagemail.io/long_description.html",
+				Description: "Test description",
 			},
 			{
 				Created: time.Now(),
@@ -185,14 +167,10 @@ func TestMailBody(cfg models.ReaderConfig) echo.HandlerFunc {
 			},
 		}
 
-		data := []models.Page{}
-		for _, url := range urls {
-			data = append(data, GetPageData(url, cfg))
-		}
 		templateData := MailTemplateData{
 			UserIdentifier: "Test user",
 			DateStart:      time.Now().Format("02-01-2006"),
-			Pages:          data,
+			Pages:          pages,
 		}
 
 		mailHTML := GetMailBody(templateData)
