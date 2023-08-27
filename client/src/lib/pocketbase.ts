@@ -21,6 +21,7 @@ export const getCurrentUser = (): UserRecord | null => {
       updated: mdl.updated,
       verified: mdl.verified ? true : false,
       subscribed: mdl.subscribed,
+      readabilityEnabled: mdl.readability_enabled || false,
     };
   }
   return null;
