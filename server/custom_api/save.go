@@ -14,12 +14,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-func saveRecord(app *pocketbase.PocketBase, user_id string, url string) (*models.Record, error) {
-	collection, err := app.Dao().FindCollectionByNameOrId("pages")
-	if err != nil {
-		return nil, err
-	}
-
+func saveRecord(app *pocketbase.PocketBase, collection *models.Collection, user_id string, url string) (*models.Record, error) {
 	record := models.NewRecord(collection)
 	record.Load(map[string]any{
 		"url":     url,
@@ -30,6 +25,11 @@ func saveRecord(app *pocketbase.PocketBase, user_id string, url string) (*models
 
 func SaveRoute(app *pocketbase.PocketBase) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		collection, err := app.Dao().FindCollectionByNameOrId("pages")
+		if err != nil {
+			log.Panic(err)
+		}
+
 		// Fetch the page contents
 		url := c.QueryParam("url")
 		claims, ok := c.Get("TokenClaims").(*TokenClaims)
@@ -45,15 +45,10 @@ func SaveRoute(app *pocketbase.PocketBase) echo.HandlerFunc {
 		if user_id == "" {
 			return c.String(http.StatusBadRequest, "Could not retrieve user id")
 		}
-		record, err := saveRecord(app, user_id, url)
+		
+		record, err := saveRecord(app, collection, user_id, url)
 		if err != nil {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("Failed to store this record: %s", err))
-		}
-
-		log.Printf("Before-- url: %s, title: %s", record.GetString("url"), record.GetString("title"))
-		collection, err := app.Dao().FindCollectionByNameOrId("pages")
-		if err != nil {
-			log.Panic(err)
 		}
 
 		form := forms.NewRecordUpsert(app, record)
