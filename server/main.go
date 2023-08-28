@@ -50,7 +50,7 @@ func main() {
 	}
 	readerConfig := models.ReaderConfig{
 		NodeScript:   "main.js",
-		PythonScript: "test.py",
+		PythonScript: "main.py",
 		ContextDir:   readerConfigDir,
 	}
 

@@ -31,6 +31,9 @@ deploy:
 run:
 	go run main.go --debug --dir=pb_data_test serve
 
+air:
+	air
+
 run-mail:
 	go run main.go --debug --dir=pb_data_test mail-all
 

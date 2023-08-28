@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"pagemail/server/models"
 	"pagemail/server/net"
@@ -13,19 +14,22 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*models.SynthesisTask, error) {
+func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*models.ReadabilityResponse, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
 	buf, err := net.FetchUrlContents(url)
 
-	task_data := new(models.SynthesisTask)
+	task_data := new(models.ReadabilityResponse)
 	raw_out, err := doReaderTask(cfg, url, buf)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 
+	log.Print(string(raw_out))
 	err = json.Unmarshal(raw_out, task_data)
 	if err != nil {
+		log.Print(err)
 		return nil, err
 	}
 
@@ -95,7 +99,7 @@ func doReaderTask(cfg models.ReaderConfig, url string, contents []byte) ([]byte,
 
 	err = parser_tsk.Wait()
 	if err != nil {
-		return nil, fmt.Errorf("Node task exited with error: %s", err)
+		return nil, fmt.Errorf("Python task exited with error: %s", err)
 	}
 	return out.Bytes(), nil
 }

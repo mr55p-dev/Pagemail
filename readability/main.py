@@ -154,7 +154,6 @@ def main():
     }
 }""")
         sys.stdout.flush()
-
     except Exception as e:
         logging.exception(e)
         logging.fatal("Failed to create new speech synthesis task")
