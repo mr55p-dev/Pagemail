@@ -13,13 +13,11 @@ type User struct {
 	Name  string
 }
 
-type ReadabilityStatus string
-
 const (
-	ReadabilityUnknown    ReadabilityStatus = "UNKNOWN"
-	ReadabilityFailed     ReadabilityStatus = "FAILED"
-	ReadabilityProcessing ReadabilityStatus = "PROCESSING"
-	ReadabilityComplete   ReadabilityStatus = "COMPLETE"
+	ReadabilityUnknown    string = "UNKNOWN"
+	ReadabilityFailed     string = "FAILED"
+	ReadabilityProcessing string = "PROCESSING"
+	ReadabilityComplete   string = "COMPLETE"
 )
 
 type SynthesisTask struct {
@@ -61,15 +59,15 @@ func (r *ReaderConfig) GetContextDir() string {
 }
 
 type Page struct {
-	Created             time.Time         `json:"created" mapkey:"created"`
-	Id                  string            `json:"id" mapkey:"id"`
-	Url                 string            `json:"url" mapkey:"url"`
-	LastCrawled         time.Time         `json:"last_crawled" mapkey:"last_crawled"`
-	Title               string            `json:"title,omitempty" mapkey:"title"`
-	Description         string            `json:"description,omitempty" mapkey:"description"`
-	ImageUrl            string            `json:"image_url,omitempty" mapkey:"image_url"`
-	IsReadable          bool              `json:"is_readable" mapkey:"is_readable"`
-	ReadabilityStatus   ReadabilityStatus `json:"readability_status" mapkey:"readability_status"`
+	Created             time.Time `json:"created" mapkey:"created"`
+	Id                  string    `json:"id" mapkey:"id"`
+	Url                 string    `json:"url" mapkey:"url"`
+	LastCrawled         time.Time `json:"last_crawled" mapkey:"last_crawled"`
+	Title               string    `json:"title,omitempty" mapkey:"title"`
+	Description         string    `json:"description,omitempty" mapkey:"description"`
+	ImageUrl            string    `json:"image_url,omitempty" mapkey:"image_url"`
+	IsReadable          bool      `json:"is_readable" mapkey:"is_readable"`
+	ReadabilityStatus   string    `json:"readability_status" mapkey:"readability_status"`
 	ReadabilityTaskData ReadabilityResponse
 }
 

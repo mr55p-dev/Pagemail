@@ -25,14 +25,27 @@ func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig models.ReaderCo
 			return err
 		}
 
+		stat := raw_page_record.GetString("readability_status")
+		if stat != models.ReadabilityUnknown {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("Cannot start a new synthesis job: record has status %s", stat))
+		}
+
 		page_record := models.Page{
 			Url:     raw_page_record.GetString("url"),
 			Created: raw_page_record.GetCreated().Time(),
 		}
 
+		form := forms.NewRecordUpsert(app, raw_page_record)
+		form.LoadData(map[string]any{
+			"readability_status": models.ReadabilityProcessing,
+		})
+		if err := form.Submit(); err != nil {
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not update job status: %s", err))		
+		}
+
 		task, err := readability.StartReaderTask(app, &page_record, readerConfig)
 		if err != nil {
-			return err
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not srart reader job: %s", err))
 		}
 
 		return c.JSON(http.StatusOK, task)
@@ -69,7 +82,6 @@ func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig models.Re
 	}
 }
 
-
 func ReadabilityMiddleware(app *pocketbase.PocketBase) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -82,7 +94,7 @@ func ReadabilityMiddleware(app *pocketbase.PocketBase) echo.MiddlewareFunc {
 			}
 
 			if !record.GetBool("readability_enabled") {
-				return apis.NewForbiddenError("Account is not priviledged", nil)
+				return apis.NewForbiddenError("Account is not privileged", nil)
 			}
 
 			return next(c)
