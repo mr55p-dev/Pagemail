@@ -58,7 +58,10 @@ export const AccountPage = () => {
   };
 
   const handleAccountDelete = () => {
-    if (user?.id) {
+    const confirm = window.confirm(
+      "Are you sure you want to delete your account?"
+    );
+    if (confirm && user?.id) {
       pb.collection("users")
         .delete(user.id)
         .then(() => notifOk("Account deleted"))
@@ -122,6 +125,9 @@ export const AccountPage = () => {
           <Tab value={AccViews.TOKEN}>Token</Tab>
         </TabList>
         <TabPanel value={AccViews.SETTINGS} sx={{ ["& > *"]: { my: 1 } }}>
+          {user?.readabilityEnabled
+            ? "Readability is enabled for this account"
+            : "Readability is not enabled for this account"}
           <Stack direction="row" useFlexGap justifyContent="space-evenly">
             <Button onClick={handleSubscribeToggle}>
               {subscribed ? "Unsubscribe" : "Subscribe"}

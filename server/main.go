@@ -107,6 +107,7 @@ func main() {
 			Handler: custom_api.ReadabilityHandler(app, readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
+				apis.RequireRecordAuth("users"),
 				custom_api.ReadabilityMiddleware(app),
 			},
 		})
@@ -116,7 +117,7 @@ func main() {
 			Handler: custom_api.ReadabilityReloadHandler(app, readerConfig),
 			Middlewares: []echo.MiddlewareFunc{
 				apis.ActivityLogger(app),
-				custom_api.ReadabilityMiddleware(app),
+				apis.RequireRecordAuth("users"),
 			},
 		})
 

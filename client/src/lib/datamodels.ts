@@ -12,6 +12,7 @@ export interface UserRecord extends BaseRecord {
 	updated: string;
 	avatar?: string;
 	subscribed: boolean;
+	readabilityEnabled: boolean;
 }
 
 export interface PageRecord extends BaseRecord {
