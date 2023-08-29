@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"pagemail/server/models"
 	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/service/polly"
 )
 
 func getExample() []byte {
@@ -44,7 +46,7 @@ func TestPipeline(t *testing.T) {
 		t.Error(out)
 		t.FailNow()
 	}
-	taskout := new(models.ReadabilityResponse)
+	taskout := new(polly.StartSpeechSynthesisTaskOutput)
 	err = json.Unmarshal(out, taskout)
 	if err != nil || taskout == nil {
 		t.Errorf("Failed to marshall output: %s", err)

@@ -51,7 +51,7 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 func FetchPreview(url string, cfg models.ReaderConfig) (*models.Page, error) {
 	out := &models.Page{
 		LastCrawled:       time.Now(),
-		ReadabilityStatus: models.ReadabilityUnknown,
+		ReadabilityStatus: string(models.ReadabilityUnknown),
 	}
 	content, err := net.FetchUrlContents(url)
 	if err != nil {

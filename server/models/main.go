@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"reflect"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/polly/types"
+	"github.com/aws/aws-sdk-go/service/polly"
 )
 
 type User struct {
@@ -13,11 +16,26 @@ type User struct {
 	Name  string
 }
 
+type ReadabilityStatus string
+
+func ReadabilityFromPolly(s *types.TaskStatus) ReadabilityStatus {
+	switch *s {
+	case types.TaskStatusFailed:
+		return ReadabilityFailed
+	case types.TaskStatusCompleted:
+		return ReadabilityComplete
+	case types.TaskStatusInProgress:
+		return ReadabilityProcessing
+	default:
+		return ReadabilityUnknown
+	};
+}
+
 const (
-	ReadabilityUnknown    string = "UNKNOWN"
-	ReadabilityFailed     string = "FAILED"
-	ReadabilityProcessing string = "PROCESSING"
-	ReadabilityComplete   string = "COMPLETE"
+	ReadabilityUnknown    ReadabilityStatus = "UNKNOWN"
+	ReadabilityFailed     ReadabilityStatus = "FAILED"
+	ReadabilityProcessing ReadabilityStatus = "PROCESSING"
+	ReadabilityComplete   ReadabilityStatus = "COMPLETE"
 )
 
 type SynthesisTask struct {
@@ -39,10 +57,6 @@ type ReadabilityResponseMetadata struct {
 	RetryAttempts  int
 }
 
-type ReadabilityResponse struct {
-	ResponseMetadata ReadabilityResponseMetadata
-	SynthesisTask    SynthesisTask
-}
 
 type ReaderConfig struct {
 	NodeScript   string
@@ -68,7 +82,7 @@ type Page struct {
 	ImageUrl            string    `json:"image_url,omitempty" mapkey:"image_url"`
 	IsReadable          bool      `json:"is_readable" mapkey:"is_readable"`
 	ReadabilityStatus   string    `json:"readability_status" mapkey:"readability_status"`
-	ReadabilityTaskData ReadabilityResponse
+	ReadabilityTaskData polly.GetSpeechSynthesisTaskOutput
 }
 
 func (p Page) ToMap() map[string]any {

@@ -2,6 +2,7 @@ package readability
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -10,16 +11,18 @@ import (
 	"os/exec"
 	"pagemail/server/models"
 	"pagemail/server/net"
+	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/pocketbase/pocketbase"
 )
 
-func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*models.ReadabilityResponse, error) {
+func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*polly.StartSpeechSynthesisTaskOutput, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
 	buf, err := net.FetchUrlContents(url)
 
-	task_data := new(models.ReadabilityResponse)
+	task_data := new(polly.StartSpeechSynthesisTaskOutput)
 	raw_out, err := doReaderTask(cfg, url, buf)
 	if err != nil {
 		log.Print(err)
@@ -32,6 +35,21 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models
 		log.Print(err)
 		return nil, err
 	}
+
+	c, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	defer cancel()
+
+	out := AwaitJobCompletion(c, task_data.SynthesisTask.TaskId)
+	go func() {
+		state := <-out
+		status := state.status.SynthesisTask.TaskStatus
+		log.Printf("HAHAHA %s", models.ReadabilityFromPolly(&status))
+		
+		err := UpdateJobState(app, record.Id, models.ReadabilityFromPolly(&status))
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return task_data, nil
 }
