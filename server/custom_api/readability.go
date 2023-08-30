@@ -13,7 +13,7 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 )
 
-func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig models.ReaderConfig) echo.HandlerFunc {
+func ReadabilityHandler(app *pocketbase.PocketBase, cfg *models.PMContext) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page_id := c.QueryParam("page_id")
 		if page_id == "" {
@@ -38,7 +38,7 @@ func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig models.ReaderCo
 
 		readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityProcessing)
 
-		task, err := readability.StartReaderTask(app, &page_record, readerConfig)
+		task, err := readability.StartReaderTask(app, cfg, &page_record)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not start reader job: %s", err))
 		}
@@ -47,7 +47,7 @@ func ReadabilityHandler(app *pocketbase.PocketBase, readerConfig models.ReaderCo
 	}
 }
 
-func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig models.ReaderConfig) echo.HandlerFunc {
+func ReadabilityReloadHandler(app *pocketbase.PocketBase, ctx *models.PMContext) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		page_id := c.QueryParam("page_id")
 		if page_id == "" {
@@ -63,7 +63,7 @@ func ReadabilityReloadHandler(app *pocketbase.PocketBase, readerConfig models.Re
 		if url == "" {
 			return fmt.Errorf("Failed to fetch URL")
 		}
-		res, err := readability.FetchPreview(url, readerConfig)
+		res, err := readability.FetchPreview(ctx, url)
 		if err != nil {
 			log.Printf("Failed to fetch preview, %s", err)
 			return c.String(http.StatusInternalServerError, "Failed generating preview")

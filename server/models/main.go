@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/polly"
 )
 
+
 type User struct {
 	Id    string
 	Email string

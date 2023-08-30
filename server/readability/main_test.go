@@ -28,11 +28,14 @@ func getExample() []byte {
 	`)
 }
 
-func getConfig() models.ReaderConfig {
-	return models.ReaderConfig{
-		NodeScript: "main.js",
-		PythonScript: "test.py",
-		ContextDir: "../../readability/dist",
+func getConfig() *models.PMContext {
+	return &models.PMContext{
+		IsReady: true,
+		Readability: &models.ReaderConfig{
+			NodeScript:   "main.js",
+			PythonScript: "test.py",
+			ContextDir:   "../../readability/dist",
+		},
 	}
 }
 
@@ -77,6 +80,6 @@ func TestHeaderAdd(t *testing.T) {
 	t.Log(out)
 }
 
-func TestCrawlAll(t * testing.T) {
+func TestCrawlAll(t *testing.T) {
 	// CrawlAll()
 }

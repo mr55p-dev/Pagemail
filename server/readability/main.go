@@ -17,7 +17,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models.ReaderConfig) (*polly.StartSpeechSynthesisTaskOutput, error) {
+func StartReaderTask(app *pocketbase.PocketBase, cfg *models.PMContext, record *models.Page) (*polly.StartSpeechSynthesisTaskOutput, error) {
 	// Get the URL and invoke the pipeline
 	url := record.Url
 	buf, err := net.FetchUrlContents(url)
@@ -54,14 +54,15 @@ func StartReaderTask(app *pocketbase.PocketBase, record *models.Page, cfg models
 	return task_data, nil
 }
 
-func CheckIsReadable(cfg models.ReaderConfig, url string, contents []byte) bool {
-	ctxPath := cfg.GetContextDir()
+func CheckIsReadable(ctx *models.PMContext, url string, contents []byte) bool {
+	rCtx := ctx.Readability
+	ctxPath := rCtx.GetContextDir()
 
 	out_buf := new(bytes.Buffer)
 	inp_with_header := insertHeader(contents)
 	inp_buf := bytes.NewReader(inp_with_header)
 
-	check_tsk := exec.Command("node", cfg.NodeScript, "--check", "--url", url)
+	check_tsk := exec.Command("node", rCtx.NodeScript, "--check", "--url", url)
 	check_tsk.Dir = ctxPath
 	check_tsk.Stdin = inp_buf
 	check_tsk.Stdout = out_buf
@@ -80,20 +81,21 @@ func insertHeader(data []byte) []byte {
 	return newRef
 }
 
-func doReaderTask(cfg models.ReaderConfig, url string, contents []byte) ([]byte, error) {
+func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, error) {
 	r, w := io.Pipe()
 	defer r.Close()
 	defer w.Close()
 	out := new(bytes.Buffer)
 	input := insertHeader(contents)
 
-	ctxPath := cfg.GetContextDir()
-	document_tsk := exec.Command("node", cfg.NodeScript, "--url", url)
+	rCfg := cfg.Readability
+	ctxPath := rCfg.GetContextDir()
+	document_tsk := exec.Command("node", rCfg.NodeScript, "--url", url)
 	document_tsk.Dir = ctxPath
 	document_tsk.Stdout = w
 	document_tsk.Stdin = bytes.NewReader(input)
 
-	parser_tsk := exec.Command("venv/bin/python3", cfg.PythonScript)
+	parser_tsk := exec.Command("venv/bin/python3", rCfg.PythonScript)
 	parser_tsk.Dir = ctxPath
 	parser_tsk.Stdin = r
 	parser_tsk.Stdout = out

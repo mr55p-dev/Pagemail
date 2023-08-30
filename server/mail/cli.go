@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func MailCommand(app *pocketbase.PocketBase, cfg *models.ReaderConfig) *cobra.Command {
+func MailCommand(app *pocketbase.PocketBase, cfg *models.PMContext) *cobra.Command {
 	cmd := func(c *cobra.Command, args []string) {
-		err := Mailer(app, *cfg)
+		err := Mailer(app, cfg)
 		if err != nil {
 			log.Printf("Mailer failed with error %s", err)
 		} else {

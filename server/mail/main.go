@@ -82,7 +82,7 @@ func getUserIdentifier(user models.User) string {
 	}
 }
 
-func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
+func Mailer(app *pocketbase.PocketBase, cfg *models.PMContext) error {
 	log.Print("Running mailer")
 
 	// Setup clients
@@ -139,7 +139,7 @@ func Mailer(app *pocketbase.PocketBase, cfg models.ReaderConfig) error {
 	return nil
 }
 
-func TestMailBody(cfg models.ReaderConfig) echo.HandlerFunc {
+func TestMailBody() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		pages := []models.Page{

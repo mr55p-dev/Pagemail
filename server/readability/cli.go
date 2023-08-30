@@ -11,7 +11,7 @@ import (
 
 // Function which crawls all pages in the database
 // Something like page preview hook
-func CrawlAll(app *pocketbase.PocketBase, cfg models.ReaderConfig) *cobra.Command {
+func CrawlAll(app *pocketbase.PocketBase, cfg *models.PMContext) *cobra.Command {
 	cmd := func(c *cobra.Command, args []string) {
 		ids := []models.Page{}
 		err := app.Dao().DB().Select("id").From("pages").Build().All(&ids)
@@ -33,7 +33,7 @@ func CrawlAll(app *pocketbase.PocketBase, cfg models.ReaderConfig) *cobra.Comman
 			log.Printf("record %s has never been crawled (last crawled %s)", record.Id, last_crawled)
 
 			url := record.GetString("url")
-			res, err := FetchPreview(url, cfg)
+			res, err := FetchPreview(cfg, url)
 			if err != nil {
 				log.Panic(err)
 			}
