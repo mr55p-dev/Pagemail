@@ -12,9 +12,10 @@ import (
 )
 
 type PMContext struct {
-	IsReady bool
+	IsReady     bool
 	Readability *ReaderConfig
-	AWS *aws.Config
+	AWS         *aws.Config
+	S3Config    *S3Config
 }
 
 func (cfg *PMContext) LoadFromEnv() {
@@ -43,5 +44,10 @@ func (cfg *PMContext) LoadFromEnv() {
 		log.Panicf("Could not load AWS config: %s", err)
 	}
 	cfg.AWS = &awsConf
+
+	cfg.S3Config =&S3Config{
+		ReadabilityBucket: "pagemail-speechsynthesis",
+	}
+
 	cfg.IsReady = true
 }

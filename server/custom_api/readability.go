@@ -1,12 +1,15 @@
 package custom_api
 
 import (
+	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
 	"pagemail/server/models"
 	"pagemail/server/readability"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
@@ -90,13 +93,29 @@ func ReadabilityGetUrlHandler(app *pocketbase.PocketBase, ctx *models.PMContext)
 			return c.String(http.StatusInternalServerError, fmt.Sprint(err))
 		}
 
-		status := record.GetString("readability_status")	
+		status := record.GetString("readability_status")
 		if status != string(models.ReadabilityComplete) {
 			return c.String(http.StatusBadRequest, "readability processing is not complete")
 		}
 
-		// Return a redirect to the required resource
-		return c.NoContent(http.StatusFound, )
+		// work out what the file name should be
+		url := record.GetString("url")
+		key := base64.StdEncoding.EncodeToString([]byte(url))
+		key = key + ".mp3"
+
+		// setup s3 client
+		s3Ctx := context.Background()
+		client := s3.NewFromConfig(*ctx.AWS)
+		signer := s3.NewPresignClient(client)
+		req, err := signer.PresignGetObject(s3Ctx, &s3.GetObjectInput{
+			Bucket: &ctx.S3Config.ReadabilityBucket,
+			Key:    &key,
+		})
+		if err != nil {
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to generate presigned url: %s", err))
+		}
+
+		return c.Redirect(http.StatusFound, req.URL)
 	}
 }
 

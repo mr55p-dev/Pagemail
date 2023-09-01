@@ -104,6 +104,16 @@ func main() {
 				apis.RequireRecordAuth("users"),
 			},
 		})
+		e.Router.AddRoute(echo.Route{
+			Method:  http.MethodGet,
+			Path:    "/api/page/readability-link",
+			Handler: custom_api.ReadabilityGetUrlHandler(app, ctx),
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireRecordAuth("users"),
+				custom_api.ReadabilityMiddleware(app),
+			},
+		})
 
 		return nil
 	})
