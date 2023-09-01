@@ -43,7 +43,7 @@ func StartReaderTask(app *pocketbase.PocketBase, cfg *models.PMContext, record *
 	go func() {
 		state := <-out
 		status := state.status.SynthesisTask.TaskStatus
-		err := UpdateJobState(app, record.Id, models.ReadabilityFromPolly(&status))
+		err := UpdateJobState(app, record.Id, models.ReadabilityFromPolly(&status), task_data)
 		if err != nil {
 			log.Panicf("Failed to update job state for record %s: %s", record.Id, err)
 		}

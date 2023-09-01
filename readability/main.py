@@ -2,6 +2,7 @@ import re
 import sys
 import json
 import boto3
+import time
 from html.parser import HTMLParser
 import logging
 
@@ -118,6 +119,8 @@ def main():
     parser = Parser()
     parser.feed(data["content"])
     inp = parser.output_stream
+
+    time.sleep(15)
 
     try:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/polly/client/start_speech_synthesis_task.html#

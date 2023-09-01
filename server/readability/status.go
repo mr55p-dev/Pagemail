@@ -37,8 +37,6 @@ func FetchJobStatus(c context.Context, id string) (*polly.GetSpeechSynthesisTask
 func AwaitJobCompletion(c context.Context, id *string) chan JobCompletion {
 	out := make(chan JobCompletion)
 	go func() {
-		t := time.NewTicker(time.Second)
-		defer t.Stop()
 		for i := 0; i < 10; i++ {
 			status, err := FetchJobStatus(context.TODO(), *id)
 			if status == nil && err != nil {

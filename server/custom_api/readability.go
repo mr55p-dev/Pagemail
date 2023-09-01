@@ -25,10 +25,10 @@ func ReadabilityHandler(app *pocketbase.PocketBase, cfg *models.PMContext) echo.
 			return err
 		}
 
-		// stat := raw_page_record.GetString("readability_status")
-		// if stat != models.ReadabilityUnknown {
-		// 	return c.String(http.StatusBadRequest, fmt.Sprintf("Cannot start a new synthesis job: record has status %s", stat))
-		// }
+		stat := raw_page_record.GetString("readability_status")
+		if stat != string(models.ReadabilityUnknown) {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("Cannot start a new synthesis job: record has status %s", stat))
+		}
 
 		page_record := models.Page{
 			Id:      raw_page_record.Id,
@@ -36,7 +36,7 @@ func ReadabilityHandler(app *pocketbase.PocketBase, cfg *models.PMContext) echo.
 			Created: raw_page_record.GetCreated().Time(),
 		}
 
-		readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityProcessing)
+		readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityProcessing, nil)
 
 		task, err := readability.StartReaderTask(app, cfg, &page_record)
 		if err != nil {
@@ -74,6 +74,29 @@ func ReadabilityReloadHandler(app *pocketbase.PocketBase, ctx *models.PMContext)
 		err = form.Submit()
 
 		return c.JSON(http.StatusOK, "Done")
+	}
+}
+
+func ReadabilityGetUrlHandler(app *pocketbase.PocketBase, ctx *models.PMContext) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Check if readability is complete
+		id := c.QueryParam("page_id")
+		if id == "" {
+			c.String(http.StatusBadRequest, "page_id field is missing")
+		}
+
+		record, err := app.Dao().FindRecordById("pages", id)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, fmt.Sprint(err))
+		}
+
+		status := record.GetString("readability_status")	
+		if status != string(models.ReadabilityComplete) {
+			return c.String(http.StatusBadRequest, "readability processing is not complete")
+		}
+
+		// Return a redirect to the required resource
+		return c.NoContent(http.StatusFound, )
 	}
 }
 
