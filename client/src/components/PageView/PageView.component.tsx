@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  // AudioFileOutlined,
+  AudioFileOutlined,
   ContentCopy,
   DeleteOutline,
   OpenInNew,
@@ -8,7 +8,7 @@ import {
 } from "@mui/icons-material";
 import LinesEllipsis from "react-lines-ellipsis";
 import { pb } from "../../lib/pocketbase";
-import { PageRecord } from "../../lib/datamodels";
+import { PageRecord, ReadabilityStatus } from "../../lib/datamodels";
 import {
   ButtonGroup,
   Card,
@@ -16,15 +16,45 @@ import {
   CardOverflow,
   Grid,
   IconButton,
+  LinearProgress,
   Link,
   Stack,
   Typography,
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
 
+
+interface PageGroup {
+  date: string;
+  pages: PageRecord[];
+}
+
+function groupPages(pages: PageRecord[]): PageGroup[] {
+  const groups = {} as Record<string, PageRecord[]>;
+  pages.forEach((page) => {
+    const dt = new Date(page.created).toLocaleDateString("en-gb") ?? "unknown";
+    const grp = groups[dt];
+    if (!grp) {
+      groups[dt] = [];
+    }
+    groups[dt].push(page);
+  });
+  const today = new Date().toLocaleDateString("en-gb");
+  const yesterday_dt = new Date();
+  yesterday_dt.setDate(yesterday_dt.getDate() - 1);
+  const yesterday = yesterday_dt.toLocaleDateString("en-gb");
+  return Object.keys(groups)
+    .sort((l, r) => new Date(r).getTime() - new Date(l).getTime())
+    .map((k) => ({
+      date: k === today ? "Today" : k === yesterday ? "Yesterday" : k,
+      pages: groups[k],
+    }));
+}
+
 export function Page(pageProps: PageRecord) {
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [audioUrl, setAudioUrl] = React.useState<string>();
 
   const dt = new Date(pageProps.created);
   const dest = new URL(pageProps.url);
@@ -40,13 +70,26 @@ export function Page(pageProps: PageRecord) {
       });
   };
 
-  // function requestReadability() {
-  //   pb.send("/api/page/readability", {
-  //     method: "GET",
-  //     params: { page_id: pageProps.id },
-  //     cache: "no-cache",
-  //   }).then((res) => console.log(res));
-  // }
+  function requestReadability() {
+    console.log(pageProps.readability_status, ReadabilityStatus.COMPLETE);
+    if (pageProps.readability_status === ReadabilityStatus.UNKNOWN) {
+      pb.send("/api/page/readability", {
+        method: "GET",
+        params: { page_id: pageProps.id },
+        cache: "no-cache",
+      }).then((res) => console.log(res));
+    } else if (pageProps.readability_status === ReadabilityStatus.COMPLETE) {
+      pb.send("/api/page/readability-link", {
+        params: { page_id: pageProps.id },
+        cache: "no-cache",
+      })
+        .then((res) => {
+          setAudioUrl(res);
+        })
+        .catch((e) => console.error(e))
+        .finally(() => console.log("BYEEEE"));
+    }
+  }
 
   function requestReload() {
     setIsLoading(true);
@@ -80,12 +123,11 @@ export function Page(pageProps: PageRecord) {
             </Typography>
           </Link>
           <IconButton
-            aria-label="bookmark Bahamas Islands"
             variant="plain"
             color="neutral"
             size="sm"
             sx={{ position: "absolute", top: "0.875rem", right: "0.5rem" }}
-			disabled={isLoading}
+            disabled={isLoading}
             onClick={requestReload}
           >
             <Refresh />
@@ -132,15 +174,28 @@ export function Page(pageProps: PageRecord) {
           >
             <OpenInNew />
           </IconButton>
-          {/* pageProps.is_readable && (
+          {pageProps.is_readable && (
             <IconButton size="sm" onClick={requestReadability}>
               <AudioFileOutlined />
             </IconButton>
-          ) */}
-          <IconButton size="sm" onClick={handleDelete} color="danger">
+          )}
+          <IconButton
+            size="sm"
+            disabled={
+              pageProps.readability_status === ReadabilityStatus.PROCESSING
+            }
+            onClick={handleDelete}
+            color="danger"
+          >
             <DeleteOutline />
           </IconButton>
         </ButtonGroup>
+
+        {pageProps.readability_status === ReadabilityStatus.PROCESSING && (
+          <LinearProgress></LinearProgress>
+        )}
+
+        {audioUrl && <audio controls src={audioUrl}></audio>}
 
         <CardOverflow sx={{ w: 1, bgcolor: "background.level1" }}>
           <Typography level="body3" sx={{ py: 1 }}>
@@ -152,33 +207,6 @@ export function Page(pageProps: PageRecord) {
       </Card>
     </Grid>
   );
-}
-
-interface PageGroup {
-  date: string;
-  pages: PageRecord[];
-}
-
-function groupPages(pages: PageRecord[]): PageGroup[] {
-  const groups = {} as Record<string, PageRecord[]>;
-  pages.forEach((page) => {
-    const dt = new Date(page.created).toLocaleDateString("en-gb") ?? "unknown";
-    const grp = groups[dt];
-    if (!grp) {
-      groups[dt] = [];
-    }
-    groups[dt].push(page);
-  });
-  const today = new Date().toLocaleDateString("en-gb");
-  const yesterday_dt = new Date();
-  yesterday_dt.setDate(yesterday_dt.getDate() - 1);
-  const yesterday = yesterday_dt.toLocaleDateString("en-gb");
-  return Object.keys(groups)
-    .sort((l, r) => new Date(r).getTime() - new Date(l).getTime())
-    .map((k) => ({
-      date: k === today ? "Today" : k === yesterday ? "Yesterday" : k,
-      pages: groups[k],
-    }));
 }
 
 export function PageView() {
@@ -219,12 +247,13 @@ export function PageView() {
         console.error(e);
       }
     };
-  }, [notifErr]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Stack spacing={1} mt={2}>
       {groupPages(pages).map((g) => (
-        <PageGroup {...g} />
+        <PageGroup {...g} key={g.date} />
       ))}
     </Stack>
   );
