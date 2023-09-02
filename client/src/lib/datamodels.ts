@@ -26,9 +26,9 @@ export interface PageRecord extends BaseRecord {
   readability_status?: ReadabilityStatus;
 }
 
-enum ReadabilityStatus {
-  UNKNOWN,
-  FAILED,
-  PROCESSING,
-  COMPLETE,
+export enum ReadabilityStatus {
+  UNKNOWN = "UNKNOWN",
+  FAILED = "FAILED",
+  PROCESSING = "PROCESSING",
+  COMPLETE = "COMPLETE",
 }

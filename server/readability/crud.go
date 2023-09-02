@@ -12,11 +12,10 @@ import (
 
 
 
-func UpdateJobState(app *pocketbase.PocketBase, pageId string, state models.ReadabilityStatus, taskData *polly.StartSpeechSynthesisTaskOutput) error {
+func UpdateJobState(app *pocketbase.PocketBase, pageId string, state models.ReadabilityStatus, taskData *polly.StartSpeechSynthesisTaskOutput) {
 	record, err := app.Dao().FindRecordById("pages", pageId)
 	if err != nil {
-		log.Print(err)
-		return err
+		log.Panic(err)
 	}
 
 	form := forms.NewRecordUpsert(app, record)
@@ -26,14 +25,19 @@ func UpdateJobState(app *pocketbase.PocketBase, pageId string, state models.Read
 	if taskData != nil {
 		data, err := json.Marshal(taskData)
 		if err != nil {
-			return err
+			log.Panic(err)
 		}
 		newData["readability_task_data"] = string(data)
+		newData["readability_task_id"] = *taskData.SynthesisTask.TaskId
 	}
 	if err := form.LoadData(newData); err != nil {
-		return err
+		log.Panic(err)
 	}
-	return form.Submit()
+	err = form.Submit()
+	if err != nil {
+		log.Panic(err)
+	}
+	return
 }
 
 // func GetPage(app *pocketbase.PocketBase, pageId string) error {

@@ -2,6 +2,7 @@ import re
 import sys
 import json
 import boto3
+import base64
 import time
 from html.parser import HTMLParser
 import logging
@@ -124,18 +125,17 @@ def main():
 
     try:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/polly/client/start_speech_synthesis_task.html#
-        # response = client.start_speech_synthesis_task(
-        #     Engine='standard',
-        #     LanguageCode='en-GB',
-        #     OutputFormat='mp3',
-        #     OutputS3BucketName='pagemail-speechsynthesis',
-        #     OutputS3KeyPrefix='test2',
-        #     Text=inp,
-        #     TextType='ssml',
-        #     VoiceId='Amy',
-        # )
-        # sys.stdout.write(json.dumps(response["SynthesisTask"], default=str))
-        # sys.stdout.flush()
+        response = client.start_speech_synthesis_task(
+            Engine='standard',
+            LanguageCode='en-GB',
+            OutputFormat='mp3',
+            OutputS3BucketName='pagemail-speechsynthesis',
+            Text=inp,
+            TextType='ssml',
+            VoiceId='Amy',
+        )
+        sys.stdout.write(json.dumps(response["SynthesisTask"], default=str))
+        sys.stdout.flush()
         sys.stdout.write("""{
 "ResponseMetadata": {
     "RequestId": "6b17d1a6-def2-4f22-9d64-0e71101f8c13",

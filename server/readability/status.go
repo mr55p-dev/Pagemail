@@ -37,11 +37,10 @@ func FetchJobStatus(c context.Context, id string) (*polly.GetSpeechSynthesisTask
 func AwaitJobCompletion(c context.Context, id *string) chan JobCompletion {
 	out := make(chan JobCompletion)
 	go func() {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 100; i++ {
 			status, err := FetchJobStatus(context.TODO(), *id)
 			if status == nil && err != nil {
-				log.Printf("Cancelling inner context, status: %s, err: %s", string(status.SynthesisTask.TaskStatus), err)
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 2)
 			} else {
 				out <- JobCompletion{
 					isSuccess: true,

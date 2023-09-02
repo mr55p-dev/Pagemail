@@ -40,9 +40,9 @@ func ReadabilityHandler(app *pocketbase.PocketBase, cfg *models.PMContext) echo.
 		}
 
 		readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityProcessing, nil)
-
 		task, err := readability.StartReaderTask(app, cfg, &page_record)
 		if err != nil {
+			readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityFailed, nil)
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not start reader job: %s", err))
 		}
 
@@ -85,7 +85,7 @@ func ReadabilityGetUrlHandler(app *pocketbase.PocketBase, ctx *models.PMContext)
 		// Check if readability is complete
 		id := c.QueryParam("page_id")
 		if id == "" {
-			c.String(http.StatusBadRequest, "page_id field is missing")
+			return c.String(http.StatusBadRequest, "page_id field is missing")
 		}
 
 		record, err := app.Dao().FindRecordById("pages", id)
@@ -99,9 +99,11 @@ func ReadabilityGetUrlHandler(app *pocketbase.PocketBase, ctx *models.PMContext)
 		}
 
 		// work out what the file name should be
-		url := record.GetString("url")
-		key := base64.StdEncoding.EncodeToString([]byte(url))
-		key = key + ".mp3"
+		taskId := record.GetString("readability_task_id")
+		if taskId == "" {
+			return c.String(http.StatusBadRequest, "no task id found")
+		}
+		key := taskId + ".mp3"
 
 		// setup s3 client
 		s3Ctx := context.Background()
@@ -115,7 +117,7 @@ func ReadabilityGetUrlHandler(app *pocketbase.PocketBase, ctx *models.PMContext)
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to generate presigned url: %s", err))
 		}
 
-		return c.Redirect(http.StatusFound, req.URL)
+		return c.JSON(http.StatusOK, req)
 	}
 }
 
