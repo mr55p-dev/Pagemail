@@ -25,6 +25,7 @@ func StartReaderTask(app *pocketbase.PocketBase, cfg *models.PMContext, record *
 	log.Print("Fetched url contents")
 
 	task_data := new(polly.StartSpeechSynthesisTaskOutput)
+	log.Printf("Starting reader task for %s", url)
 	rawOut, err := doReaderTask(cfg, url, buf)
 	if err != nil {
 		log.Print("Error executing reader task", err)
@@ -131,5 +132,6 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 		log.Printf("Written to stderr: %s", stdErr.String())
 		return nil, fmt.Errorf("Python task exited with error: %s", err)
 	}
+	log.Printf("Completed reader tasks succesfully for %s", url)
 	return stdOut.Bytes(), nil
 }
