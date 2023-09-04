@@ -85,61 +85,79 @@ func insertHeader(data []byte) []byte {
 	return newRef
 }
 
+func getReadabilityData(cfg *models.ReaderConfig, url string, data io.Reader, buf io.Writer) error {
+	log.Print("Fetching readability data for ", url)
+
+	proc := exec.Command("node", cfg.NodeScript, "--url", url)
+	proc.Dir = cfg.GetContextDir()
+	proc.Stdout = buf
+	proc.Stdin = data
+
+	if err := proc.Run(); err != nil {
+		err := err.(*exec.ExitError)
+
+		stdoutData := new(bytes.Buffer)
+		cnt, _ := io.Copy(buf, stdoutData)
+		return fmt.Errorf(
+			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
+			err.ExitCode(),
+			err.Stderr,
+			cnt,
+			stdoutData.String(),
+		)
+	}
+	log.Printf("Completed readability data job (process exited with status %d)", proc.ProcessState.ExitCode())
+	return nil
+}
+
+func getSpeechSynthesisJob(cfg *models.ReaderConfig, data io.Reader, buf io.Writer) error {
+	log.Print("Fetching synthesis job")
+
+	proc := exec.Command("venv/bin/python3", cfg.PythonScript)
+	proc.Dir = cfg.GetContextDir() 
+	proc.Stdin = data
+	proc.Stdout = buf
+
+	if err := proc.Run(); err != nil {
+		err := err.(*exec.ExitError)
+		stdoutData := new(bytes.Buffer)
+		cnt, _ := io.Copy(buf, stdoutData)
+		return fmt.Errorf(
+			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
+			err.ExitCode(),
+			err.Stderr,
+			cnt,
+			stdoutData.String(),
+		)
+	}
+
+	log.Printf("Completed readability synthesis job (process exited with status %d)", proc.ProcessState.ExitCode())
+	return nil
+}
+
 func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, error) {
+	log.Printf("Starting reader task for %s", url)
+	conf := cfg.Readability
+
+	inputData := insertHeader(contents)
+	inputStream := bytes.NewReader(inputData)
+	outputStream := new(bytes.Buffer)
+	log.Print("Prepared header bytes")
+
 	r, w := io.Pipe()
 	defer r.Close()
 	defer w.Close()
-	stdOut := new(bytes.Buffer)
-	stdErr := new(bytes.Buffer)
-	log.Print("Entered doReaderTask")
-	in := insertHeader(contents)
-	log.Print("Header inserted")
 
-	rCfg := cfg.Readability
-	ctxPath := rCfg.GetContextDir()
-	log.Print(rCfg)
-	document_tsk := exec.Command("node", rCfg.NodeScript, "--url", url)
-	document_tsk.Dir = ctxPath
-	document_tsk.Stdout = w
-	document_tsk.Stdin = bytes.NewReader(in)
-	document_tsk.Stderr = stdErr
-
-	parser_tsk := exec.Command("venv/bin/python3", rCfg.PythonScript)
-	parser_tsk.Dir = ctxPath
-	parser_tsk.Stdin = r
-	parser_tsk.Stdout = stdOut
-	parser_tsk.Stderr = stdErr
-	log.Print("Setup tasks")
-
-	err := document_tsk.Start()
-	if err != nil {
-		log.Printf("Written to stderr: %s", stdErr.String())
-		return nil, fmt.Errorf("Failed to start node task with error: %s", err)
+	if err := getReadabilityData(conf, url, inputStream, w); err != nil {
+		log.Print(err)
+		return nil, err
 	}
-	log.Print("Started nodejs")
 
-	err = parser_tsk.Start()
-	if err != nil {
-		log.Printf("Written to stderr: %s", stdErr.String())
-		return nil, fmt.Errorf("Failed to start python task with error: %s", err)
+	if err := getSpeechSynthesisJob(conf, r, outputStream); err != nil {
+		log.Print(err)
+		return nil, err
 	}
-	log.Print("Started python")
 
-	err = document_tsk.Wait()
-	if err != nil {
-		log.Printf("Written to stderr: %s", stdErr.String())
-		return nil, fmt.Errorf("Node task exited with error: %s", err)
-	}
-	log.Print("Finished nodejs")
-
-	w.Close()
-	log.Print("Closed write end of pipe")
-
-	err = parser_tsk.Wait()
-	if err != nil {
-		log.Printf("Written to stderr: %s", stdErr.String())
-		return nil, fmt.Errorf("Python task exited with error: %s", err)
-	}
-	log.Printf("Completed reader tasks succesfully for %s", url)
-	return stdOut.Bytes(), nil
+	log.Printf("Completed reader tasks successfully for %s", url)
+	return outputStream.Bytes(), nil
 }

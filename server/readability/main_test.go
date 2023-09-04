@@ -1,6 +1,7 @@
 package readability
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"pagemail/server/models"
@@ -36,6 +37,17 @@ func getConfig() *models.PMContext {
 			PythonScript: "test.py",
 			ContextDir:   "../../readability/dist",
 		},
+	}
+}
+
+func TestSpawnReadabilityData(t *testing.T) {
+	url := "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio"
+	data := getExample()
+	config := getConfig()
+	outBuf := new(bytes.Buffer)
+	err := getReadabilityData(config.Readability, url, bytes.NewReader(data), outBuf)
+	if err != nil {
+		t.Error(err)
 	}
 }
 
@@ -78,8 +90,4 @@ func TestHeaderAdd(t *testing.T) {
 		t.FailNow()
 	}
 	t.Log(out)
-}
-
-func TestCrawlAll(t *testing.T) {
-	// CrawlAll()
 }

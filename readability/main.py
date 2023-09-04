@@ -111,6 +111,7 @@ def main():
     parser.feed(data["content"])
     inp = parser.output_stream
 
+    sys.exit(0)
     try:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/polly/client/start_speech_synthesis_task.html#
         response = client.start_speech_synthesis_task(
