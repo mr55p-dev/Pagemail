@@ -2,7 +2,6 @@ package custom_api
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"

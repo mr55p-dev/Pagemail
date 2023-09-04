@@ -2,6 +2,7 @@ import re
 import sys
 import json
 import boto3
+import datetime
 import base64
 import time
 from html.parser import HTMLParser
@@ -26,13 +27,11 @@ class Tag():
             case _:
                 return f"<{self.name}>"
 
-
 class Parser(HTMLParser):
     KEEP = ["p"]
 
     REMAP_OPEN = {
         "section": Tag("break", Tag.OPENCLOSE),
-        "article": Tag("speak", Tag.OPEN),
         "strong": Tag("emphasis", Tag.OPEN),
         "em": Tag("emphasis", Tag.OPEN),
         "h1": Tag("p", Tag.OPEN),
@@ -44,7 +43,6 @@ class Parser(HTMLParser):
     }
     
     REMAP_CLOSE = {
-        "article": Tag("speak", Tag.CLOSE),
         "strong": Tag("emphasis", Tag.CLOSE),
         "em": Tag("emphasis", Tag.CLOSE),
         "h1": Tag("p", Tag.CLOSE),
@@ -58,41 +56,38 @@ class Parser(HTMLParser):
     def __init__(self, *, convert_charrefs: bool = True) -> None:
         super().__init__(convert_charrefs=convert_charrefs)
         self._output_stream = []
-        self.tagstack = []
+        self._depth = 0
 
     def handle_starttag(self, tag: str, _: list[tuple[str, str | None]]) -> None:
+        self._depth += 1
         if tag in Parser.KEEP:
             self._output_stream.append(Tag(tag, Tag.OPEN))
         elif tag in Parser.REMAP_OPEN:
             replacement = Parser.REMAP_OPEN[tag]
             self._output_stream.append(replacement)
-            if replacement.isopen == Tag.OPENCLOSE:
-                self.tagstack.append(False)
-                return 
-        else:
-            self.tagstack.append(False)
-            return
-        self.tagstack.append(True)
 
     def handle_endtag(self, tag: str) -> None:
-        if not self.tagstack.pop():
-            return
-
-        if tag in Parser.REMAP_CLOSE:
-            self._output_stream.append(Parser.REMAP_CLOSE[tag])
-        else:
+        self._depth -= 1
+        if tag in Parser.KEEP:
             self._output_stream.append(Tag(tag, Tag.CLOSE))
+        if tag in Parser.REMAP_CLOSE:
+            replacement = Parser.REMAP_CLOSE[tag]
+            if replacement.isopen == Tag.OPENCLOSE:
+                return
+            self._output_stream.append(replacement)
 
     def handle_data(self, data: str) -> None:
         processed_data = preprocess_html_content(data)
-        if len(self._output_stream) and isinstance(self._output_stream[-1], str):
+        if not data or not data.strip():
+            return
+        elif len(self._output_stream) and isinstance(self._output_stream[-1], str):
             self._output_stream[-1] += processed_data
         elif processed_data:
             self._output_stream.append(processed_data)
 
     @property
     def output_stream(self):
-        return "".join(str(i) for i in self._output_stream)
+        return "".join(["<speak>", *(str(i) for i in self._output_stream), "</speak>"])
 
 def replace(start: str, init: list[str], repl: list[str]) -> str:
     n = start
@@ -113,15 +108,10 @@ def main():
     # Load the data 
     text = sys.stdin.read()
     data = json.loads(text)
-
-    # Parse the json 
-    data = json.loads(text)
     
     parser = Parser()
     parser.feed(data["content"])
     inp = parser.output_stream
-
-    time.sleep(15)
 
     try:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/polly/client/start_speech_synthesis_task.html#
@@ -134,35 +124,14 @@ def main():
             TextType='ssml',
             VoiceId='Amy',
         )
-        sys.stdout.write(json.dumps(response["SynthesisTask"], default=str))
-        sys.stdout.flush()
-        sys.stdout.write("""{
-"ResponseMetadata": {
-    "RequestId": "6b17d1a6-def2-4f22-9d64-0e71101f8c13",
-    "HTTPStatusCode": 200,
-    "HTTPHeaders": { "x-amzn-requestid": "6b17d1a6-def2-4f22-9d64-0e71101f8c13", "content-type": "application/json", "content-length": "472", "date": "Thu, 27 Jul 2023 23:48:54 GMT" },
-    "RetryAttempts": 0
-},
-"SynthesisTask": {
-    "Engine": "standard",
-    "TaskId": "d75be692-5f58-4534-b7fe-4d6e51c53a51",
-    "TaskStatus": "scheduled",
-    "OutputUri": "https://s3.eu-west-2.amazonaws.com/pagemail-speechsynthesis/d75be692-5f58-4534-b7fe-4d6e51c53a51.mp3",
-    "RequestCharacters": 1398,
-    "OutputFormat": "mp3",
-    "TextType": "text",
-    "VoiceId": "Amy",
-    "LanguageCode": "en-GB"
-}}""")
+        response["SynthesisTask"]["CreationTime"] = response["SynthesisTask"]["CreationTime"].astimezone(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        sys.stdout.write(json.dumps(response))
         sys.stdout.flush()
     except Exception as e:
+        sys.stderr.write(str(e))
         logging.exception(e)
         logging.fatal("Failed to create new speech synthesis task")
         sys.exit(1)
-
-    logging.info("Finished job")
-
-
     
 if __name__ == "__main__":
     logging.basicConfig(filename="parser.log")

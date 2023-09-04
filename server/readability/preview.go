@@ -51,7 +51,6 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 func FetchPreview(ctx *models.PMContext, url string) (*models.Page, error) {
 	out := &models.Page{
 		LastCrawled:       time.Now(),
-		ReadabilityStatus: string(models.ReadabilityUnknown),
 	}
 	content, err := net.FetchUrlContents(url)
 	if err != nil {
@@ -102,7 +101,9 @@ func PagePreviewHook(app *pocketbase.PocketBase, cfg *models.PMContext) hook.Han
 			}
 
 			form := forms.NewRecordUpsert(app, e.Record)
-			err = form.LoadData(res.ToMap())
+			data := res.ToMap()
+			data["ReadabilityStatus"] = string(models.ReadabilityUnknown)
+			err = form.LoadData(data)
 			if err != nil {
 				log.Printf("Failed to prepare page preview record update for url %s: %s", url, err)
 				return

@@ -23,7 +23,6 @@ import {
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
 
-
 interface PageGroup {
   date: string;
   pages: PageRecord[];
@@ -71,7 +70,6 @@ export function Page(pageProps: PageRecord) {
   };
 
   function requestReadability() {
-    console.log(pageProps.readability_status, ReadabilityStatus.COMPLETE);
     if (pageProps.readability_status === ReadabilityStatus.UNKNOWN) {
       pb.send("/api/page/readability", {
         method: "GET",
@@ -79,12 +77,12 @@ export function Page(pageProps: PageRecord) {
         cache: "no-cache",
       }).then((res) => console.log(res));
     } else if (pageProps.readability_status === ReadabilityStatus.COMPLETE) {
-      pb.send("/api/page/readability-link", {
+      pb.send<{ URL: string }>("/api/page/readability-link", {
         params: { page_id: pageProps.id },
         cache: "no-cache",
       })
         .then((res) => {
-          setAudioUrl(res);
+          setAudioUrl(res.URL);
         })
         .catch((e) => console.error(e))
         .finally(() => console.log("BYEEEE"));
@@ -247,7 +245,7 @@ export function PageView() {
         console.error(e);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

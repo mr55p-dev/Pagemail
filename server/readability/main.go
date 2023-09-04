@@ -18,32 +18,40 @@ import (
 )
 
 func StartReaderTask(app *pocketbase.PocketBase, cfg *models.PMContext, record *models.Page) (*polly.StartSpeechSynthesisTaskOutput, error) {
+	log.Print("Starting reader task")
 	// Get the URL and invoke the pipeline
 	url := record.Url
 	buf, err := net.FetchUrlContents(url)
+	log.Print("Fetched url contents")
 
 	task_data := new(polly.StartSpeechSynthesisTaskOutput)
-	raw_out, err := doReaderTask(cfg, url, buf)
+	rawOut, err := doReaderTask(cfg, url, buf)
 	if err != nil {
-		log.Print(err)
+		log.Print("Error executing reader task", err)
 		return nil, err
 	}
 
-	log.Print(string(raw_out))
-	err = json.Unmarshal(raw_out, task_data)
+	err = json.Unmarshal(rawOut, task_data)
 	if err != nil {
-		log.Print(err)
+		log.Print("Error parsing task output", err)
 		return nil, err
 	}
 
+	log.Printf("Synthesis task obtained with id %s", *task_data.SynthesisTask.TaskId)
 	c, cancel := context.WithTimeout(context.Background(), time.Minute*2)
 	defer cancel()
 
-	out := AwaitJobCompletion(c, task_data.SynthesisTask.TaskId)
+	taskData, taskErr := AwaitJobCompletion(c, cfg, task_data.SynthesisTask.TaskId)
 	go func() {
-		state := <-out
-		status := state.status.SynthesisTask.TaskStatus
-		UpdateJobState(app, record.Id, models.ReadabilityFromPolly(&status), task_data)
+		select {
+		case job := <-taskData:
+			log.Print("Got some output", job)
+			status := job.SynthesisTask.TaskStatus
+			UpdateJobState(app, record.Id, models.ReadabilityFromPolly(&status), task_data)
+		case err := <-taskErr:
+			log.Print("Got an error", err)
+			UpdateJobState(app, record.Id, models.ReadabilityFailed, task_data)
+		}
 	}()
 
 	return task_data, nil
@@ -80,33 +88,39 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 	r, w := io.Pipe()
 	defer r.Close()
 	defer w.Close()
-	out := new(bytes.Buffer)
-	input := insertHeader(contents)
+	stdOut := new(bytes.Buffer)
+	stdErr := new(bytes.Buffer)
+	in := insertHeader(contents)
 
 	rCfg := cfg.Readability
 	ctxPath := rCfg.GetContextDir()
 	document_tsk := exec.Command("node", rCfg.NodeScript, "--url", url)
 	document_tsk.Dir = ctxPath
 	document_tsk.Stdout = w
-	document_tsk.Stdin = bytes.NewReader(input)
+	document_tsk.Stdin = bytes.NewReader(in)
+	document_tsk.Stderr = stdErr
 
 	parser_tsk := exec.Command("venv/bin/python3", rCfg.PythonScript)
 	parser_tsk.Dir = ctxPath
 	parser_tsk.Stdin = r
-	parser_tsk.Stdout = out
+	parser_tsk.Stdout = stdOut
+	parser_tsk.Stderr = stdErr
 
 	err := document_tsk.Start()
 	if err != nil {
+		log.Printf("Written to stderr: %s", stdErr.String())
 		return nil, fmt.Errorf("Failed to start node task with error: %s", err)
 	}
 
 	err = parser_tsk.Start()
 	if err != nil {
+		log.Printf("Written to stderr: %s", stdErr.String())
 		return nil, fmt.Errorf("Failed to start python task with error: %s", err)
 	}
 
 	err = document_tsk.Wait()
 	if err != nil {
+		log.Printf("Written to stderr: %s", stdErr.String())
 		return nil, fmt.Errorf("Node task exited with error: %s", err)
 	}
 
@@ -114,7 +128,8 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 
 	err = parser_tsk.Wait()
 	if err != nil {
+		log.Printf("Written to stderr: %s", stdErr.String())
 		return nil, fmt.Errorf("Python task exited with error: %s", err)
 	}
-	return out.Bytes(), nil
+	return stdOut.Bytes(), nil
 }
