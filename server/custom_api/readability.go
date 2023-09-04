@@ -41,9 +41,11 @@ func ReadabilityHandler(app *pocketbase.PocketBase, cfg *models.PMContext) echo.
 		readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityProcessing, nil)
 		task, err := readability.StartReaderTask(app, cfg, &page_record)
 		if err != nil {
+			log.Print("Readability task failed with error: ", err)
 			readability.UpdateJobState(app, raw_page_record.Id, models.ReadabilityFailed, nil)
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("Could not start reader job: %s", err))
 		}
+		log.Printf("Readability task created with task id %s", *task.SynthesisTask.TaskId)
 
 		return c.JSON(http.StatusOK, task)
 	}
