@@ -3,8 +3,6 @@ import sys
 import json
 import boto3
 import datetime
-import base64
-import time
 from html.parser import HTMLParser
 import logging
 
