@@ -91,7 +91,7 @@ export function Page(pageProps: PageRecord) {
         .then((res) => {
           setAudioUrl(res.URL);
         })
-        .catch((e) => notifErr("Failed to fetch readability link"));
+        .catch(() => notifErr("Failed to fetch readability link"));
     }
   }
 
