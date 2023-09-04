@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os/exec"
 	"pagemail/server/models"
@@ -91,24 +90,27 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 	inputData := insertHeader(contents)
 	inputStream := bytes.NewReader(inputData)
 	outputStream := new(bytes.Buffer)
+	errStream := new(bytes.Buffer)
 	log.Print("Prepared header bytes")
-
-	r, w := io.Pipe()
-	defer r.Close()
-	defer w.Close()
 
 	// Create readability job
 	log.Print("Fetching readability data for ", url)
 	nodeProc := exec.Command("node", cfg.Readability.NodeScript, "--url", url)
 	nodeProc.Dir = cfg.Readability.GetContextDir()
-	nodeProc.Stdout = w
 	nodeProc.Stdin = inputStream
+	nodeProc.Stderr = errStream
+	nodeOut, err := nodeProc.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to obtain node process stdout: %s", err)
+	}
+	defer nodeOut.Close()
 
 	// Create python job
 	pythonProc := exec.Command("venv/bin/python3", cfg.Readability.PythonScript)
 	pythonProc.Dir = cfg.Readability.GetContextDir()
-	pythonProc.Stdin = r
+	pythonProc.Stdin = nodeOut
 	pythonProc.Stdout = outputStream
+	pythonProc.Stderr = errStream
 
 	// Start processes
 	if err := nodeProc.Start(); err != nil {
@@ -119,41 +121,26 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 		return nil, fmt.Errorf("Failed to start python process: %s", err)
 	}
 
-	// Close pipe (important)
-	w.Close()
-
 	// Wait on exits
 	if err := nodeProc.Wait(); err != nil {
-		err := err.(*exec.ExitError)
-
-		stdoutData, _ := io.ReadAll(r)
+		log.Print("ERROR (node): ", err)
 		return nil, fmt.Errorf(
-			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
-			err.ExitCode(),
-			err.Stderr,
-			len(stdoutData),
-			string(stdoutData),
+			"Readability (node) exited with status %d: %s",
+			nodeProc.ProcessState.ExitCode(),
+			errStream.String(),
 		)
 	}
 	log.Printf("Completed readability data job (process exited with status %d)", nodeProc.ProcessState.ExitCode())
 
 	if err := pythonProc.Wait(); err != nil {
-		err := err.(*exec.ExitError)
-		stdoutData := new(bytes.Buffer)
-		cnt, _ := io.Copy(outputStream, stdoutData)
+		log.Print("ERROR (python): ", err)
 		return nil, fmt.Errorf(
-			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
-			err.ExitCode(),
-			err.Stderr,
-			cnt,
-			stdoutData.String(),
+			"Readability (python) exited with status %d: %s",
+			pythonProc.ProcessState.ExitCode(),
+			errStream.String(),
 		)
 	}
 	log.Printf("Completed readability synthesis job (process exited with status %d)", pythonProc.ProcessState.ExitCode())
-
-	out, err := io.ReadAll(r)
-	log.Printf("Got output %s (err %s) ", string(out), err)
-
-	log.Printf("Completed reader tasks successfully for %s", url)
+	log.Printf("Completed all reader tasks successfully for %s", url)
 	return outputStream.Bytes(), nil
 }

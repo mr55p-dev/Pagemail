@@ -1,7 +1,6 @@
 import { parseArgs } from "node:util";
 import { JSDOM } from "jsdom";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
-import { writeFileSync, writeSync } from "node:fs";
 
 function parseDoc(docstring: Buffer | string, url: string): any {
   const parser = new JSDOM(docstring, {
@@ -139,5 +138,3 @@ function main() {
 }
 
 main();
-writeFileSync("/Users/ellis/Git/pagemail/thisisthenodejsprogram", "hello I am alive")
-process.stdout.destroy()
