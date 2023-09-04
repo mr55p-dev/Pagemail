@@ -1,6 +1,7 @@
 import { parseArgs } from "node:util";
 import { JSDOM } from "jsdom";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
+import { writeFileSync, writeSync } from "node:fs";
 
 function parseDoc(docstring: Buffer | string, url: string): any {
   const parser = new JSDOM(docstring, {
@@ -28,8 +29,8 @@ async function fetchReadableArticle(data: Buffer, url: URL) {
     process.exit(3);
   }
 
-  process.stdout.write(JSON.stringify(parsed));
-  process.exit(0);
+  const out = JSON.stringify(parsed)
+  process.stdout.write(out);
 }
 
 class Message {
@@ -99,7 +100,7 @@ class Message {
   }
 }
 
-async function main() {
+function main() {
   const { values } = parseArgs({
     options: {
       check: {
@@ -125,6 +126,8 @@ async function main() {
     process.exit(1);
   }
 
+
+
   const msg = new Message()
   msg.attachStream(buf => {
 	if (values.check) {
@@ -136,3 +139,5 @@ async function main() {
 }
 
 main();
+writeFileSync("/Users/ellis/Git/pagemail/thisisthenodejsprogram", "hello I am alive")
+process.stdout.destroy()

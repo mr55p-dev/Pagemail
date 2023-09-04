@@ -85,59 +85,8 @@ func insertHeader(data []byte) []byte {
 	return newRef
 }
 
-func getReadabilityData(cfg *models.ReaderConfig, url string, data io.Reader, buf io.Writer) error {
-	log.Print("Fetching readability data for ", url)
-
-	proc := exec.Command("node", cfg.NodeScript, "--url", url)
-	proc.Dir = cfg.GetContextDir()
-	proc.Stdout = buf
-	proc.Stdin = data
-
-	if err := proc.Run(); err != nil {
-		err := err.(*exec.ExitError)
-
-		stdoutData := new(bytes.Buffer)
-		cnt, _ := io.Copy(buf, stdoutData)
-		return fmt.Errorf(
-			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
-			err.ExitCode(),
-			err.Stderr,
-			cnt,
-			stdoutData.String(),
-		)
-	}
-	log.Printf("Completed readability data job (process exited with status %d)", proc.ProcessState.ExitCode())
-	return nil
-}
-
-func getSpeechSynthesisJob(cfg *models.ReaderConfig, data io.Reader, buf io.Writer) error {
-	log.Print("Fetching synthesis job")
-
-	proc := exec.Command("venv/bin/python3", cfg.PythonScript)
-	proc.Dir = cfg.GetContextDir() 
-	proc.Stdin = data
-	proc.Stdout = buf
-
-	if err := proc.Run(); err != nil {
-		err := err.(*exec.ExitError)
-		stdoutData := new(bytes.Buffer)
-		cnt, _ := io.Copy(buf, stdoutData)
-		return fmt.Errorf(
-			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
-			err.ExitCode(),
-			err.Stderr,
-			cnt,
-			stdoutData.String(),
-		)
-	}
-
-	log.Printf("Completed readability synthesis job (process exited with status %d)", proc.ProcessState.ExitCode())
-	return nil
-}
-
 func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, error) {
 	log.Printf("Starting reader task for %s", url)
-	conf := cfg.Readability
 
 	inputData := insertHeader(contents)
 	inputStream := bytes.NewReader(inputData)
@@ -148,15 +97,62 @@ func doReaderTask(cfg *models.PMContext, url string, contents []byte) ([]byte, e
 	defer r.Close()
 	defer w.Close()
 
-	if err := getReadabilityData(conf, url, inputStream, w); err != nil {
-		log.Print(err)
-		return nil, err
+	// Create readability job
+	log.Print("Fetching readability data for ", url)
+	nodeProc := exec.Command("node", cfg.Readability.NodeScript, "--url", url)
+	nodeProc.Dir = cfg.Readability.GetContextDir()
+	nodeProc.Stdout = w
+	nodeProc.Stdin = inputStream
+
+	// Create python job
+	pythonProc := exec.Command("venv/bin/python3", cfg.Readability.PythonScript)
+	pythonProc.Dir = cfg.Readability.GetContextDir()
+	pythonProc.Stdin = r
+	pythonProc.Stdout = outputStream
+
+	// Start processes
+	if err := nodeProc.Start(); err != nil {
+		return nil, fmt.Errorf("Failed to start node process: %s", err)
 	}
 
-	if err := getSpeechSynthesisJob(conf, r, outputStream); err != nil {
-		log.Print(err)
-		return nil, err
+	if err := pythonProc.Start(); err != nil {
+		return nil, fmt.Errorf("Failed to start python process: %s", err)
 	}
+
+	// Close pipe (important)
+	w.Close()
+
+	// Wait on exits
+	if err := nodeProc.Wait(); err != nil {
+		err := err.(*exec.ExitError)
+
+		stdoutData, _ := io.ReadAll(r)
+		return nil, fmt.Errorf(
+			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
+			err.ExitCode(),
+			err.Stderr,
+			len(stdoutData),
+			string(stdoutData),
+		)
+	}
+	log.Printf("Completed readability data job (process exited with status %d)", nodeProc.ProcessState.ExitCode())
+
+	if err := pythonProc.Wait(); err != nil {
+		err := err.(*exec.ExitError)
+		stdoutData := new(bytes.Buffer)
+		cnt, _ := io.Copy(outputStream, stdoutData)
+		return nil, fmt.Errorf(
+			"Readability (node) exited with status %d: %s\nFollowing was written to stdout (%d bytes) %s",
+			err.ExitCode(),
+			err.Stderr,
+			cnt,
+			stdoutData.String(),
+		)
+	}
+	log.Printf("Completed readability synthesis job (process exited with status %d)", pythonProc.ProcessState.ExitCode())
+
+	out, err := io.ReadAll(r)
+	log.Printf("Got output %s (err %s) ", string(out), err)
 
 	log.Printf("Completed reader tasks successfully for %s", url)
 	return outputStream.Bytes(), nil
