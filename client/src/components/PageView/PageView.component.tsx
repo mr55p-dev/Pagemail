@@ -75,7 +75,14 @@ export function Page(pageProps: PageRecord) {
         method: "GET",
         params: { page_id: pageProps.id },
         cache: "no-cache",
-      }).then((res) => console.log(res));
+      })
+        .then(() => notifOk("Readability generated successfully"))
+        .catch(() =>
+          notifErr(
+            "Failed to run readability.",
+            "Check server logs for details"
+          )
+        );
     } else if (pageProps.readability_status === ReadabilityStatus.COMPLETE) {
       pb.send<{ URL: string }>("/api/page/readability-link", {
         params: { page_id: pageProps.id },
@@ -84,8 +91,7 @@ export function Page(pageProps: PageRecord) {
         .then((res) => {
           setAudioUrl(res.URL);
         })
-        .catch((e) => console.error(e))
-        .finally(() => console.log("BYEEEE"));
+        .catch((e) => notifErr("Failed to fetch readability link"));
     }
   }
 
