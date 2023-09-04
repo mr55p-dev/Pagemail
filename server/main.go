@@ -33,6 +33,7 @@ func main() {
 	migratecmd.MustRegister(app, app.RootCmd, &migratecmd.Options{
 		Automigrate: isGoRun,
 	})
+	log.Printf("Automatic migrations are %t", isGoRun)
 
 	// Load the configuration
 	ctx := new(models.PMContext)
