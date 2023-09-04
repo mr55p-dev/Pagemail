@@ -9,6 +9,9 @@ Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/keys/staging.key.p
 Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/keys/staging.key"
 Environment="PAGEMAIL_EMAIL_TEMPLATE_PATH=/home/ec2-user/stage/templates/email.html.template"
 Environment="PAGEMAIL_READABILITY_CONTEXT_DIR=/home/ec2-user/stage/readability"
+StandardError=journal
+StandardOutput=journal
+StandardInput=null
 
 [Install]
 WantedBy=multi-user.target
