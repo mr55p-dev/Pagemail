@@ -1,8 +1,8 @@
 init:
 	mkdir dist
 	npm install
-	python3 -m venv dist/venv
-	dist/venv/bin/python -m pip install -r requirements.txt
+	python3 -m venv venv
+	venv/bin/python -m pip install -r requirements.txt
 
 build:
 	npx tsc 
@@ -14,7 +14,7 @@ build:
 		dist/
 
 clean-venv:
-	rm -rf dist/venv
+	rm -rf venv/
 
 clean:
 	rm -rf dist/
