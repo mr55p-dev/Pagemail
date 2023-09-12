@@ -1,5 +1,5 @@
-import { parseArgs } from "node:util";
 import { JSDOM } from "jsdom";
+import parseArgs from "minimist";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
 
 function parseDoc(docstring: Buffer | string, url: string): any {
@@ -28,7 +28,7 @@ async function fetchReadableArticle(data: Buffer, url: URL) {
     process.exit(3);
   }
 
-  const out = JSON.stringify(parsed)
+  const out = JSON.stringify(parsed);
   process.stdout.write(out);
 }
 
@@ -71,16 +71,17 @@ class Message {
       this.bufIdx++;
       if (this.bufIdx === this.cl) {
         this.done = true;
-		return true
+        // console.log("overspill data", data.slice(bufOffset + 1, data.length).toString());
+        return true;
       }
     }
     this.frIdx++;
   }
 
-  attachStream(callback: (buf: Buffer) => void) {
-    process.stdin.addListener("readable", () => {
-      const data = process.stdin.read();
+  async attachStream(callback: (buf: Buffer) => void) {
+    for await (const data of process.stdin) {
       if (!data || this.done) {
+        // console.log("overspill frame before pipe EOF", data.toString());
         process.stdin.destroy();
         return;
       }
@@ -91,50 +92,41 @@ class Message {
       }
 
       this.processFrame(data, offset);
-      process.stdin.emit("end");
-	  if (this.done) {
-		callback(this.buf!)
-	  }
-    });
+      if (this.done) {
+        callback(this.buf!);
+      }
+    }
   }
 }
 
 function main() {
-  const { values } = parseArgs({
-    options: {
-      check: {
-        type: "boolean",
-        default: false,
-      },
-      url: {
-        type: "string",
-      },
-    },
-    strict: true,
+  const argv = parseArgs(process.argv.slice(2), {
+    string: ["url"],
+    boolean: ["check"],
   });
 
-  if (!values.url) {
-    console.error("Did not provide a site URI");
-    process.exit(1);
-  }
+  // if (!argv.url) {
+  //   console.error("Did not provide a site URI");
+  //   process.exit(1);
+  // }
 
-  try {
-    var url = new URL(values.url || "");
-  } catch (_) {
-    console.error("URL is invalid");
-    process.exit(1);
-  }
+  // try {
+  //   var url = new URL(argv.url || "");
+  // } catch (_) {
+  //   console.error("URL is invalid");
+  //   process.exit(1);
+  // }
 
+  var url = new URL("https://www.google.com");
 
-
-  const msg = new Message()
-  msg.attachStream(buf => {
-	if (values.check) {
-	  fetchQuick(buf, url)
-	} else {
-	  fetchReadableArticle(buf, url)
-	}
-  })
+  const msg = new Message();
+  msg.attachStream((buf) => {
+    if (argv.check) {
+      fetchQuick(buf, url);
+    } else {
+      fetchReadableArticle(buf, url);
+    }
+  });
 }
 
 main();
