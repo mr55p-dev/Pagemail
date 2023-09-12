@@ -105,19 +105,17 @@ function main() {
     boolean: ["check"],
   });
 
-  // if (!argv.url) {
-  //   console.error("Did not provide a site URI");
-  //   process.exit(1);
-  // }
+  if (!argv.url) {
+    console.error("Did not provide a site URI");
+    process.exit(1);
+  }
 
-  // try {
-  //   var url = new URL(argv.url || "");
-  // } catch (_) {
-  //   console.error("URL is invalid");
-  //   process.exit(1);
-  // }
-
-  var url = new URL("https://www.google.com");
+  try {
+    var url = new URL(argv.url || "");
+  } catch (_) {
+    console.error("URL is invalid");
+    process.exit(1);
+  }
 
   const msg = new Message();
   msg.attachStream((buf) => {
