@@ -21,6 +21,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { NotificationCtx } from "../../lib/notif";
+import { dateToString } from "../../lib/utils";
 
 export function Page(pageProps: PageRecord) {
   const { notifOk, notifErr } = React.useContext(NotificationCtx);
@@ -162,17 +163,17 @@ interface PageGroup {
 function groupPages(pages: PageRecord[]): PageGroup[] {
   const groups = {} as Record<string, PageRecord[]>;
   pages.forEach((page) => {
-    const dt = new Date(page.created).toLocaleDateString("en-gb") ?? "unknown";
+    const dt = dateToString(new Date(page.created)) ?? "unknown";
     const grp = groups[dt];
     if (!grp) {
       groups[dt] = [];
     }
     groups[dt].push(page);
   });
-  const today = new Date().toLocaleDateString("en-gb");
+  const today = dateToString(new Date());
   const yesterday_dt = new Date();
   yesterday_dt.setDate(yesterday_dt.getDate() - 1);
-  const yesterday = yesterday_dt.toLocaleDateString("en-gb");
+  const yesterday = dateToString(yesterday_dt);
   return Object.keys(groups)
     .sort((l, r) => new Date(r).getTime() - new Date(l).getTime())
     .map((k) => ({
