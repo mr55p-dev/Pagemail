@@ -14,6 +14,7 @@ type AbsAuthorizer interface {
 	SignupNewUser(email, password, username string) (string, error)
 	GetToken(string) string
 	CheckToken(token string) string
+	RevokeToken(token string)
 }
 
 type Authorizer struct {

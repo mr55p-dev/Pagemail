@@ -10,9 +10,12 @@ import (
 type AbsClient interface {
 	DB() *sql.DB
 	Close()
-	InsertUser(u *User) error
-	GetUserById(id string) (*User, error)
-	GetUserByEmail(email string) (*User, error)
+	CreateUser(*User) error
+	ReadUserById(string) (*User, error)
+	ReadUserByEmail(string) (*User, error)
+
+	CreatePage(*Page) error
+	ReadPagesByUserId(string) ([]Page, error)
 }
 
 type Client struct {

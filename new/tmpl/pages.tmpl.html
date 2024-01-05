@@ -7,6 +7,12 @@
 		<h2>Pages</h2>
 		<p>Hello</p>
 		<a href="/logout">Logout</a>
+		{{ range .Pages }}
+		<div>
+			<p>{{ .Id }}</p>
+			<p>{{ .Url }}</p>
+		</div>
+		{{ end}}
 	</body>
 </html>
 

@@ -9,7 +9,7 @@ func (a *Authorizer) SignupNewUser(email, password, username string) (token stri
 	user.Username = username
 	a.log.Info().Msgf("user: %+v", user)
 
-	err = a.DBClient().InsertUser(user)
+	err = a.DBClient().CreateUser(user)
 	if err != nil {
 		return
 	}

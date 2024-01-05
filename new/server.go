@@ -25,7 +25,9 @@ type DataIndex struct {
 	IsUser bool
 }
 
-type DataPages struct{}
+type DataPages struct {
+	Pages []db.Page
+}
 
 func (Router) GetRoot(c echo.Context) error {
 	return render.RenderTempate("index", c.Response(), &DataIndex{false})
@@ -38,7 +40,7 @@ func (Router) GetLogin(c echo.Context) error {
 func (s *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	user, err := s.DBClient.GetUserByEmail(email)
+	user, err := s.DBClient.ReadUserByEmail(email)
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return c.NoContent(http.StatusBadRequest)
@@ -79,7 +81,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 
 	c.Response().Header().Set("Location", "/pages")
 	c.SetCookie(&http.Cookie{
-		Name:  "pm-session-token",
+		Name:  auth.SESS_COOKIE,
 		Value: token,
 		Path:  "/",
 	})
@@ -89,7 +91,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 func (Router) GetLogout(c echo.Context) error {
 	c.Response().Header().Set("Location", "/login")
 	c.SetCookie(&http.Cookie{
-		Name:   "pm-session-token",
+		Name:   auth.SESS_COOKIE,
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,
@@ -97,8 +99,34 @@ func (Router) GetLogout(c echo.Context) error {
 	return c.NoContent(http.StatusSeeOther)
 }
 
-func (Router) GetPages(c echo.Context) error {
-	return render.RenderTempate("pages", c.Response(), &DataPages{})
+func (r *Router) GetPages(c echo.Context) error {
+	user, ok := c.Get("user").(*db.User)
+	if !ok {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	pages, err := r.DBClient.ReadPagesByUserId(user.Id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return render.RenderTempate("pages", c.Response(), &DataPages{pages})
+}
+
+func (r *Router) PostPage(c echo.Context) error {
+	user, ok := c.Get("user").(*db.User)
+	if !ok || user == nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	url := c.FormValue("url")
+	page := db.NewPage(user.Id, url)
+
+	if err := r.DBClient.CreatePage(page); err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.NoContent(http.StatusCreated)
 }
 
 func (Router) TestTmpl(c echo.Context) error {
@@ -149,13 +177,14 @@ func main() {
 	e.GET("/", s.GetRoot)
 
 	e.GET("/login", s.GetLogin)
-	e.GET("/logout", s.GetLogout)
+	e.GET("/logout", s.GetLogout, protected)
 	e.POST("/login", s.PostLogin)
 
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
 
 	e.GET("/pages", s.GetPages, protected)
+	e.POST("/page", s.PostPage, protected)
 
 	if err := e.Start(":8080"); err != nil {
 		rootLogger.Error().Msg(err.Error())

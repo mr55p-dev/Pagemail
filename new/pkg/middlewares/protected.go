@@ -24,7 +24,7 @@ func GetProtectedMiddleware(log zerolog.Logger, authClient auth.AbsAuthorizer, d
 				return c.NoContent(http.StatusUnauthorized)
 			}
 
-			user, err := dbClient.GetUserById(uid)
+			user, err := dbClient.ReadUserById(uid)
 			if err != nil {
 				log.Error().Msgf("Could not find user with id %s", uid)
 				return c.NoContent(http.StatusInternalServerError)

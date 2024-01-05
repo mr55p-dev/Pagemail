@@ -6,7 +6,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-func (c *Client) InsertUser(u *User) error {
+func (c *Client) CreateUser(u *User) error {
 	c.log.Debug().Msgf("Inserting new user with id %s", u.Id)
 	res, err := c.DB().Exec(`
 		INSERT INTO users (
@@ -31,7 +31,7 @@ func (c *Client) InsertUser(u *User) error {
 	return err
 }
 
-func (c *Client) GetUserById(id string) (*User, error) {
+func (c *Client) ReadUserById(id string) (*User, error) {
 	c.log.Debug().Msgf("Checking user by id %s", id)
 	row := c.DB().QueryRow(`SELECT * FROM users WHERE id = ?`, id)
 	user := User{}
@@ -51,7 +51,7 @@ func (c *Client) GetUserById(id string) (*User, error) {
 	c.log.Debug().Msgf("Loaded user %+v", user)
 	return &user, err
 }
-func (c *Client) GetUserByEmail(email string) (*User, error) {
+func (c *Client) ReadUserByEmail(email string) (*User, error) {
 	c.log.Debug().Msgf("Checking user by email %s", email)
 	row := c.DB().QueryRow(`SELECT * FROM users WHERE email = ?`, email)
 	user := User{}

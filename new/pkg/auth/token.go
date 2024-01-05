@@ -21,3 +21,8 @@ func (a *Authorizer) CheckToken(token string) string {
 
 	return uid
 }
+
+// Revoke a token
+func (a *Authorizer) RevokeToken(token string) {
+	delete(TokenStore, token)
+}
