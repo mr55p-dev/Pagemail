@@ -5,11 +5,11 @@ CREATE TABLE users (
 	id STRING UNIQUE NOT NULL PRIMARY KEY,
 	username STRING,
 	email STRING UNIQUE NOT NULL ,
-	password STRING NOT NULL,
+	password BINARY NOT NULL,
 	name STRING,
 	avatar STRING,
 	subscribed BOOL DEFAULT false,
-	shortcutToken STRING,
+	shortcut_token STRING,
 	has_readability BOOL DEFAULT false,
 	created DATETIME NOT NULL,
 	updated DATETIME NOT NULL

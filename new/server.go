@@ -51,6 +51,33 @@ func (s *Router) PostLogin(c echo.Context) error {
 	return c.NoContent(http.StatusSeeOther)
 }
 
+func (Router) GetSignup(c echo.Context) error {
+	return render.RenderTempate("signup", c.Response(), nil)
+}
+
+func (s *Router) PostSignup(c echo.Context) error {
+	username := c.FormValue("username")
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+	passwordRepeat := c.FormValue("password-repeat")
+	if password != passwordRepeat {
+		return c.String(http.StatusBadRequest, "Passwords do not match")
+	}
+
+	token, err := s.Authorizer.SignupNewUser(email, password, username)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Something went wrong")
+	}
+
+	c.Response().Header().Set("Location", "/pages")
+	c.SetCookie(&http.Cookie{
+		Name:  "Authorization",
+		Value: token,
+		Path:  "/",
+	})
+	return c.NoContent(http.StatusSeeOther)
+}
+
 func (Router) GetLogout(c echo.Context) error {
 	c.Response().Header().Set("Location", "/login")
 	c.SetCookie(&http.Cookie{
@@ -114,6 +141,9 @@ func main() {
 	e.GET("/login", s.GetLogin)
 	e.GET("/logout", s.GetLogout)
 	e.POST("/login", s.PostLogin)
+
+	e.GET("/signup", s.GetSignup)
+	e.POST("/signup", s.PostSignup)
 
 	e.GET("/pages", s.GetPages)
 

@@ -14,7 +14,7 @@ type User struct {
 	Name           string     `db:"name"`
 	Avatar         string     `db:"avatar"`
 	Subscribed     bool       `db:"subscribed"`
-	ShortcutToken  string     `db:"shortcutoken"`
+	ShortcutToken  string     `db:"shortcut_token"`
 	HasReadability bool       `db:"has_readability"`
 	Created        *time.Time `db:"created"`
 	Updated        *time.Time `db:"updated"`
@@ -22,7 +22,7 @@ type User struct {
 
 func NewUser(email, password string) *User {
 	now := time.Now()
-	uid := tools.GenerateNewId(20)
+	uid := tools.GenerateNewId(10)
 	token := tools.GenerateNewShortcutToken(uid)
 	return &User{
 		Id:             uid,

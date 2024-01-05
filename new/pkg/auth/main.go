@@ -5,10 +5,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// maps tokens to user ids
+var TokenStore map[string]string
+
 type AbsAuthorizer interface {
 	DBClient() db.AbsClient
 	ValidateUser(email, password string) (isUser bool)
-	SignupNewUser(email, password, username string) error
+	SignupNewUser(email, password, username string) (string, error)
+	GetToken(string) string
 }
 
 type Authorizer struct {
@@ -22,4 +26,8 @@ func NewAuthorizer(client db.AbsClient, logger zerolog.Logger) AbsAuthorizer {
 
 func (a *Authorizer) DBClient() db.AbsClient {
 	return a.client
+}
+
+func init() {
+	TokenStore = make(map[string]string)
 }
