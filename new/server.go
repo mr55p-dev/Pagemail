@@ -38,14 +38,22 @@ func (Router) GetLogin(c echo.Context) error {
 func (s *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	if !s.Authorizer.ValidateUser(email, password) {
+	user, err := s.DBClient.GetUserByEmail(email)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if !s.Authorizer.ValidateUser(email, password, user) {
 		return c.String(http.StatusBadRequest, "Invalid username or password")
 	}
 
+	sess := s.Authorizer.GetToken(user.Id)
+
 	c.Response().Header().Set("Location", "/pages")
 	c.SetCookie(&http.Cookie{
-		Name:  "Authorization",
-		Value: "1234",
+		Name:  auth.SESS_COOKIE,
+		Value: sess,
 		Path:  "/",
 	})
 	return c.NoContent(http.StatusSeeOther)
@@ -71,7 +79,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 
 	c.Response().Header().Set("Location", "/pages")
 	c.SetCookie(&http.Cookie{
-		Name:  "Authorization",
+		Name:  "pm-session-token",
 		Value: token,
 		Path:  "/",
 	})
@@ -81,7 +89,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 func (Router) GetLogout(c echo.Context) error {
 	c.Response().Header().Set("Location", "/login")
 	c.SetCookie(&http.Cookie{
-		Name:   "Authorization",
+		Name:   "pm-session-token",
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,
@@ -122,6 +130,7 @@ func main() {
 	reqLogger := rootLogger.With().Str("service", "root").Logger()
 	authLogger := rootLogger.With().Str("service", "auth").Logger()
 	dbLogger := rootLogger.With().Str("service", "db").Logger()
+	protectionLogger := rootLogger.With().Str("service", "protection").Logger()
 
 	e := echo.New()
 	dbClient := db.NewClient(dbLogger)
@@ -134,6 +143,7 @@ func main() {
 		Authorizer: authClient,
 	}
 
+	protected := middlewares.GetProtectedMiddleware(protectionLogger, authClient, dbClient)
 	e.Use(middlewares.GetLoggingMiddleware(reqLogger))
 
 	e.GET("/", s.GetRoot)
@@ -145,7 +155,7 @@ func main() {
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
 
-	e.GET("/pages", s.GetPages)
+	e.GET("/pages", s.GetPages, protected)
 
 	if err := e.Start(":8080"); err != nil {
 		rootLogger.Error().Msg(err.Error())

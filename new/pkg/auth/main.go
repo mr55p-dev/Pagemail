@@ -10,9 +10,10 @@ var TokenStore map[string]string
 
 type AbsAuthorizer interface {
 	DBClient() db.AbsClient
-	ValidateUser(email, password string) (isUser bool)
+	ValidateUser(email, password string, user *db.User) (isUser bool)
 	SignupNewUser(email, password, username string) (string, error)
 	GetToken(string) string
+	CheckToken(token string) string
 }
 
 type Authorizer struct {
