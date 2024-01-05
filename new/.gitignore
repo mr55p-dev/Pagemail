@@ -1,0 +1,3 @@
+tmp/
+db/pagemail.sqlite3
+db/schema.sql

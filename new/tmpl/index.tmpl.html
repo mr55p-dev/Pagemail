@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Pagemail - a simple read-it-later</title>
+  </head>
+  <body>
+    <h2>Pagemail</h2>
+    <p>Pagemail is a simple read-it-later client for the web</p>
+    {{ if .IsUser }}
+    <a href="/pages">View pages</a>
+    {{ else }}
+    <a href="/signup">Sign up</a>
+    <a href="/login">Log in</a>
+    {{ end }}
+  </body>
+</html>
