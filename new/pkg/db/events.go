@@ -7,12 +7,12 @@ type Event[T User | Page] struct {
 	Record *T
 }
 
-func (c *Client) AddPageListener(id string, output EventOutput[Page]) {
-	c.log.Info().Msg("Added listener")
+func (c *DBDriver) AddPageListener(id string, output EventOutput[Page]) {
+	c.log.Info("Added listener")
 	PageEventMap[id] = output
 }
 
-func (c *Client) RemovePageListener(id string) {
-	c.log.Info().Msg("Removed listener")
+func (c *DBDriver) RemovePageListener(id string) {
+	c.log.Info("Removed listener")
 	delete(PageEventMap, id)
 }

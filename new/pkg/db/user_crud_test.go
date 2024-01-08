@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserRead(t *testing.T) {
-	client := NewClient(zerolog.New(os.Stdout))
+	client := NewDriver(zerolog.New(os.Stdout))
 	user, err := client.ReadUserById("123")
 	if err != nil {
 		t.Log(err)

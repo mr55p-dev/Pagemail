@@ -1,6 +1,6 @@
 package db
 
-func (c *Client) CreatePage(p *Page) error {
+func (c *DBDriver) CreatePage(p *Page) error {
 	c.log.Debug().Msgf("Creating new Page %+v", p)
 	res, err := c.DB().Exec(`
 		INSERT INTO pages (id, user_id, url, created, updated)
@@ -10,7 +10,7 @@ func (c *Client) CreatePage(p *Page) error {
 	return err
 }
 
-func (c *Client) ReadPagesByUserId(id string) ([]Page, error) {
+func (c *DBDriver) ReadPagesByUserId(id string) ([]Page, error) {
 	var pages []Page
 	c.log.Debug().Msgf("Reading pages with user id %s", id)
 	rows, err := c.DB().Query(`
@@ -33,7 +33,7 @@ func (c *Client) ReadPagesByUserId(id string) ([]Page, error) {
 	return pages, err
 }
 
-func (c *Client) UpsertPage(p *Page) error {
+func (c *DBDriver) UpsertPage(p *Page) error {
 	res, err := c.DB().Exec(
 		`INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		p.Id, p.UserId, p.Url, p.Title,
@@ -57,7 +57,7 @@ func (c *Client) UpsertPage(p *Page) error {
 	return err
 }
 
-func (c *Client) DeletePagesByUserId(id string) (int, error) {
+func (c *DBDriver) DeletePagesByUserId(id string) (int, error) {
 	c.log.Debug().Msgf("Deleting pages with user id %s", id)
 	res, err := c.DB().Exec(`
 		DELETE FROM pages WHERE user_id = ?

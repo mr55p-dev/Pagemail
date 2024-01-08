@@ -13,41 +13,43 @@ func init() {
 	PageEventMap = make(map[string]EventOutput[Page])
 }
 
-type AbsClient interface {
-	DB() *sql.DB
-	Close()
-	CreateUser(*User) error
-	ReadUserById(string) (*User, error)
-	ReadUserByEmail(string) (*User, error)
-
-	CreatePage(*Page) error
-	UpsertPage(*Page) error
-
-	ReadPagesByUserId(string) ([]Page, error)
-	DeletePagesByUserId(string) (int, error)
-
-	AddPageListener(id string, output EventOutput[Page])
-	RemovePageListener(id string)
+type Client[T any] interface {
+	TableName() string
+	CreateRecord(*T) error
+	// CreateRecords([]T) error
+	// ReadRecordByField(field string, val any) (*T, error)
+	// ReadRecordsByField(field string, val any) ([]T, error)
+	// UpsertRecord(*T) error
+	// UpsertRecords([]T) error
+	// DeleteRecordsByField(field string, val any) error
+	//
+	// AddListener() string
+	// RemoveListener(id string)
 }
 
-type Client struct {
+type Driver interface {
+	DB() *sql.DB
+	Close()
+}
+
+type DBDriver struct {
 	db  *sql.DB
 	log *slog.Logger
 }
 
-func (c *Client) DB() *sql.DB {
+func (c *DBDriver) DB() *sql.DB {
 	return c.db
 }
 
-func (c *Client) Close() {
+func (c *DBDriver) Close() {
 	c.db.Close()
 }
 
-func NewClient(logger *slog.Logger) AbsClient {
+func NewDriver(logger *slog.Logger) Driver {
 	conn, err := sql.Open("sqlite3", "db/pagemail.sqlite3")
 	if err != nil {
 		panic(err)
 	}
 
-	return &Client{conn, logger}
+	return &DBDriver{conn, logger}
 }

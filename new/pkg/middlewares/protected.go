@@ -10,7 +10,7 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/l"
 )
 
-func GetProtectedMiddleware(log *slog.Logger, authClient auth.AbsAuthorizer, dbClient db.AbsClient) echo.MiddlewareFunc {
+func GetProtectedMiddleware(log *slog.Logger, authClient auth.AbsAuthorizer, dbClient db.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			log = l.WithTrace(log, c)

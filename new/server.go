@@ -14,7 +14,7 @@ import (
 )
 
 type Router struct {
-	DBClient   db.AbsClient
+	DBClient   db.Client
 	Authorizer auth.AbsAuthorizer
 }
 
@@ -199,7 +199,7 @@ func main() {
 	protectionLogger := log.With("module", "protection middleware")
 	reqLogger := log.With("module", "request log middleware")
 
-	dbClient := db.NewClient(dbLogger)
+	dbClient := db.NewDriver(dbLogger)
 	defer dbClient.Close()
 
 	authClient := auth.NewAuthorizer(dbClient, authLogger)
