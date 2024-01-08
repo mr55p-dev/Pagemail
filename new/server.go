@@ -76,7 +76,6 @@ func (s *Router) PostSignup(c echo.Context) error {
 	user.Username = username
 	err := s.DBClient.CreateUser(c.Request().Context(), user)
 	if err != nil {
-		c.Logger().Error(err)
 		return c.String(http.StatusBadRequest, "Something went wrong")
 	}
 
@@ -151,41 +150,41 @@ func (r *Router) PostPage(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (r *Router) ListenPages(c echo.Context) error {
-	user, ok := c.Get("user").(*db.User)
-	if !ok || user == nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
+// func (r *Router) ListenPages(c echo.Context) error {
+// 	user, ok := c.Get("user").(*db.User)
+// 	if !ok || user == nil {
+// 		return c.NoContent(http.StatusInternalServerError)
+// 	}
+//
+// 	// create listener to updates
+// 	events := make(chan db.Event[db.Page])
+//
+// 	r.DBClient.AddPageListener(user.Id, events)
+//
+// 	c.Response().WriteHeader(http.StatusOK)
+// 	c.Response().Header().Add("Content-Type", "text/event-stream")
+// 	c.Response().Flush()
+//
+// 	defer r.DBClient.RemovePageListener(user.Id)
+// 	for event := range events {
+// 		fmt.Println("Event", event)
+// 		c.Response().Write([]byte("<p>Message sent</p>\n\n"))
+// 		c.Response().Flush()
+// 	}
+//
+// 	return nil
+// }
 
-	// create listener to updates
-	events := make(chan db.Event[db.Page])
-
-	r.DBClient.AddPageListener(user.Id, events)
-
-	c.Response().WriteHeader(http.StatusOK)
-	c.Response().Header().Add("Content-Type", "text/event-stream")
-	c.Response().Flush()
-
-	defer r.DBClient.RemovePageListener(user.Id)
-	for event := range events {
-		fmt.Println("Event", event)
-		c.Response().Write([]byte("<p>Message sent</p>\n\n"))
-		c.Response().Flush()
-	}
-
-	return nil
-}
-
-func (r *Router) TestUpdate(c echo.Context) error {
-	user, _ := c.Get("user").(*db.User)
-	page := db.NewPage(user.Id, "https://example.com")
-	page.Id = "123456"
-	err := r.DBClient.UpsertPage(c.Request().Context(), page)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	return c.String(200, "Updated")
-}
+// func (r *Router) TestUpdate(c echo.Context) error {
+// 	user, _ := c.Get("user").(*db.User)
+// 	page := db.NewPage(user.Id, "https://example.com")
+// 	page.Id = "123456"
+// 	err := r.DBClient.UpsertPage(c.Request().Context(), page)
+// 	if err != nil {
+// 		return c.String(http.StatusInternalServerError, err.Error())
+// 	}
+// 	return c.String(200, "Updated")
+// }
 
 func (Router) TestTmpl(c echo.Context) error {
 	cmp := render.Hello("ellis")
@@ -222,8 +221,9 @@ func main() {
 	e.GET("/:id/pages", s.GetPages, protected)
 	e.DELETE("/:id/pages", s.DeletePages, protected)
 	e.POST("/:id/page", s.PostPage, protected)
-	e.GET("/:id/pages/listen", s.ListenPages, protected)
-	e.GET("/test", s.TestUpdate, protected)
+
+	// e.GET("/:id/pages/listen", s.ListenPages, protected)
+	// e.GET("/test", s.TestUpdate, protected)
 
 	if err := e.Start(":8080"); err != nil {
 		slog.Error(err.Error())
