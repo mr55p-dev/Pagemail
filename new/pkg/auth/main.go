@@ -10,25 +10,18 @@ import (
 var TokenStore map[string]string
 
 type AbsAuthorizer interface {
-	DBClient() db.Client
 	ValidateUser(email, password string, user *db.User) (isUser bool)
-	SignupNewUser(email, password, username string) (string, error)
-	GetToken(string) string
+	GetToken(*db.User) string
 	CheckToken(token string) string
 	RevokeToken(token string)
 }
 
 type Authorizer struct {
-	client db.Client
-	log    *slog.Logger
+	log *slog.Logger
 }
 
-func NewAuthorizer(client db.Client, logger *slog.Logger) AbsAuthorizer {
-	return &Authorizer{client, logger}
-}
-
-func (a *Authorizer) DBClient() db.Client {
-	return a.client
+func NewAuthorizer() AbsAuthorizer {
+	return &Authorizer{}
 }
 
 func init() {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
@@ -14,7 +13,7 @@ import (
 )
 
 type Router struct {
-	DBClient   db.Client
+	DBClient   *db.Client
 	Authorizer auth.AbsAuthorizer
 }
 
@@ -38,9 +37,8 @@ func (Router) GetLogin(c echo.Context) error {
 func (s *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	user, err := s.DBClient.ReadUserByEmail(email)
+	user, err := s.DBClient.ReadUserByEmail(c, email)
 	if err != nil {
-		c.Logger().Error(err.Error())
 		return c.NoContent(http.StatusBadRequest)
 	}
 
@@ -48,7 +46,7 @@ func (s *Router) PostLogin(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid username or password")
 	}
 
-	sess := s.Authorizer.GetToken(user.Id)
+	sess := s.Authorizer.GetToken(user)
 
 	c.Response().Header().Set("Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -64,6 +62,7 @@ func (Router) GetSignup(c echo.Context) error {
 }
 
 func (s *Router) PostSignup(c echo.Context) error {
+	// Read the form requests
 	username := c.FormValue("username")
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -72,7 +71,13 @@ func (s *Router) PostSignup(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Passwords do not match")
 	}
 
-	token, err := s.Authorizer.SignupNewUser(email, password, username)
+	// Generate a new user
+	user := db.NewUser(email, auth.HashPassword(password))
+	user.Username = username
+	err := s.DBClient.CreateUser(c, user)
+
+	// Generate a token for the user from the session manager
+	token := s.Authorizer.GetToken(user)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Something went wrong")
 	}
@@ -103,7 +108,7 @@ func (r *Router) GetPages(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	pages, err := r.DBClient.ReadPagesByUserId(user.Id)
+	pages, err := r.DBClient.ReadPagesByUserId(c, user.Id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -120,7 +125,7 @@ func (r *Router) DeletePages(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	n, err := r.DBClient.DeletePagesByUserId(user.Id)
+	n, err := r.DBClient.DeletePagesByUserId(c, user.Id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -138,7 +143,7 @@ func (r *Router) PostPage(c echo.Context) error {
 	url := c.FormValue("url")
 	page := db.NewPage(user.Id, url)
 
-	if err := r.DBClient.CreatePage(page); err != nil {
+	if err := r.DBClient.CreatePage(c, page); err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
@@ -174,7 +179,7 @@ func (r *Router) TestUpdate(c echo.Context) error {
 	user, _ := c.Get("user").(*db.User)
 	page := db.NewPage(user.Id, "https://example.com")
 	page.Id = "123456"
-	err := r.DBClient.UpsertPage(page)
+	err := r.DBClient.UpsertPage(c, page)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -187,22 +192,12 @@ func (Router) TestTmpl(c echo.Context) error {
 }
 
 func main() {
-	// Logging
 	e := echo.New()
 
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	})
-	log := slog.New(handler)
-	dbLogger := log.With("module", "db")
-	authLogger := log.With("module", "auth")
-	protectionLogger := log.With("module", "protection middleware")
-	reqLogger := log.With("module", "request log middleware")
-
-	dbClient := db.NewDriver(dbLogger)
+	dbClient := db.NewClient()
 	defer dbClient.Close()
 
-	authClient := auth.NewAuthorizer(dbClient, authLogger)
+	authClient := auth.NewAuthorizer()
 
 	s := &Router{
 		DBClient:   dbClient,
@@ -210,8 +205,8 @@ func main() {
 	}
 
 	e.Use(middlewares.TraceMiddleware)
-	protected := middlewares.GetProtectedMiddleware(protectionLogger, authClient, dbClient)
-	e.Use(middlewares.GetLoggingMiddleware(reqLogger))
+	e.Use(middlewares.GetLoggingMiddleware)
+	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
 
 	e.Static("/assets", "public")
 	e.GET("/", s.GetRoot)
@@ -230,6 +225,6 @@ func main() {
 	e.GET("/test", s.TestUpdate, protected)
 
 	if err := e.Start(":8080"); err != nil {
-		log.Error(err.Error())
+		slog.Error(err.Error())
 	}
 }

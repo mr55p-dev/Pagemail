@@ -1,19 +1,20 @@
 package db
 
-func (c *DBDriver) CreatePage(p *Page) error {
-	c.log.Debug().Msgf("Creating new Page %+v", p)
-	res, err := c.DB().Exec(`
+import (
+	"github.com/labstack/echo/v4"
+)
+
+func (client *Client) CreatePage(c echo.Context, p *Page) error {
+	_, err := client.db.Exec(`
 		INSERT INTO pages (id, user_id, url, created, updated)
 		VALUES (?, ?, ?, ?, ?)
 	`, p.Id, p.UserId, p.Url, p.Created, p.Updated)
-	c.log.Debug().Msgf("Created new page with result %s", res)
 	return err
 }
 
-func (c *DBDriver) ReadPagesByUserId(id string) ([]Page, error) {
+func (client *Client) ReadPagesByUserId(c echo.Context, id string) ([]Page, error) {
 	var pages []Page
-	c.log.Debug().Msgf("Reading pages with user id %s", id)
-	rows, err := c.DB().Query(`
+	rows, err := client.db.Query(`
 		SELECT * FROM pages WHERE user_id = ?
 	`, id)
 	if err != nil {
@@ -33,33 +34,28 @@ func (c *DBDriver) ReadPagesByUserId(id string) ([]Page, error) {
 	return pages, err
 }
 
-func (c *DBDriver) UpsertPage(p *Page) error {
-	res, err := c.DB().Exec(
+func (client *Client) UpsertPage(c echo.Context, p *Page) error {
+	_, err := client.db.Exec(
 		`INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		p.Id, p.UserId, p.Url, p.Title,
 		p.Description, p.ImageUrl, p.ReadabilityStatus,
 		p.ReadabilityTaskData, p.IsReadable, p.Created, p.Updated,
 	)
-	c.log.Debug().Msgf("Insert ran with result %+v", res)
 	if err == nil {
-		c.log.Info().Msg("Started to fire listener")
 		listener, ok := PageEventMap[p.UserId]
 		if ok {
-			c.log.Info().Msg("Fired listener")
 			listener <- Event[Page]{
 				Event:  EventType("Update"),
 				Record: p,
 			}
 		} else {
-			c.log.Info().Msg("Failed to fire, no open channel")
 		}
-	} 
+	}
 	return err
 }
 
-func (c *DBDriver) DeletePagesByUserId(id string) (int, error) {
-	c.log.Debug().Msgf("Deleting pages with user id %s", id)
-	res, err := c.DB().Exec(`
+func (client *Client) DeletePagesByUserId(c echo.Context, id string) (int, error) {
+	res, err := client.db.Exec(`
 		DELETE FROM pages WHERE user_id = ?
 	`, id)
 	if err != nil {
