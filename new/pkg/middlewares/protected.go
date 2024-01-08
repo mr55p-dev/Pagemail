@@ -7,11 +7,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
+	"github.com/mr55p-dev/pagemail/pkg/l"
 )
 
 func GetProtectedMiddleware(log *slog.Logger, authClient auth.AbsAuthorizer, dbClient db.AbsClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			log = l.WithTrace(log, c)
 			cookie, err := c.Cookie(auth.SESS_COOKIE)
 			if err != nil {
 				log.Error("Could not read session token")

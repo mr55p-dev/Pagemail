@@ -6,7 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var TraceId = "pm-trace-id"
 
 func GetLoggingMiddleware(logger *slog.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
