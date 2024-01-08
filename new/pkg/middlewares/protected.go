@@ -26,7 +26,7 @@ func GetProtectedMiddleware(authClient auth.AbsAuthorizer, dbClient *db.Client) 
 				return c.NoContent(http.StatusForbidden)
 			}
 
-			user, err := dbClient.ReadUserById(c, uid)
+			user, err := dbClient.ReadUserById(c.Request().Context(), uid)
 			if err != nil {
 				return c.NoContent(http.StatusInternalServerError)
 			}

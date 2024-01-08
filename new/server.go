@@ -37,7 +37,7 @@ func (Router) GetLogin(c echo.Context) error {
 func (s *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	user, err := s.DBClient.ReadUserByEmail(c, email)
+	user, err := s.DBClient.ReadUserByEmail(c.Request().Context(), email)
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
 	}
@@ -48,13 +48,13 @@ func (s *Router) PostLogin(c echo.Context) error {
 
 	sess := s.Authorizer.GetToken(user)
 
-	c.Response().Header().Set("Location", fmt.Sprintf("/%s/pages", user.Id))
+	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
 		Name:  auth.SESS_COOKIE,
 		Value: sess,
 		Path:  "/",
 	})
-	return c.NoContent(http.StatusSeeOther)
+	return c.NoContent(http.StatusOK)
 }
 
 func (Router) GetSignup(c echo.Context) error {
@@ -74,21 +74,22 @@ func (s *Router) PostSignup(c echo.Context) error {
 	// Generate a new user
 	user := db.NewUser(email, auth.HashPassword(password))
 	user.Username = username
-	err := s.DBClient.CreateUser(c, user)
-
-	// Generate a token for the user from the session manager
-	token := s.Authorizer.GetToken(user)
+	err := s.DBClient.CreateUser(c.Request().Context(), user)
 	if err != nil {
+		c.Logger().Error(err)
 		return c.String(http.StatusBadRequest, "Something went wrong")
 	}
 
-	c.Response().Header().Set("Location", "/pages")
+	// Generate a token for the user from the session manager
+	token := s.Authorizer.GetToken(user)
+
+	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
 		Name:  auth.SESS_COOKIE,
 		Value: token,
 		Path:  "/",
 	})
-	return c.NoContent(http.StatusSeeOther)
+	return c.NoContent(http.StatusOK)
 }
 
 func (Router) GetLogout(c echo.Context) error {
@@ -108,7 +109,7 @@ func (r *Router) GetPages(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	pages, err := r.DBClient.ReadPagesByUserId(c, user.Id)
+	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -125,7 +126,7 @@ func (r *Router) DeletePages(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	n, err := r.DBClient.DeletePagesByUserId(c, user.Id)
+	n, err := r.DBClient.DeletePagesByUserId(c.Request().Context(), user.Id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -143,7 +144,7 @@ func (r *Router) PostPage(c echo.Context) error {
 	url := c.FormValue("url")
 	page := db.NewPage(user.Id, url)
 
-	if err := r.DBClient.CreatePage(c, page); err != nil {
+	if err := r.DBClient.CreatePage(c.Request().Context(), page); err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
@@ -179,7 +180,7 @@ func (r *Router) TestUpdate(c echo.Context) error {
 	user, _ := c.Get("user").(*db.User)
 	page := db.NewPage(user.Id, "https://example.com")
 	page.Id = "123456"
-	err := r.DBClient.UpsertPage(c, page)
+	err := r.DBClient.UpsertPage(c.Request().Context(), page)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

@@ -1,10 +1,8 @@
 package db
 
-import (
-	"github.com/labstack/echo/v4"
-)
+import "context"
 
-func (client *Client) CreatePage(c echo.Context, p *Page) error {
+func (client *Client) CreatePage(c context.Context, p *Page) error {
 	_, err := client.db.Exec(`
 		INSERT INTO pages (id, user_id, url, created, updated)
 		VALUES (?, ?, ?, ?, ?)
@@ -12,7 +10,7 @@ func (client *Client) CreatePage(c echo.Context, p *Page) error {
 	return err
 }
 
-func (client *Client) ReadPagesByUserId(c echo.Context, id string) ([]Page, error) {
+func (client *Client) ReadPagesByUserId(c context.Context, id string) ([]Page, error) {
 	var pages []Page
 	rows, err := client.db.Query(`
 		SELECT * FROM pages WHERE user_id = ?
@@ -34,7 +32,7 @@ func (client *Client) ReadPagesByUserId(c echo.Context, id string) ([]Page, erro
 	return pages, err
 }
 
-func (client *Client) UpsertPage(c echo.Context, p *Page) error {
+func (client *Client) UpsertPage(c context.Context, p *Page) error {
 	_, err := client.db.Exec(
 		`INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		p.Id, p.UserId, p.Url, p.Title,
@@ -54,7 +52,7 @@ func (client *Client) UpsertPage(c echo.Context, p *Page) error {
 	return err
 }
 
-func (client *Client) DeletePagesByUserId(c echo.Context, id string) (int, error) {
+func (client *Client) DeletePagesByUserId(c context.Context, id string) (int, error) {
 	res, err := client.db.Exec(`
 		DELETE FROM pages WHERE user_id = ?
 	`, id)

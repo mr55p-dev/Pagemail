@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Pagemail - signup</title>
+    <script src="/assets/js/htmx.min.js"></script>
     <style>
       form {
         display: flex;
@@ -12,7 +13,7 @@
   </head>
   <body>
     <h2>Login</h2>
-    <form action="/signup" method="POST">
+    <form hx-post="/signup">
       <input type="text" name="username" value="" />
       <label for="username">Username</label>
 
