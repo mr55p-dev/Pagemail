@@ -2,9 +2,9 @@ package db
 
 import (
 	"database/sql"
+	"log/slog"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rs/zerolog"
 )
 
 var PageEventMap map[string]EventOutput[Page]
@@ -32,7 +32,7 @@ type AbsClient interface {
 
 type Client struct {
 	db  *sql.DB
-	log zerolog.Logger
+	log *slog.Logger
 }
 
 func (c *Client) DB() *sql.DB {
@@ -43,7 +43,7 @@ func (c *Client) Close() {
 	c.db.Close()
 }
 
-func NewClient(logger zerolog.Logger) AbsClient {
+func NewClient(logger *slog.Logger) AbsClient {
 	conn, err := sql.Open("sqlite3", "db/pagemail.sqlite3")
 	if err != nil {
 		panic(err)

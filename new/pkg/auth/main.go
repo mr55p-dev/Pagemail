@@ -1,8 +1,9 @@
 package auth
 
 import (
+	"log/slog"
+
 	"github.com/mr55p-dev/pagemail/pkg/db"
-	"github.com/rs/zerolog"
 )
 
 // maps tokens to user ids
@@ -19,10 +20,10 @@ type AbsAuthorizer interface {
 
 type Authorizer struct {
 	client db.AbsClient
-	log    zerolog.Logger
+	log    *slog.Logger
 }
 
-func NewAuthorizer(client db.AbsClient, logger zerolog.Logger) AbsAuthorizer {
+func NewAuthorizer(client db.AbsClient, logger *slog.Logger) AbsAuthorizer {
 	return &Authorizer{client, logger}
 }
 

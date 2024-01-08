@@ -2,18 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/pkg/render"
-	"github.com/rs/zerolog"
 )
 
 type Router struct {
@@ -191,31 +188,17 @@ func (Router) TestTmpl(c echo.Context) error {
 
 func main() {
 	// Logging
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	logOut := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: time.RFC3339,
-		FormatLevel: func(i interface{}) string {
-			return strings.ToUpper(fmt.Sprintf("[%s]", i))
-		},
-		FormatMessage: func(i interface{}) string {
-			return fmt.Sprintf("| %s |", i)
-		},
-		FormatCaller: func(i interface{}) string {
-			return filepath.Base(fmt.Sprintf("%s", i))
-		},
-		PartsExclude: []string{
-			zerolog.TimestampFieldName,
-		},
-	}
-
-	rootLogger := zerolog.New(logOut).With().Timestamp().Caller().Logger()
-	reqLogger := rootLogger.With().Str("service", "root").Logger()
-	authLogger := rootLogger.With().Str("service", "auth").Logger()
-	dbLogger := rootLogger.With().Str("service", "db").Logger()
-	protectionLogger := rootLogger.With().Str("service", "protection").Logger()
-
 	e := echo.New()
+
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	})
+	log := slog.New(handler)
+	dbLogger := log.With("module", "db")
+	authLogger := log.With("module", "auth")
+	protectionLogger := log.With("module", "protection middleware")
+	reqLogger := log.With("module", "request log middleware")
+
 	dbClient := db.NewClient(dbLogger)
 	defer dbClient.Close()
 
@@ -226,6 +209,7 @@ func main() {
 		Authorizer: authClient,
 	}
 
+	e.Use(middlewares.TraceMiddleware)
 	protected := middlewares.GetProtectedMiddleware(protectionLogger, authClient, dbClient)
 	e.Use(middlewares.GetLoggingMiddleware(reqLogger))
 
@@ -246,6 +230,6 @@ func main() {
 	e.GET("/test", s.TestUpdate, protected)
 
 	if err := e.Start(":8080"); err != nil {
-		rootLogger.Error().Msg(err.Error())
+		log.Error(err.Error())
 	}
 }
