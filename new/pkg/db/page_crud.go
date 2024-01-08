@@ -32,3 +32,39 @@ func (c *Client) ReadPagesByUserId(id string) ([]Page, error) {
 
 	return pages, err
 }
+
+func (c *Client) UpsertPage(p *Page) error {
+	res, err := c.DB().Exec(
+		`INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		p.Id, p.UserId, p.Url, p.Title,
+		p.Description, p.ImageUrl, p.ReadabilityStatus,
+		p.ReadabilityTaskData, p.IsReadable, p.Created, p.Updated,
+	)
+	c.log.Debug().Msgf("Insert ran with result %+v", res)
+	if err == nil {
+		c.log.Info().Msg("Started to fire listener")
+		listener, ok := PageEventMap[p.UserId]
+		if ok {
+			c.log.Info().Msg("Fired listener")
+			listener <- Event[Page]{
+				Event:  EventType("Update"),
+				Record: p,
+			}
+		} else {
+			c.log.Info().Msg("Failed to fire, no open channel")
+		}
+	} 
+	return err
+}
+
+func (c *Client) DeletePagesByUserId(id string) (int, error) {
+	c.log.Debug().Msgf("Deleting pages with user id %s", id)
+	res, err := c.DB().Exec(`
+		DELETE FROM pages WHERE user_id = ?
+	`, id)
+	if err != nil {
+		return 0, err
+	}
+	n, _ := res.RowsAffected()
+	return int(n), err
+}

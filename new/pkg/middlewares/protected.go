@@ -24,6 +24,12 @@ func GetProtectedMiddleware(log zerolog.Logger, authClient auth.AbsAuthorizer, d
 				return c.NoContent(http.StatusUnauthorized)
 			}
 
+			requestedId := c.Param("id")
+			if requestedId != "" && requestedId != uid {
+				log.Error().Msgf("Cookie for %s not valid to access user %s", uid, requestedId)
+				return c.NoContent(http.StatusForbidden)
+			}
+
 			user, err := dbClient.ReadUserById(uid)
 			if err != nil {
 				log.Error().Msgf("Could not find user with id %s", uid)

@@ -26,7 +26,8 @@ type DataIndex struct {
 }
 
 type DataPages struct {
-	Pages []db.Page
+	UserId string
+	Pages  []db.Page
 }
 
 func (Router) GetRoot(c echo.Context) error {
@@ -52,7 +53,7 @@ func (s *Router) PostLogin(c echo.Context) error {
 
 	sess := s.Authorizer.GetToken(user.Id)
 
-	c.Response().Header().Set("Location", "/pages")
+	c.Response().Header().Set("Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
 		Name:  auth.SESS_COOKIE,
 		Value: sess,
@@ -110,7 +111,25 @@ func (r *Router) GetPages(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return render.RenderTempate("pages", c.Response(), &DataPages{pages})
+	return render.RenderTempate("pages", c.Response(), &DataPages{
+		Pages:  pages,
+		UserId: user.Id,
+	})
+}
+
+func (r *Router) DeletePages(c echo.Context) error {
+	user, ok := c.Get("user").(*db.User)
+	if !ok {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	n, err := r.DBClient.DeletePagesByUserId(user.Id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.String(http.StatusOK, fmt.Sprintf("Deleted %d records", n))
+
 }
 
 func (r *Router) PostPage(c echo.Context) error {
@@ -127,6 +146,42 @@ func (r *Router) PostPage(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusCreated)
+}
+
+func (r *Router) ListenPages(c echo.Context) error {
+	user, ok := c.Get("user").(*db.User)
+	if !ok || user == nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	// create listener to updates
+	events := make(chan db.Event[db.Page])
+
+	r.DBClient.AddPageListener(user.Id, events)
+
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Header().Add("Content-Type", "text/event-stream")
+	c.Response().Flush()
+
+	defer r.DBClient.RemovePageListener(user.Id)
+	for event := range events {
+		fmt.Println("Event", event)
+		c.Response().Write([]byte("<p>Message sent</p>\n\n"))
+		c.Response().Flush()
+	}
+
+	return nil
+}
+
+func (r *Router) TestUpdate(c echo.Context) error {
+	user, _ := c.Get("user").(*db.User)
+	page := db.NewPage(user.Id, "https://example.com")
+	page.Id = "123456"
+	err := r.DBClient.UpsertPage(page)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.String(200, "Updated")
 }
 
 func (Router) TestTmpl(c echo.Context) error {
@@ -174,17 +229,21 @@ func main() {
 	protected := middlewares.GetProtectedMiddleware(protectionLogger, authClient, dbClient)
 	e.Use(middlewares.GetLoggingMiddleware(reqLogger))
 
+	e.Static("/assets", "public")
 	e.GET("/", s.GetRoot)
 
 	e.GET("/login", s.GetLogin)
-	e.GET("/logout", s.GetLogout, protected)
 	e.POST("/login", s.PostLogin)
+	e.GET("/logout", s.GetLogout, protected)
 
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
 
-	e.GET("/pages", s.GetPages, protected)
-	e.POST("/page", s.PostPage, protected)
+	e.GET("/:id/pages", s.GetPages, protected)
+	e.DELETE("/:id/pages", s.DeletePages, protected)
+	e.POST("/:id/page", s.PostPage, protected)
+	e.GET("/:id/pages/listen", s.ListenPages, protected)
+	e.GET("/test", s.TestUpdate, protected)
 
 	if err := e.Start(":8080"); err != nil {
 		rootLogger.Error().Msg(err.Error())

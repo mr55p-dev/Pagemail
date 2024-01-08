@@ -7,6 +7,12 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var PageEventMap map[string]EventOutput[Page]
+
+func init() {
+	PageEventMap = make(map[string]EventOutput[Page])
+}
+
 type AbsClient interface {
 	DB() *sql.DB
 	Close()
@@ -15,7 +21,13 @@ type AbsClient interface {
 	ReadUserByEmail(string) (*User, error)
 
 	CreatePage(*Page) error
+	UpsertPage(*Page) error
+
 	ReadPagesByUserId(string) ([]Page, error)
+	DeletePagesByUserId(string) (int, error)
+
+	AddPageListener(id string, output EventOutput[Page])
+	RemovePageListener(id string)
 }
 
 type Client struct {
