@@ -1,17 +1,13 @@
 package render
 
 import (
-	"fmt"
-	"html/template"
-	"io"
+	"net/http"
+
+	"github.com/a-h/templ"
+	"github.com/labstack/echo/v4"
 )
 
-func RenderTempate(page string, out io.Writer, data any) error {
-	path := fmt.Sprintf("./tmpl/%s.tmpl.html", page)
-	tmpl, err := template.ParseFiles(path)
-	if err != nil {
-		return err
-	}
-	err = tmpl.Execute(out, data)
-	return err
+func ReturnRender(c echo.Context, component templ.Component) error {
+	c.Response().WriteHeader(http.StatusOK)
+	return component.Render(c.Request().Context(), c.Response().Writer)
 }

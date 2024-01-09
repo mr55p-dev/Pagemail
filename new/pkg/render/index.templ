@@ -1,0 +1,15 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/pkg/db"
+
+templ Index(user *db.User) {
+	@Wrapper(user, "") {
+		<p>Pagemail is a simple read-it-later client for the web</p>
+		if user != nil {
+			<a href="/pages">View pages</a>
+		} else {
+			<a href="/signup">Sign up</a>
+			<a href="/login">Log in</a>
+		}
+	}
+}

@@ -2,11 +2,24 @@ package db
 
 import "context"
 
-func (client *Client) CreatePage(c context.Context, p *Page) error {
-	_, err := client.db.Exec(`
+func (client *Client) CreatePage(ctx context.Context, p *Page) error {
+	_, err := client.db.ExecContext(ctx, `
 		INSERT INTO pages (id, user_id, url, created, updated)
 		VALUES (?, ?, ?, ?, ?)
 	`, p.Id, p.UserId, p.Url, p.Created, p.Updated)
+	return err
+}
+
+func (client *Client) ReadPage(ctx context.Context, id string) (*Page, error) {
+	out := new(Page)
+	err := client.db.GetContext(ctx, out, "SELECT * FROM pages WHERE id = ?", id)
+	return out, err
+}
+
+func (client *Client) DeletePage(c context.Context, id string) error {
+	_, err := client.db.Exec(`
+		DELETE FROM pages WHERE id = ?
+	`, id)
 	return err
 }
 

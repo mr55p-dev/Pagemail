@@ -1,0 +1,34 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/pkg/db"
+
+templ PageView(user *db.User, pages []db.Page) {
+	@Wrapper(user, "Pages") {
+		<div>
+			<h2>Your saved pages</h2>
+			<div class="pages">
+				for _, v := range pages {
+					@PageElementComponent(&v)
+				}
+			</div>
+		</div>
+	}
+}
+
+templ PageElementComponent(page *db.Page) {
+	<div sse-swap={ page.Id }>
+		<h3>{ page.Url }</h3>
+		if page.Description == nil {
+			<p>No description</p>
+		} else {
+			<p>{ *page.Description }</p>
+		}
+		<small>Updated { page.Updated.Format("02-01-2006") }</small>
+	</div>
+}
+
+templ SavePageWidget() {
+	<div>
+		<p>Not implemented</p>
+	</div>
+}

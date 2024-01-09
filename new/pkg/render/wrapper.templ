@@ -1,0 +1,60 @@
+package render
+
+import (
+	"github.com/mr55p-dev/pagemail/pkg/db"
+	t "github.com/a-h/templ"
+	"fmt"
+)
+
+templ Wrapper(user *db.User, title string) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			if title != "Pagemail" {
+				<title>Pagemail - { title }</title>
+			} else {
+				<title>Pagemail</title>
+			}
+			<script src="/assets/js/htmx.min.js"></script>
+			<script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+			<meta charset="UTF-8"/>
+			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
+		</head>
+		<body>
+			@Header(user)
+			<div class="wrapper">
+				<h2>{ title }</h2>
+				{ children... }
+			</div>
+		</body>
+	</html>
+}
+
+templ Header(user *db.User) {
+	<div class="header">
+		<div class="header-left">
+			<a class="nav-button brand" href="/">
+				<img src="/assets/img/default-monochrome-a.svg" alt="NavBrand"/>
+			</a>
+		</div>
+		<div class="header-right">
+			if user != nil {
+				<a class="nav-button" href={ t.URL(fmt.Sprintf("/%s/pages", user.Id)) }>
+					<span>Pages</span>
+				</a>
+				<a class="nav-button" href="/account">
+					<span>Account</span>
+				</a>
+				<a class="nav-button" href="/logout">
+					<span>Logout</span>
+				</a>
+			} else {
+				<a class="nav-button" href="/login">
+					<span>Login</span>
+				</a>
+			}
+		</div>
+	</div>
+}

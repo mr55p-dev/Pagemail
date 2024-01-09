@@ -27,11 +27,16 @@ type DataPages struct {
 }
 
 func (Router) GetRoot(c echo.Context) error {
-	return render.RenderTempate("index", c.Response(), &DataIndex{false})
+	var user *db.User
+	if c.Get("user") != nil {
+		user = c.Get("user").(*db.User)
+	}
+	c.Logger().Info(user)
+	return render.ReturnRender(c, render.Index(user))
 }
 
 func (Router) GetLogin(c echo.Context) error {
-	return render.RenderTempate("login", c.Response(), nil)
+	return render.ReturnRender(c, render.Login())
 }
 
 func (s *Router) PostLogin(c echo.Context) error {
@@ -58,7 +63,7 @@ func (s *Router) PostLogin(c echo.Context) error {
 }
 
 func (Router) GetSignup(c echo.Context) error {
-	return render.RenderTempate("signup", c.Response(), nil)
+	return render.ReturnRender(c, render.Signup())
 }
 
 func (s *Router) PostSignup(c echo.Context) error {
@@ -113,10 +118,18 @@ func (r *Router) GetPages(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return render.RenderTempate("pages", c.Response(), &DataPages{
-		Pages:  pages,
-		UserId: user.Id,
-	})
+	render.PageView(user, pages).Render(
+		c.Request().Context(),
+		c.Response().Writer,
+	)
+
+	c.Response().WriteHeader(http.StatusOK)
+	return nil
+
+	// return render.RenderTempate("pages", c.Response(), &DataPages{
+	// 	Pages:  pages,
+	// 	UserId: user.Id,
+	// })
 }
 
 func (r *Router) DeletePages(c echo.Context) error {
@@ -132,6 +145,29 @@ func (r *Router) DeletePages(c echo.Context) error {
 
 	return c.String(http.StatusOK, fmt.Sprintf("Deleted %d records", n))
 
+}
+
+func (r *Router) GetPage(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	pageId := c.Param("page_id")
+	page, err := r.DBClient.ReadPage(c.Request().Context(), pageId)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return c.String(http.StatusInternalServerError, "Failed to get page id")
+	}
+	if page.UserId != user.Id {
+		return c.NoContent(http.StatusForbidden)
+	}
+	err = r.DBClient.DeletePage(c.Request().Context(), pageId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	render.PageElementComponent(page).Render(
+		c.Request().Context(),
+		c.Response().Writer,
+	)
+	c.Response().WriteHeader(http.StatusOK)
+	return nil
 }
 
 func (r *Router) PostPage(c echo.Context) error {
@@ -186,11 +222,6 @@ func (r *Router) PostPage(c echo.Context) error {
 // 	return c.String(200, "Updated")
 // }
 
-func (Router) TestTmpl(c echo.Context) error {
-	cmp := render.Hello("ellis")
-	return cmp.Render(c.Request().Context(), c.Response())
-}
-
 func main() {
 	e := echo.New()
 
@@ -220,6 +251,8 @@ func main() {
 
 	e.GET("/:id/pages", s.GetPages, protected)
 	e.DELETE("/:id/pages", s.DeletePages, protected)
+
+	e.GET("/:id/page/:page_id", s.GetPage, protected)
 	e.POST("/:id/page", s.PostPage, protected)
 
 	// e.GET("/:id/pages/listen", s.ListenPages, protected)
