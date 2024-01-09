@@ -26,7 +26,7 @@ func (client *Client) DeletePage(c context.Context, id string) error {
 func (client *Client) ReadPagesByUserId(c context.Context, id string) ([]Page, error) {
 	var pages []Page
 	rows, err := client.db.Query(`
-		SELECT * FROM pages WHERE user_id = ?
+		SELECT * FROM pages WHERE user_id = ? ORDER BY created DESC
 	`, id)
 	if err != nil {
 		return nil, err

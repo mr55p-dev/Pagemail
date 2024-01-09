@@ -136,7 +136,11 @@ func (r *Router) DeletePages(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("Deleted %d records", n))
+	if ShouldRender(c) {
+		return render.ReturnRender(c, render.SavePageSuccess(fmt.Sprintf("Deleted %d records", n)))
+	} else {
+		return c.String(http.StatusOK, fmt.Sprintf("Deleted %d records", n))
+	}
 
 }
 

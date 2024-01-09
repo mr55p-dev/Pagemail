@@ -92,12 +92,17 @@ func FetchPreview(ctx context.Context, page *db.Page) error {
 
 	select {
 	case err := <-errorChan:
-		log.Printf("Error in goroutine, %s", err)
 		return err
-	case preview_data := <-previewChan:
-		page.Title = &preview_data.Title
-		page.Description = &preview_data.Description
-		page.ImageUrl = &preview_data.ImageUrl
+	case previewData := <-previewChan:
+		if previewData.Title != "" {
+			page.Title = &previewData.Title
+		}
+		if previewData.Description != "" {
+			page.Description = &previewData.Description
+		}
+		if previewData.ImageUrl != "" {
+			page.ImageUrl = &previewData.ImageUrl
+		}
 	}
 
 	return nil

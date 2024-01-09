@@ -19,7 +19,12 @@ templ PageView(user *db.User, pages []db.Page) {
 templ PageElementComponent(page *db.Page) {
 	<article class="box" sse-swap={ page.Id } id={ fmt.Sprintf("page-%s", page.Id) }>
 		<header>
-			<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Url }</a></h3>
+			if page.Title != nil {
+				<h3><a href={ templ.URL(page.Url) } target="_blank">{ *page.Title }</a></h3>
+				<sub-title>{ page.Url }</sub-title>
+			} else {
+				<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Url }</a></h3>
+			}
 		</header>
 		if page.Description == nil {
 			<p>No description</p>
@@ -33,7 +38,6 @@ templ PageElementComponent(page *db.Page) {
 				hx-swap="outerHTML"
 				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
 				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
-				hx-confirm="Are you sure you want to delete this page?"
 			>Delete</button>
 		</footer>
 	</article>
@@ -52,7 +56,23 @@ templ SavePageWidget(user *db.User) {
 		</form>
 		<button type="submit" id="save-page-submit">Save</button>
 		<button id="save-page-paste">Paste</button>
-		<div id="save-response"></div>
+		<hr aria-orientation="vertical"/>
+		<button
+			class="warn"
+			hx-delete={ fmt.Sprintf("/%s/pages", user.Id) }
+			hx-confirm="Are you sure you want to delete all saved pages?"
+			hx-target="#save-response"
+			hx-swap="innerHTML"
+		>Delete all</button>
+	</div>
+	<div id="save-response"></div>
+}
+
+templ SavePageSuccess(msg string) {
+	<div class="box ok" id="save-page-success-msg">
+		<strong class="block titlebar">Success</strong>
+		<p>{ msg }</p>
+		<button onClick={ RemoveElement("save-page-success-msg") }>Close</button>
 	</div>
 }
 
