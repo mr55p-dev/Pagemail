@@ -104,7 +104,8 @@ func (Router) GetLogout(c echo.Context) error {
 		Path:   "/",
 		MaxAge: -1,
 	})
-	return c.NoContent(http.StatusSeeOther)
+	c.Response().Header().Set("HX-Location", "/")
+	return c.NoContent(http.StatusOK)
 }
 
 func (r *Router) GetPages(c echo.Context) error {
@@ -118,18 +119,7 @@ func (r *Router) GetPages(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	render.PageView(user, pages).Render(
-		c.Request().Context(),
-		c.Response().Writer,
-	)
-
-	c.Response().WriteHeader(http.StatusOK)
-	return nil
-
-	// return render.RenderTempate("pages", c.Response(), &DataPages{
-	// 	Pages:  pages,
-	// 	UserId: user.Id,
-	// })
+	return render.ReturnRender(c, render.PageView(user, pages))
 }
 
 func (r *Router) DeletePages(c echo.Context) error {
@@ -177,13 +167,20 @@ func (r *Router) PostPage(c echo.Context) error {
 	}
 
 	url := c.FormValue("url")
-	page := db.NewPage(user.Id, url)
+	if url == "" {
+		return c.String(http.StatusBadRequest, "URL field must be present")
+	}
 
+	page := db.NewPage(user.Id, url)
 	if err := r.DBClient.CreatePage(c.Request().Context(), page); err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.NoContent(http.StatusCreated)
+	if c.Request().Header.Get("Accept") == "*/*" {
+		return render.ReturnRender(c, render.PageElementComponent(page))
+	} else {
+		return c.NoContent(http.StatusCreated)
+	}
 }
 
 // func (r *Router) ListenPages(c echo.Context) error {

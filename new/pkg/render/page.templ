@@ -1,16 +1,17 @@
 package render
 
 import "github.com/mr55p-dev/pagemail/pkg/db"
+import "fmt"
 
 templ PageView(user *db.User, pages []db.Page) {
 	@Wrapper(user, "Pages") {
-		<div>
-			<h2>Your saved pages</h2>
-			<div class="pages">
-				for _, v := range pages {
-					@PageElementComponent(&v)
-				}
-			</div>
+		<h4>Save a page</h4>
+		@SavePageWidget(user)
+		<h4>Your saved pages</h4>
+		<div id="pageview" class="pages" hx-ext="response-targets">
+			for _, v := range pages {
+				@PageElementComponent(&v)
+			}
 		</div>
 	}
 }
@@ -27,8 +28,18 @@ templ PageElementComponent(page *db.Page) {
 	</div>
 }
 
-templ SavePageWidget() {
+templ SavePageWidget(user *db.User) {
 	<div>
-		<p>Not implemented</p>
+		<form
+			hx-post={ fmt.Sprintf("/%s/page", user.Id) }
+			hx-target="#pageview"
+			hx-target-400="#save-response"
+			hx-swap="afterbegin"
+			hx-swap-400="innerHTML"
+		>
+			<input type="url" name="url" placeholder="url"/>
+			<button type="submit">Save</button>
+		</form>
+		<div id="save-response"></div>
 	</div>
 }
