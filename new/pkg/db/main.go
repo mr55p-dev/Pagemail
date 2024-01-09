@@ -3,26 +3,18 @@ package db
 import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mr55p-dev/pagemail/pkg/logging"
 )
 
 var PageEventMap map[string]EventOutput[Page]
+var log logging.Log
 
 func init() {
+	log = logging.GetLogger("db")
 	PageEventMap = make(map[string]EventOutput[Page])
 }
 
 type Client struct {
-	// CreateRecord(*T) error
-	// CreateRecords([]T) error
-	// ReadRecordByField(field string, val any) (*T, error)
-	// ReadRecordsByField(field string, val any) ([]T, error)
-	// UpsertRecord(*T) error
-	// UpsertRecords([]T) error
-	// DeleteRecordsByField(field string, val any) error
-	// AddListener() string
-	// RemoveListener(id string)
-	// DB() *sql.DB
-	// Close()
 	db *sqlx.DB
 }
 

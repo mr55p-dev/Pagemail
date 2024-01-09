@@ -9,15 +9,19 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
+	"github.com/mr55p-dev/pagemail/pkg/aws"
 	"github.com/mr55p-dev/pagemail/pkg/db"
+	"github.com/mr55p-dev/pagemail/pkg/mail"
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
+	"github.com/robfig/cron/v3"
 )
 
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
+	MailClient *mail.MailClient
 }
 
 type DataIndex struct {
@@ -277,9 +281,14 @@ func main() {
 
 	authClient := auth.NewAuthorizer()
 
+	mailClient := &mail.MailClient{
+		SesClient: aws.GetSesClient(context.Background()),
+	}
+
 	s := &Router{
 		DBClient:   dbClient,
 		Authorizer: authClient,
+		MailClient: mailClient,
 	}
 
 	e.Use(middlewares.TraceMiddleware)
@@ -306,6 +315,16 @@ func main() {
 
 	// e.GET("/:id/pages/listen", s.ListenPages, protected)
 	// e.GET("/test", s.TestUpdate, protected)
+
+	cr := cron.New()
+	cr.AddFunc(
+		"0 7 * * *",
+		func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+			defer cancel()
+			mail.DoDigestJob(ctx, dbClient, mailClient)
+		},
+	)
 
 	if err := e.Start(":8080"); err != nil {
 		slog.Error(err.Error())
