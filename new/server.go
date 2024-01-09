@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
+	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
 )
 
@@ -188,6 +191,19 @@ func (r *Router) PostPage(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 	}
+
+	go func(cli *db.Client) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		err := preview.FetchPreview(ctx, page)
+		if err != nil {
+			return
+		}
+		err = cli.UpsertPage(ctx, page)
+		if err != nil {
+			return
+		}
+	}(r.DBClient)
 
 	if ShouldRender(c) {
 		return render.ReturnRender(c, render.PageElementComponent(page))

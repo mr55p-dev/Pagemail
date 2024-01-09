@@ -3,7 +3,9 @@ module github.com/mr55p-dev/pagemail
 go 1.20
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/a-h/templ v0.2.501 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/labstack/echo/v4 v4.11.4 // indirect
