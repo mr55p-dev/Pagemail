@@ -8,7 +8,7 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/db"
 )
 
-func GetProtectedMiddleware(authClient auth.AbsAuthorizer, dbClient *db.Client) echo.MiddlewareFunc {
+func GetProtectedMiddleware(authClient *auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if true {

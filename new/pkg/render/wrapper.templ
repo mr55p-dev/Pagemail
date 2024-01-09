@@ -2,7 +2,6 @@ package render
 
 import (
 	"github.com/mr55p-dev/pagemail/pkg/db"
-	t "github.com/a-h/templ"
 	"fmt"
 )
 
@@ -21,41 +20,32 @@ templ Wrapper(user *db.User, title string) {
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="stylesheet" href="/assets/css/missing.css"/>
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
 		</head>
 		<body>
 			@Header(user)
-			<div class="wrapper">
+			<main class="wrapper">
 				<h2>{ title }</h2>
 				{ children... }
-			</div>
+			</main>
 		</body>
 	</html>
 }
 
 templ Header(user *db.User) {
-	<div class="header">
-		<div class="header-left">
-			<a class="nav-button brand" href="/">
-				<img src="/assets/img/default-monochrome-a.svg" alt="NavBrand"/>
-			</a>
-		</div>
-		<div class="header-right">
-			if user != nil {
-				<a class="nav-button" href={ t.URL(fmt.Sprintf("/%s/pages", user.Id)) }>
-					<span>Pages</span>
-				</a>
-				<a class="nav-button" href="/account">
-					<span>Account</span>
-				</a>
-				<a class="nav-button" href="/logout">
-					<span>Logout</span>
-				</a>
-			} else {
-				<a class="nav-button" href="/login">
-					<span>Login</span>
-				</a>
-			}
-		</div>
-	</div>
+	<header class="navbar">
+		<nav aria-label="Site sections">
+			<ul role="list" class="align-items:center">
+				<li><a href="/"><img alt="Pagemail" class="brand-icon" src="/assets/img/default-monochrome-a.svg"/></a></li>
+				if user != nil {
+					<li><a href={ templ.URL(fmt.Sprintf("/%s/pages", user.Id)) }>Pages</a></li>
+					<li><a href={ templ.URL(fmt.Sprintf("/%s/account", user.Id)) }>Account</a></li>
+					<li><a href={ templ.URL(fmt.Sprintf("/%s/logout", user.Id)) }>Logout</a></li>
+				} else {
+					<li><a href="/login">Login</a></li>
+				}
+			</ul>
+		</nav>
+	</header>
 }

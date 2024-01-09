@@ -14,7 +14,7 @@ import (
 
 type Router struct {
 	DBClient   *db.Client
-	Authorizer auth.AbsAuthorizer
+	Authorizer *auth.Authorizer
 }
 
 type DataIndex struct {
@@ -160,7 +160,12 @@ func (r *Router) GetPage(c echo.Context) error {
 	return nil
 }
 
+func ShouldRender(c echo.Context) bool {
+	return c.Request().Header.Get("Accept") == "*/*"
+}
+
 func (r *Router) PostPage(c echo.Context) error {
+
 	user, ok := c.Get("user").(*db.User)
 	if !ok || user == nil {
 		return c.NoContent(http.StatusInternalServerError)
@@ -168,19 +173,44 @@ func (r *Router) PostPage(c echo.Context) error {
 
 	url := c.FormValue("url")
 	if url == "" {
-		return c.String(http.StatusBadRequest, "URL field must be present")
+		if ShouldRender(c) {
+			return render.ReturnRender(c, render.SavePageError("URL field must be present"))
+		} else {
+			return c.String(http.StatusBadRequest, "URL field must be present")
+		}
 	}
 
 	page := db.NewPage(user.Id, url)
 	if err := r.DBClient.CreatePage(c.Request().Context(), page); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		if ShouldRender(c) {
+			return render.ReturnRender(c, render.SavePageError(err.Error()))
+		} else {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
 	}
 
-	if c.Request().Header.Get("Accept") == "*/*" {
+	if ShouldRender(c) {
 		return render.ReturnRender(c, render.PageElementComponent(page))
 	} else {
 		return c.NoContent(http.StatusCreated)
 	}
+}
+
+func (r *Router) DeletePage(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	id := c.Param("page_id")
+	page, err := r.DBClient.ReadPage(c.Request().Context(), id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Something went wrong")
+	}
+
+	if !r.Authorizer.CheckPagePermission(user, page) {
+		return c.String(http.StatusForbidden, "Permission denied")
+	}
+
+	r.DBClient.DeletePage(c.Request().Context(), page.Id)
+
+	return c.NoContent(http.StatusOK)
 }
 
 // func (r *Router) ListenPages(c echo.Context) error {
@@ -241,15 +271,17 @@ func main() {
 
 	e.GET("/login", s.GetLogin)
 	e.POST("/login", s.PostLogin)
-	e.GET("/logout", s.GetLogout, protected)
 
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
+
+	e.GET("/:id/logout", s.GetLogout, protected)
 
 	e.GET("/:id/pages", s.GetPages, protected)
 	e.DELETE("/:id/pages", s.DeletePages, protected)
 
 	e.GET("/:id/page/:page_id", s.GetPage, protected)
+	e.DELETE("/:id/page/:page_id", s.DeletePage, protected)
 	e.POST("/:id/page", s.PostPage, protected)
 
 	// e.GET("/:id/pages/listen", s.ListenPages, protected)

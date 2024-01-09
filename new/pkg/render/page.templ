@@ -8,7 +8,7 @@ templ PageView(user *db.User, pages []db.Page) {
 		<h4>Save a page</h4>
 		@SavePageWidget(user)
 		<h4>Your saved pages</h4>
-		<div id="pageview" class="pages" hx-ext="response-targets">
+		<div id="pageview" class="f-col" hx-ext="response-targets">
 			for _, v := range pages {
 				@PageElementComponent(&v)
 			}
@@ -17,29 +17,53 @@ templ PageView(user *db.User, pages []db.Page) {
 }
 
 templ PageElementComponent(page *db.Page) {
-	<div sse-swap={ page.Id }>
-		<h3>{ page.Url }</h3>
+	<article class="box" sse-swap={ page.Id } id={ fmt.Sprintf("page-%s", page.Id) }>
+		<header>
+			<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Url }</a></h3>
+		</header>
 		if page.Description == nil {
 			<p>No description</p>
 		} else {
 			<p>{ *page.Description }</p>
 		}
-		<small>Updated { page.Updated.Format("02-01-2006") }</small>
-	</div>
+		<footer>
+			<small>Added { page.Created.Format("02-01-2006") }</small>
+			<button
+				hx-delete={ fmt.Sprintf("/%s/page/%s", page.UserId, page.Id) }
+				hx-swap="outerHTML"
+				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
+				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
+				hx-confirm="Are you sure you want to delete this page?"
+			>Delete</button>
+		</footer>
+	</article>
 }
 
 templ SavePageWidget(user *db.User) {
-	<div>
+	<div class="tool-bar">
 		<form
+			hx-trigger="submit,click from:#save-page-submit"
 			hx-post={ fmt.Sprintf("/%s/page", user.Id) }
 			hx-target="#pageview"
-			hx-target-400="#save-response"
+			hx-target-error="#save-response"
 			hx-swap="afterbegin"
-			hx-swap-400="innerHTML"
 		>
 			<input type="url" name="url" placeholder="url"/>
-			<button type="submit">Save</button>
 		</form>
+		<button type="submit" id="save-page-submit">Save</button>
+		<button id="save-page-paste">Paste</button>
 		<div id="save-response"></div>
 	</div>
+}
+
+templ SavePageError(msg string) {
+	<div class="box bad" id="save-page-err-msg">
+		<strong class="block titlebar">Error</strong>
+		<p>{ msg }</p>
+		<button onClick={ RemoveElement("save-page-err-msg") }>Close</button>
+	</div>
+}
+
+script RemoveElement(id string) {
+	document.getElementById(id).remove();
 }
