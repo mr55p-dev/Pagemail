@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/mattn/go-sqlite3"
-	"github.com/mr55p-dev/pagemail/pkg/logging"
 )
 
 func (client *Client) CreateUser(c context.Context, u *User) error {
@@ -45,12 +44,12 @@ func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, e
 }
 
 func (client *Client) ReadUsersWithMail(c context.Context) (users []User, err error) {
-	log.InfoContext(c, "Looking up all users with mail enabled")
-	err = client.db.Select(users, `SELECT * FROM users`)
+	log.DebugContext(c, "Looking up all users with mail enabled")
+	err = client.db.Select(&users, `SELECT * FROM users`)
 	if err != nil {
-		log.ErrorContext(c, "Failed looking up user", logging.Error, err.Error())
+		log.ErrContext(c, "Failed looking up user", err)
 		return
 	}
-	log.InfoContext(c, "Found users", "num-users", len(users))
+	log.DebugContext(c, "Found users", "count", len(users))
 	return
 }

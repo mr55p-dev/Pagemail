@@ -3,8 +3,10 @@ package mail
 import (
 	"bytes"
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 
@@ -15,22 +17,43 @@ import (
 
 var log logging.Log
 
+const (
+	Sender = "ellis@pagemail.io"
+)
+
 func init() {
 	log = logging.GetLogger("mail")
 }
 
-type MailClient struct {
+func GenerateMailBody(ctx context.Context, user *db.User, pages []db.Page) ([]byte, error) {
+	now := time.Now()
+	dt := time.Date(now.Year(), now.Month(), now.Day()-1, 7, 0, 0, 0, time.UTC)
+	dest := new(bytes.Buffer)
+	err := render.MailDigest(&dt, user, pages).Render(ctx, dest)
+	return dest.Bytes(), err
+}
+
+type MailClient interface {
+	SendMail(context.Context, *db.User, string) error
+}
+
+type SesMailClient struct {
 	FromAddr  string
 	SesClient *ses.Client
 }
 
-func GenerateMailBody(ctx context.Context, user *db.User, pages []db.Page) ([]byte, error) {
-	dest := new(bytes.Buffer)
-	err := render.EmailBody(user, pages).Render(ctx, dest)
-	return dest.Bytes(), err
+func NewSesMailClient(ctx context.Context) *SesMailClient {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+	client := ses.NewFromConfig(cfg)
+	return &SesMailClient{
+		SesClient: client,
+	}
 }
 
-func (c *MailClient) SendMail(ctx context.Context, user db.User, body string) error {
+func (c *SesMailClient) SendMail(ctx context.Context, user *db.User, body string) error {
 	log.Debug("Sending mail", logging.UserMail, user.Email)
 	out, err := c.SesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
@@ -49,7 +72,7 @@ func (c *MailClient) SendMail(ctx context.Context, user db.User, body string) er
 				Charset: aws.String("UTF-8"),
 			},
 		},
-		ReplyToAddresses: []string{"ellis@pagemail.io"},
+		ReplyToAddresses: []string{Sender},
 		Tags: []types.MessageTag{
 			{
 				Name:  aws.String("purpose"),

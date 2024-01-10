@@ -9,7 +9,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
-	"github.com/mr55p-dev/pagemail/pkg/aws"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/mail"
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
@@ -21,7 +20,7 @@ import (
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
-	MailClient *mail.MailClient
+	MailClient mail.MailClient
 }
 
 type DataIndex struct {
@@ -281,9 +280,7 @@ func main() {
 
 	authClient := auth.NewAuthorizer()
 
-	mailClient := &mail.MailClient{
-		SesClient: aws.GetSesClient(context.Background()),
-	}
+	mailClient := mail.NewSesMailClient(context.Background())
 
 	s := &Router{
 		DBClient:   dbClient,
