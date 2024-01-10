@@ -34,3 +34,4 @@ func NewUser(email, password string) *User {
 		Updated:        &now,
 	}
 }
+

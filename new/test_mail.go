@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/mr55p-dev/pagemail/pkg/aws"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/logging"
 	"github.com/mr55p-dev/pagemail/pkg/mail"
@@ -14,10 +13,7 @@ var log logging.Log
 
 func sendTestEmail() {
 	dbClient := db.NewClient()
-	mailClient := &mail.SesMailClient{
-		SesClient: aws.GetSesClient(context.Background()),
-		FromAddr:  "ellis@pagemail.io",
-	}
+	mailClient := mail.NewSesMailClient(context.Background())
 	user, _ := dbClient.ReadUserById(context.Background(), "iy17XbjTy7")
 	log.Info("Got user", "user", user)
 	pages, _ := dbClient.ReadPagesByUserId(context.Background(), user.Id)
@@ -32,16 +28,9 @@ func sendTestEmail() {
 
 }
 
-type TestClient struct{}
-
-func (*TestClient) SendMail(ctx context.Context, user *db.User, body string) error {
-	log.Info("Test sending mail", "user", user.Email, "body", body)
-	return nil
-}
-
 func testUserGeneration() {
 	dbClient := db.NewClient()
-	mailClient := new(TestClient)
+	mailClient := new(mail.TestClient)
 	err := mail.DoDigestJob(context.Background(), dbClient, mailClient)
 	if err != nil {
 		log.Err("Error sending", err)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -19,7 +20,7 @@ import (
 
 type Router struct {
 	DBClient   *db.Client
-	Authorizer *auth.Authorizer
+	Authorizer auth.Authorizer
 	MailClient mail.MailClient
 }
 
@@ -53,11 +54,11 @@ func (s *Router) PostLogin(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if !s.Authorizer.ValidateUser(email, password, user) {
+	if !s.Authorizer.ValCredentialsAgainstUser(email, password, user) {
 		return c.String(http.StatusBadRequest, "Invalid username or password")
 	}
 
-	sess := s.Authorizer.GetToken(user)
+	sess := s.Authorizer.GenSessionToken(user)
 
 	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -83,7 +84,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 	}
 
 	// Generate a new user
-	user := db.NewUser(email, auth.HashPassword(password))
+	user := db.NewUser(email, s.Authorizer.GenPasswordHash(password))
 	user.Username = username
 	err := s.DBClient.CreateUser(c.Request().Context(), user)
 	if err != nil {
@@ -91,7 +92,7 @@ func (s *Router) PostSignup(c echo.Context) error {
 	}
 
 	// Generate a token for the user from the session manager
-	token := s.Authorizer.GetToken(user)
+	token := s.Authorizer.GenSessionToken(user)
 
 	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -227,7 +228,7 @@ func (r *Router) DeletePage(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Something went wrong")
 	}
 
-	if !r.Authorizer.CheckPagePermission(user, page) {
+	if !r.Authorizer.ValUserAgainstPage(user, page) {
 		return c.String(http.StatusForbidden, "Permission denied")
 	}
 
@@ -273,14 +274,22 @@ func (r *Router) DeletePage(c echo.Context) error {
 // }
 
 func main() {
+	env := os.Getenv("PM_ENV")
 	e := echo.New()
+	ctx := context.Background()
 
 	dbClient := db.NewClient()
 	defer dbClient.Close()
 
-	authClient := auth.NewAuthorizer()
-
-	mailClient := mail.NewSesMailClient(context.Background())
+	var mailClient mail.MailClient
+	var authClient auth.Authorizer
+	if env == "prd" {
+		authClient = auth.NewSecureAuthorizer()
+		mailClient = mail.NewSesMailClient(ctx)
+	} else {
+		authClient = auth.NewTestAuthorizer(os.Getenv("PM_TEST_USER"))
+		mailClient = &mail.TestClient{}
+	}
 
 	s := &Router{
 		DBClient:   dbClient,
@@ -317,7 +326,7 @@ func main() {
 	cr.AddFunc(
 		"0 7 * * *",
 		func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+			ctx, cancel := context.WithTimeout(ctx, 20*time.Minute)
 			defer cancel()
 			mail.DoDigestJob(ctx, dbClient, mailClient)
 		},

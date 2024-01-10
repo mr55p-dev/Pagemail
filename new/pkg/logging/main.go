@@ -22,9 +22,27 @@ const (
 var BaseLog *slog.Logger
 
 func init() {
-	BaseLog = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	env := os.Getenv("PM_ENV")
+	lvl := os.Getenv("PM_LVL")
+	var handler slog.Handler
+	var level slog.Level
+	switch lvl {
+	case "DEBUG":
+		level = slog.LevelDebug
+	case "WARN":
+		level = slog.LevelWarn
+	default:
+	case "INFO":
+		level = slog.LevelInfo
+	}
+	opts := &slog.HandlerOptions{Level: level}
+
+	if env == "prd" {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+	BaseLog = slog.New(handler)
 }
 
 func GetLogger(name string) Log {

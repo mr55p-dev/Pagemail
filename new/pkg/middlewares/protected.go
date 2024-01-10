@@ -8,21 +8,15 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/db"
 )
 
-func GetProtectedMiddleware(authClient *auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
+func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if true {
-				user, _ := dbClient.ReadUserByEmail(c.Request().Context(), "ellislunnon@gmail.com")
-				c.Set("user", user)
-				return next(c)
-			}
-
 			cookie, err := c.Cookie(auth.SESS_COOKIE)
 			if err != nil {
 				return c.NoContent(http.StatusUnauthorized)
 			}
 
-			uid := authClient.CheckToken(cookie.Value)
+			uid := authClient.ValSessionToken(cookie.Value)
 			if uid == "" {
 				return c.NoContent(http.StatusUnauthorized)
 			}
