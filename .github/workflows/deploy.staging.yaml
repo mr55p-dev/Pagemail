@@ -89,4 +89,4 @@ jobs:
           username: ${{ secrets.username }}
           key: ${{ secrets.key }}
           port: ${{ secrets.port }}
-          script: sudo /home/ec2-user/pagemail/install.sh /home/ec2-user/pagemail stg
+          script: sudo bash /home/ec2-user/pagemail/install.sh /home/ec2-user/pagemail stg
