@@ -10,7 +10,7 @@ if [ -z $env ]; then
 		echo "error: no environment set"
 		exit 1
 	else
-		export env $2
+		export env=$2
 	fi
 fi
 
@@ -18,7 +18,7 @@ fi
 if [ $env = "prd" ]; then
 	echo "installing prd binary"
 	export svc = pagemail
-else if [ $env = "stg" ]; then
+elif [ $env = "stg" ]; then
 	echo "installing stg binary"
 	export svc = pagemail.staging
 else
