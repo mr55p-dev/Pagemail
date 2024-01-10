@@ -17,10 +17,10 @@ fi
 # setup env
 if [ $env = "prd" ]; then
 	echo "installing prd binary"
-	export svc = pagemail
+	export svc=pagemail
 elif [ $env = "stg" ]; then
 	echo "installing stg binary"
-	export svc = pagemail.staging
+	export svc=pagemail.staging
 else
 	echo "unknown environment $env"
 	exit 1
