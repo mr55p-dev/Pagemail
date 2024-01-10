@@ -3,11 +3,11 @@ Description=pagemail.stage
 After=network.target
 
 [Service]
-ExecStart=/home/ec2-user/stg/pagemail/server 
+ExecStart=/home/ec2-user/stg/pagemail/main 
 Restart=always
 Environment="PM_ENV=stg"
-Environment="PM_PORT=4000"
-Environment="PM_DB_PATH=/home/ec2-user/data/stg/pagemail"
+Environment="PM_PORT=4001"
+Environment="PM_DB_PATH=/home/ec2-user/data/stg/pagemail/pagemail.sqlite3"
 StandardError=journal
 StandardOutput=journal
 StandardInput=null
