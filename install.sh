@@ -37,9 +37,9 @@ rm /var/www/testsites/*
 cp $base/test_pages/* /var/www/testsites
 
 # install nginx configs
-for f in pm staging_pm test v2 www_pm
+for f in pm $(ls $base/nginx)
 do
-	cp $base/nginx/$f.conf /etc/nginx/conf.d/$f.conf
+	cp $base/nginx/$f /etc/nginx/conf.d/$f
 done
 
 # get ssl certificates
