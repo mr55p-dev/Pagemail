@@ -39,6 +39,7 @@ templ PageElementComponent(page *db.Page) {
 				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
 				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
 			>Delete</button>
+			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
 		</footer>
 	</article>
 }
@@ -52,10 +53,10 @@ templ SavePageWidget(user *db.User) {
 			hx-target-error="#save-response"
 			hx-swap="afterbegin"
 		>
-			<input type="url" name="url" placeholder="url"/>
+			<input type="url" name="url" placeholder="url" id="save-page-input"/>
 		</form>
 		<button type="submit" id="save-page-submit">Save</button>
-		<button id="save-page-paste">Paste</button>
+		<button id="save-page-paste" onClick={ PasteFromClipboard("save-page-input") }>Paste</button>
 		<hr aria-orientation="vertical"/>
 		<button
 			class="warn"
@@ -86,4 +87,13 @@ templ SavePageError(msg string) {
 
 script RemoveElement(id string) {
 	document.getElementById(id).remove();
+}
+
+script PasteFromClipboard(toId string) {
+	const elem = document.getElementById(toId)
+	navigator.clipboard.readText().then(txt => elem.setAttribute("value", txt)).catch(err => console.error("Failed to paste", error))
+}
+
+script CopyToClipboard(text string) {
+	navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Something went wrong."))
 }

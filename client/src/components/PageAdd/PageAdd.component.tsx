@@ -22,6 +22,7 @@ export const PageAdd = () => {
   );
 
   const handlePaste = () => {
+	document.getElementById()?.setAttribute()
     navigator.clipboard
       .readText()
       .then((txt) => setUrl(txt))
