@@ -3,12 +3,11 @@ Description=pagemail.stage
 After=network.target
 
 [Service]
-ExecStart=/home/ec2-user/stage/server serve --dir=/home/ec2-user/data/stage --debug --http="0.0.0.0:4001"
+ExecStart=/home/ec2-user/stg/pagemail/server 
 Restart=always
-Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/keys/staging.key.pub"
-Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/keys/staging.key"
-Environment="PAGEMAIL_EMAIL_TEMPLATE_PATH=/home/ec2-user/stage/templates/email.html.template"
-Environment="PAGEMAIL_READABILITY_CONTEXT_DIR=/home/ec2-user/stage/readability"
+Environment="PM_ENV=stg"
+Environment="PM_PORT=4000"
+Environment="PM_DB_PATH=/home/ec2-user/data/stg/pagemail"
 StandardError=journal
 StandardOutput=journal
 StandardInput=null

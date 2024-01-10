@@ -1,43 +1,21 @@
 ---
-name: Deploy code to stage
+name: Deploy code from master to Production
+
 on:
   workflow_dispatch:
-  pull_request:
+  push:
+    branches:
+      - main
+
 permissions:
   contents: read
-env:
-  ENV: staging
+
 concurrency:
-  group: staging
-  cancel-in-progress: true
+  group: production
+  cancel-in-progress: false
 
 jobs:
-  build-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.3.x
-          cache: npm
-          cache-dependency-path: "client/package-lock.json"
-
-      - name: Initialize environment
-        run: make -C client init
-
-      - name: Build code
-        run: make -C client build
-
-      - name: Store dist artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: dist-frontend
-          path: ${{ github.workspace }}/client/dist/
-
-  build-backend:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,132 +27,51 @@ jobs:
           cache: true
           cache-dependency-path: server/go.sum
 
-      - name: Initialize environment
-        run: make -C server init
-
-      # - name: Run tests
-      #   run: make -C server test
+      - name: Install dependencies
+        run: make install
 
       - name: Build binary
-        run: make -C server build
+        run: make build
 
       - name: Store build artifact
         uses: actions/upload-artifact@master
         with:
-          name: dist-backend
-          path: ${{ github.workspace }}/server/dist/
-
-  build-readability:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.3.x
-          cache: npm
-          cache-dependency-path: "readability/package-lock.json"
-
-      - name: Initialize environment
-        run: make -C readability init
-
-      - name: Build code
-        run: make -C readability build
-
-      - name: Remove virtual env
-        run: make -C readability clean-venv
-
-      - name: Store dist artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: dist-readability
-          path: ${{ github.workspace }}/readability/dist/
+          name: build
+          path: ${{ github.workspace }}/tmp/main
 
   deploy:
     runs-on: ubuntu-latest
-    environment: Preview
-    needs: [build-frontend, build-backend, build-readability]
-    if: |
-      always() &&
-      !contains(needs.*.result, 'failure') &&
-      !contains(needs.*.result, 'cancelled')
+    environment: Production
+    needs: [build]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Download frontend
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-frontend
-          path: client-dist/
 
       - name: Download backend
         uses: actions/download-artifact@v3
         with:
-          name: dist-backend
-          path: server-dist/
+          name: build
+          path: build/
 
-      - name: Download readability
-        uses: actions/download-artifact@v3
+      - name: Clean environment
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          name: dist-readability
-          path: readability-dist/
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: rm -rf /home/ec2-user/pagemail
 
-      - name: Copy makefile to server
+      - name: Copy build artifact onto server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "Makefile"
-          target: /home/ec2-user/pagemail
-
-      - name: Clean existing server resources
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd pagemail
-            make pre-install-stage
-
-      - name: Copy frontend artifacts onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "client-dist/*"
-          target: /home/ec2-user/pagemail/client/dist/
-          strip_components: 1
-
-      - name: Copy backend artifacts onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "server-dist/server"
-          target: /home/ec2-user/pagemail/server/dist
-          strip_components: 1
-
-      - name: Copy readability artifacts onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "readability-dist/*"
-          target: /home/ec2-user/pagemail/readability/dist
+          source: "build/main"
+          target: /home/ec2-user/stg/pagemail/
           strip_components: 1
 
       - name: Copy server files onto server
@@ -184,41 +81,14 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "Makefile,nginx/*,services/*,test_pages/*,templates/*"
+          source: "install.sh,nginx/*,services/*,test_pages/*"
           target: /home/ec2-user/pagemail
 
-      - name: run install scripts
-        uses: appleboy/ssh-action@v0.1.10
+      - name: Run install script
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.host }}
           username: ${{ secrets.username }}
           key: ${{ secrets.key }}
           port: ${{ secrets.port }}
-          script: |
-            cd pagemail
-            make install-stage
-
-      - name: Run static install scripts
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          key: ${{ secrets.key }}
-          port: ${{ secrets.port }}
-          script: |
-            cd pagemail
-            make install-nginx
-            make install-test-sites
-            make install-stage-templates
-
-      - name: Run post install scripts
-        if: always()
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          key: ${{ secrets.key }}
-          port: ${{ secrets.port }}
-          script: |
-            cd pagemail
-            make post-install-stage
+          script: sudo /home/ec2-user/pagemail/install.sh /home/ec2-user/pagemail stg

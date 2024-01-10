@@ -17,6 +17,7 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
+	"github.com/mr55p-dev/pagemail/pkg/tools"
 	"github.com/robfig/cron/v3"
 )
 
@@ -278,20 +279,32 @@ func (r *Router) DeletePage(c echo.Context) error {
 // 	return c.String(200, "Updated")
 // }
 
+type Cfg struct {
+	Env      string `env:"PM_ENV" log:"environment"`
+	DBPath   string `env:"PM_DB_PATH" log:"db-path"`
+	Port     string `env:"PM_PORT" log:"port"`
+	TestUser string `env:"PM_TEST_USER,optional" log:"test-user-id"`
+}
+
+func (c Cfg) LogValue() slog.Value {
+	vals := tools.LogValue(&c)
+	return slog.GroupValue(vals...)
+}
+
 func main() {
 	log := logging.GetLogger("root")
-	env := os.Getenv("PM_ENV")
-	dbPath := os.Getenv("PM_DB_PATH")
-	log.Info("Configuring server", "env", env, "db-path", dbPath)
+	cfg := new(Cfg)
+	tools.LoadFromEnv(cfg)
+	log.Info("Configuring server", "config", cfg)
 
 	e := echo.New()
 	ctx := context.Background()
-	dbClient := db.NewClient(dbPath)
+	dbClient := db.NewClient(cfg.DBPath)
 	defer dbClient.Close()
 
 	var mailClient mail.MailClient
 	var authClient auth.Authorizer
-	if env == "prd" {
+	if cfg.Env == "prd" {
 		authClient = auth.NewSecureAuthorizer()
 		mailClient = mail.NewSesMailClient(ctx)
 	} else {
@@ -309,7 +322,7 @@ func main() {
 	e.Use(middlewares.GetLoggingMiddleware)
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
 
-	if env == "prd" {
+	if cfg.Env == "prd" {
 		fs := echo.MustSubFS(public, "public")
 		e.StaticFS("/assets", fs)
 	} else {
@@ -346,7 +359,7 @@ func main() {
 		},
 	)
 
-	if err := e.Start(":8080"); err != nil {
+	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil {
 		slog.Error(err.Error())
 	}
 }
