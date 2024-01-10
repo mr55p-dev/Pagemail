@@ -27,7 +27,7 @@ else
 fi
 
 # install binary into $env
-service $svc stop
+systemctl stop $svc
 cp $base/services/$svc.service /etc/systemd/system/$svc.service
 cp $base/build/main /home/ec2/$env/pagemail/main
 chmod a+x /home/ec2/$env/pagemail/main
@@ -46,4 +46,5 @@ done
 
 # get ssl certificates
 certbot certonly --nginx -d "v2.pagemail.io,www.pagemail.io,pagemail.io,staging.pagemail.io" --expand --non-interactive
-service nginx restart
+systemctl restart nginx
+systemctl start $svc
