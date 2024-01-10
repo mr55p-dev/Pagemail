@@ -37,7 +37,7 @@ rm /var/www/testsites/*
 cp $base/test_pages/* /var/www/testsites
 
 # install nginx configs
-for f in pm $(ls $base/nginx)
+for f in $(ls $base/nginx)
 do
 	cp $base/nginx/$f /etc/nginx/conf.d/$f
 done
