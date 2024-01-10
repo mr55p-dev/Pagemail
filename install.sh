@@ -26,10 +26,9 @@ else
 	exit 1
 fi
 
-# install binary into $env
+# install service
 systemctl stop $svc
 cp $base/services/$svc.service /etc/systemd/system/$svc.service
-cp $base/build/main /home/ec2/$env/pagemail/main
 chmod a+x /home/ec2/$env/pagemail/main
 systemctl daemon-reload
 
@@ -40,8 +39,7 @@ cp $base/test_pages/* /var/www/testsites
 # install nginx configs
 for f in pm staging_pm test v2 www_pm
 do
-	rm /etc/nginx/conf.d/$f.conf
-	cp $base/nginx/pm.conf /etc/nginx/conf.d/pm.conf
+	cp $base/nginx/$f.conf /etc/nginx/conf.d/$f.conf
 done
 
 # get ssl certificates
