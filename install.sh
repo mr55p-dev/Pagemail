@@ -29,7 +29,7 @@ fi
 # install service
 systemctl stop $svc
 cp $base/services/$svc.service /etc/systemd/system/$svc.service
-chmod a+x /home/ec2/$env/pagemail/main
+chmod a+x /home/ec2-user/$env/pagemail/main
 systemctl daemon-reload
 
 # install test sites
