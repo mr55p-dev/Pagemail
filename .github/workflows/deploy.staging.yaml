@@ -3,9 +3,7 @@ name: Deploy code from master to Production
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  pull_request:
 
 permissions:
   contents: read
