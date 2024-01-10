@@ -1,5 +1,5 @@
 ---
-name: Deploy code from master to Production
+name: Deploy code to stage
 
 on:
   workflow_dispatch:
@@ -32,14 +32,13 @@ jobs:
         run: make build
 
       - name: Store build artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: ${{ github.workspace }}/tmp/main
 
   deploy:
     runs-on: ubuntu-latest
-    environment: Production
     needs: [build]
 
     steps:
