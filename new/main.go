@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,12 +12,16 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
+	"github.com/mr55p-dev/pagemail/pkg/logging"
 	"github.com/mr55p-dev/pagemail/pkg/mail"
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
 	"github.com/robfig/cron/v3"
 )
+
+//go:embed public
+var public embed.FS
 
 type Router struct {
 	DBClient   *db.Client
@@ -274,11 +279,14 @@ func (r *Router) DeletePage(c echo.Context) error {
 // }
 
 func main() {
+	log := logging.GetLogger("root")
 	env := os.Getenv("PM_ENV")
+	dbPath := os.Getenv("PM_DB_PATH")
+	log.Info("Configuring server", "env", env, "db-path", dbPath)
+
 	e := echo.New()
 	ctx := context.Background()
-
-	dbClient := db.NewClient()
+	dbClient := db.NewClient(dbPath)
 	defer dbClient.Close()
 
 	var mailClient mail.MailClient
@@ -301,7 +309,13 @@ func main() {
 	e.Use(middlewares.GetLoggingMiddleware)
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
 
-	e.Static("/assets", "public")
+	if env == "prd" {
+		fs := echo.MustSubFS(public, "public")
+		e.StaticFS("/assets", fs)
+	} else {
+		e.Static("/assets", "public")
+	}
+
 	e.GET("/", s.GetRoot)
 
 	e.GET("/login", s.GetLogin)

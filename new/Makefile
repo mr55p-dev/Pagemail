@@ -4,6 +4,7 @@ ifndef PM_ENV
 endif
 
 $(server):
+	mkdir -p ./tmp
 	templ generate
 	GOARCH=amd64 GOOS=linux go build -o ./tmp/main .
 

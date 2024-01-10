@@ -22,8 +22,8 @@ func (c *Client) Close() {
 	c.db.Close()
 }
 
-func NewClient() *Client {
-	conn := sqlx.MustOpen("sqlite3", "db/pagemail.sqlite3")
+func NewClient(path string) *Client {
+	conn := sqlx.MustOpen("sqlite3", path)
 
 	return &Client{conn}
 }
