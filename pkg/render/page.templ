@@ -1,0 +1,99 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/pkg/db"
+import "fmt"
+
+templ PageView(user *db.User, pages []db.Page) {
+	@Wrapper(user, "Pages") {
+		<h4>Save a page</h4>
+		@SavePageWidget(user)
+		<h4>Your saved pages</h4>
+		<div id="pageview" class="f-col" hx-ext="response-targets">
+			for _, v := range pages {
+				@PageElementComponent(&v)
+			}
+		</div>
+	}
+}
+
+templ PageElementComponent(page *db.Page) {
+	<article class="box" sse-swap={ page.Id } id={ fmt.Sprintf("page-%s", page.Id) }>
+		<header>
+			if page.Title != nil {
+				<h3><a href={ templ.URL(page.Url) } target="_blank">{ *page.Title }</a></h3>
+				<sub-title>{ page.Url }</sub-title>
+			} else {
+				<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Url }</a></h3>
+			}
+		</header>
+		if page.Description == nil {
+			<p>No description</p>
+		} else {
+			<p>{ *page.Description }</p>
+		}
+		<footer>
+			<small>Added { page.Created.Format("02-01-2006") }</small>
+			<button
+				hx-delete={ fmt.Sprintf("/%s/page/%s", page.UserId, page.Id) }
+				hx-swap="outerHTML"
+				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
+				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
+			>Delete</button>
+			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
+		</footer>
+	</article>
+}
+
+templ SavePageWidget(user *db.User) {
+	<div class="tool-bar">
+		<form
+			hx-trigger="submit,click from:#save-page-submit"
+			hx-post={ fmt.Sprintf("/%s/page", user.Id) }
+			hx-target="#pageview"
+			hx-target-error="#save-response"
+			hx-swap="afterbegin"
+		>
+			<input type="url" name="url" placeholder="url" id="save-page-input"/>
+		</form>
+		<button type="submit" id="save-page-submit">Save</button>
+		<button id="save-page-paste" onClick={ PasteFromClipboard("save-page-input") }>Paste</button>
+		<hr aria-orientation="vertical"/>
+		<button
+			class="warn"
+			hx-delete={ fmt.Sprintf("/%s/pages", user.Id) }
+			hx-confirm="Are you sure you want to delete all saved pages?"
+			hx-target="#save-response"
+			hx-swap="innerHTML"
+		>Delete all</button>
+	</div>
+	<div id="save-response"></div>
+}
+
+templ SavePageSuccess(msg string) {
+	<div class="box ok" id="save-page-success-msg">
+		<strong class="block titlebar">Success</strong>
+		<p>{ msg }</p>
+		<button onClick={ RemoveElement("save-page-success-msg") }>Close</button>
+	</div>
+}
+
+templ SavePageError(msg string) {
+	<div class="box bad" id="save-page-err-msg">
+		<strong class="block titlebar">Error</strong>
+		<p>{ msg }</p>
+		<button onClick={ RemoveElement("save-page-err-msg") }>Close</button>
+	</div>
+}
+
+script RemoveElement(id string) {
+	document.getElementById(id).remove();
+}
+
+script PasteFromClipboard(toId string) {
+	const elem = document.getElementById(toId)
+	navigator.clipboard.readText().then(txt => elem.setAttribute("value", txt)).catch(err => console.error("Failed to paste", error))
+}
+
+script CopyToClipboard(text string) {
+	navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Something went wrong."))
+}

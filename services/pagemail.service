@@ -3,12 +3,16 @@ Description=pagemail
 After=network.target
 
 [Service]
-ExecStart=/home/ec2-user/prod/server serve --dir=/home/ec2-user/data/prod --http="0.0.0.0:4000"
+ExecStart=/home/ec2-user/prd/pagemail/main 
 Restart=always
-Environment="PAGEMAIL_TOKEN_SIGNING_PUBLIC_KEY=/home/ec2-user/keys/prod.key.pub"
-Environment="PAGEMAIL_TOKEN_SIGNING_PRIVATE_KEY=/home/ec2-user/keys/prod.key"
-Environment="PAGEMAIL_EMAIL_TEMPLATE_PATH=/home/ec2-user/prod/templates/email.html.template"
-Environment="PAGEMAIL_READABILITY_CONTEXT_DIR=/home/ec2-user/prod/readability"
+Environment="PM_ENV=prd"
+Environment="PM_LVL=INFO"
+Environment="PM_MODE=release"
+Environment="PM_PORT=4000"
+Environment="PM_DB_PATH=/home/ec2-user/data/prd/pagemail/pagemail.sqlite3"
+StandardError=file:/var/log/pagemail/logs.log
+StandardOutput=file:/var/log/pagemail/logs.log
+StandardInput=null
 
 [Install]
 WantedBy=multi-user.target

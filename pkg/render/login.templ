@@ -1,0 +1,47 @@
+package render
+
+templ Login() {
+	@Wrapper(nil, "Login") {
+		<div class="center box">
+			<form class="table rows" hx-post="/login">
+				<p>
+					<label for="email">E-mail</label>
+					<input type="email" name="email" value=""/>
+				</p>
+				<p>
+					<label for="password">Password</label>
+					<input type="password" name="password" value=""/>
+				</p>
+				<button type="submit">Login</button>
+			</form>
+			<p>Don't have an account? <a href="/signup">Sign up</a></p>
+		</div>
+	}
+}
+
+templ Signup() {
+	@Wrapper(nil, "Signup") {
+		<div class="center box">
+			<form class="table rows" hx-post="/signup">
+				<p>
+					<label for="username">Username</label>
+					<input type="text" name="username" value=""/>
+				</p>
+				<p>
+					<label for="email">E-mail</label>
+					<input type="email" name="email" value=""/>
+				</p>
+				<p>
+					<label for="password">Password</label>
+					<input type="password" name="password" value=""/>
+				</p>
+				<p>
+					<label for="password-repeat">Repeat password</label>
+					<input type="password" name="password-repeat" value=""/>
+				</p>
+				<button type="submit">Create account</button>
+			</form>
+			<p>Already have an account? <a href="/login">Log in</a></p>
+		</div>
+	}
+}

@@ -7,13 +7,12 @@ print("""{
     },
     "SynthesisTask": {
         "Engine": "standard",
-        "TaskId": "2ce9ece0-128f-41bb-8d40-7e723f405d5b",
+        "TaskId": "d75be692-5f58-4534-b7fe-4d6e51c53a51",
         "TaskStatus": "scheduled",
-        "OutputUri": "https://s3.eu-west-2.amazonaws.com/pagemail-speechsynthesis/test2.2ce9ece0-128f-41bb-8d40-7e723f405d5b.mp3",
-        "CreationTime": "2023-07-28 00:48:54.636000+01:00",
-        "RequestCharacters": 6501,
+        "OutputUri": "https://s3.eu-west-2.amazonaws.com/pagemail-speechsynthesis/d75be692-5f58-4534-b7fe-4d6e51c53a51.mp3",
+        "RequestCharacters": 1398,
         "OutputFormat": "mp3",
-        "TextType": "ssml",
+        "TextType": "text",
         "VoiceId": "Amy",
         "LanguageCode": "en-GB"
     }
