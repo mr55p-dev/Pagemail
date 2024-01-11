@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/tools"
 )
 
@@ -13,12 +14,14 @@ type Log struct{ *slog.Logger }
 type LogKey string
 
 const (
+	User     = "user"
 	UserId   = "user-id"
 	UserMail = "user-email"
 	PageId   = "page-id"
 	Error    = "error"
 	File     = "file"
 	Line     = "lineno"
+	Rows     = "rows"
 )
 
 var BaseLog *slog.Logger
@@ -80,3 +83,24 @@ func (l *Log) ErrContext(ctx context.Context, msg string, err error, args ...any
 	callerArgs = append(callerArgs, args...)
 	l.ErrorContext(ctx, msg, callerArgs...)
 }
+
+func (l *Log) ReqDebug(c echo.Context, msg string, args ...any) {
+	_, file, line, _ := runtime.Caller(1)
+	callerArgs := []any{File, file, Line, line}
+	callerArgs = append(callerArgs, args...)
+	l.DebugContext(c.Request().Context(), msg, callerArgs...)
+}
+func (l *Log) ReqInfo(c echo.Context, msg string, args ...any) {
+	_, file, line, _ := runtime.Caller(1)
+	callerArgs := []any{File, file, Line, line}
+	callerArgs = append(callerArgs, args...)
+	l.InfoContext(c.Request().Context(), msg, callerArgs...)
+}
+
+func (l *Log) ReqErr(c echo.Context, msg string, err error, args ...any) {
+	_, file, line, _ := runtime.Caller(1)
+	callerArgs := []any{Error, err.Error(), File, file, Line, line}
+	callerArgs = append(callerArgs, args...)
+	l.InfoContext(c.Request().Context(), msg, callerArgs...)
+}
+

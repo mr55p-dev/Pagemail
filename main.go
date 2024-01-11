@@ -32,6 +32,7 @@ const (
 
 //go:embed public
 var public embed.FS
+var log logging.Log
 
 type Router struct {
 	DBClient   *db.Client
@@ -54,16 +55,20 @@ func (Router) GetLogin(c echo.Context) error {
 func (s *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
+	log.ReqInfo(c, "requested login", logging.UserMail, email)
 	user, err := s.DBClient.ReadUserByEmail(c.Request().Context(), email)
 	if err != nil {
+		log.ReqErr(c, "DB error when logging in", err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 
 	if !s.Authorizer.ValCredentialsAgainstUser(email, password, user) {
+		log.ReqErr(c, "Unauthorized login attempt", err, logging.UserMail, email)
 		return c.String(http.StatusBadRequest, "Invalid username or password")
 	}
 
 	sess := s.Authorizer.GenSessionToken(user)
+	log.ReqDebug(c, "Login succesfull", logging.User, user)
 
 	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -279,7 +284,7 @@ func (r *Router) DeletePage(c echo.Context) error {
 // }
 
 func main() {
-	log := logging.GetLogger("root")
+	log = logging.GetLogger("root")
 	cfg := logging.Config
 	log.Info("Configuring server", "config", cfg)
 
