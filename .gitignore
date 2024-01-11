@@ -1,5 +1,5 @@
 tmp/
-db/pagemail.sqlite3
+db/*.sqlite3
 db/schema.sql
 pkg/render/*.go
 !pkg/render/main.go
