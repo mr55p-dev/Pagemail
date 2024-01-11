@@ -4,7 +4,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -16,8 +15,19 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
-	"github.com/mr55p-dev/pagemail/pkg/tools"
 	"github.com/robfig/cron/v3"
+)
+
+type Env string
+type Mode string
+
+const (
+	ENV_DEV Env = "dev"
+	ENV_STG Env = "stg"
+	ENV_PRD Env = "prd"
+
+	MODE_LOCAL   Mode = "local"
+	MODE_RELEASE Mode = "release"
 )
 
 //go:embed public
@@ -29,21 +39,11 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
-type DataIndex struct {
-	IsUser bool
-}
-
-type DataPages struct {
-	UserId string
-	Pages  []db.Page
-}
-
 func (Router) GetRoot(c echo.Context) error {
 	var user *db.User
 	if c.Get("user") != nil {
 		user = c.Get("user").(*db.User)
 	}
-	c.Logger().Info(user)
 	return render.ReturnRender(c, render.Index(user))
 }
 
@@ -278,38 +278,15 @@ func (r *Router) DeletePage(c echo.Context) error {
 // 	return c.String(200, "Updated")
 // }
 
-type Env string
-type Mode string
-
-const (
-	ENV_DEV Env = "dev"
-	ENV_STG Env = "stg"
-	ENV_PRD Env = "prd"
-
-	MODE_LOCAL   Mode = "local"
-	MODE_RELEASE Mode = "release"
-)
-
-type Cfg struct {
-	Env      string `env:"PM_ENV" log:"environment"`
-	Mode     string `env:"PM_MODE" log:"deploy-mode"`
-	DBPath   string `env:"PM_DB_PATH" log:"db-path"`
-	Port     string `env:"PM_PORT" log:"port"`
-	TestUser string `env:"PM_TEST_USER,optional" log:"test-user-id"`
-}
-
-func (c Cfg) LogValue() slog.Value {
-	vals := tools.LogValue(&c)
-	return slog.GroupValue(vals...)
-}
-
 func main() {
 	log := logging.GetLogger("root")
-	cfg := new(Cfg)
-	tools.LoadFromEnv(cfg)
+	cfg := logging.Config
 	log.Info("Configuring server", "config", cfg)
 
 	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = true
+
 	ctx := context.Background()
 	dbClient := db.NewClient(cfg.DBPath)
 	defer dbClient.Close()
@@ -377,6 +354,6 @@ func main() {
 	)
 
 	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil {
-		slog.Error(err.Error())
+		log.Err("Server exited with error", err)
 	}
 }

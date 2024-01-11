@@ -24,3 +24,4 @@ func GenerateNewId(length int) string {
 func GenerateNewShortcutToken(id string) string {
 	return "123"
 }
+

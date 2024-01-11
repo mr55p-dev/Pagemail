@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+
+	"github.com/mr55p-dev/pagemail/pkg/tools"
 )
 
 type Log struct{ *slog.Logger }
@@ -20,13 +22,29 @@ const (
 )
 
 var BaseLog *slog.Logger
+var Config *Cfg
+
+type Cfg struct {
+	Env      string `env:"PM_ENV" log:"environment"`
+	Mode     string `env:"PM_MODE" log:"deploy-mode"`
+	DBPath   string `env:"PM_DB_PATH" log:"db-path"`
+	Port     string `env:"PM_PORT" log:"port"`
+	TestUser string `env:"PM_TEST_USER,optional" log:"test-user-id"`
+	LogLevel string `env:"PM_LVL,optional" log:"log-level"`
+}
+
+func (c Cfg) LogValue() slog.Value {
+	vals := tools.LogValue(&c)
+	return slog.GroupValue(vals...)
+}
 
 func init() {
-	env := os.Getenv("PM_ENV")
-	lvl := os.Getenv("PM_LVL")
+	Config = new(Cfg)
+	tools.LoadFromEnv(Config)
+
 	var handler slog.Handler
 	var level slog.Level
-	switch lvl {
+	switch Config.LogLevel {
 	case "DEBUG":
 		level = slog.LevelDebug
 	case "WARN":
@@ -37,7 +55,7 @@ func init() {
 	}
 	opts := &slog.HandlerOptions{Level: level}
 
-	if env == "prd" {
+	if Config.Mode == "release" {
 		handler = slog.NewJSONHandler(os.Stdout, opts)
 	} else {
 		handler = slog.NewTextHandler(os.Stdout, opts)
