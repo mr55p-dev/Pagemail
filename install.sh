@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 export base=$1
 if [ -z $1 ]; then
