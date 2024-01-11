@@ -42,8 +42,8 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build]
     environment: Preview
+    needs: [build]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -71,7 +71,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           source: "build/main"
-          target: /home/ec2-user/stg/pagemail/
+          target: /home/ec2-user/${{ vars.env }}/pagemail/
           strip_components: 1
 
       - name: Copy server files onto server

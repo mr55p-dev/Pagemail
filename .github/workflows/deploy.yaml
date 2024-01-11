@@ -11,13 +11,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: production
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: Production
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -26,7 +25,7 @@ jobs:
         with:
           go-version: "1.21.5"
           cache: true
-          cache-dependency-path: server/go.sum
+          cache-dependency-path: go.sum
 
       - name: Install dependencies
         run: make install
@@ -35,7 +34,7 @@ jobs:
         run: make build
 
       - name: Store build artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: ${{ github.workspace }}/tmp/main
@@ -44,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: Production
     needs: [build]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -71,8 +69,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
-          source: "build/*"
-          target: /home/ec2-user/prd/pagemail/
+          source: "build/main"
+          target: /home/ec2-user/${{ vars.env }}/pagemail/
           strip_components: 1
 
       - name: Copy server files onto server
