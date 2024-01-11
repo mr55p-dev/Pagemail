@@ -6,13 +6,12 @@ After=network.target
 ExecStart=/home/ec2-user/stg/pagemail/main 
 Restart=always
 Environment="PM_ENV=stg"
+Environment="PM_MODE=release"
 Environment="PM_PORT=4001"
 Environment="PM_DB_PATH=/home/ec2-user/data/stg/pagemail/pagemail.sqlite3"
-StandardError=journal
-StandardOutput=journal
+StandardError=file:/var/log/pagemail.staging/logs.log
+StandardOutput=file:/var/log/pagemail.staging/logs.log
 StandardInput=null
 
 [Install]
 WantedBy=multi-user.target
-
-

@@ -279,8 +279,21 @@ func (r *Router) DeletePage(c echo.Context) error {
 // 	return c.String(200, "Updated")
 // }
 
+type Env string
+type Mode string
+
+const (
+	ENV_DEV Env = "dev"
+	ENV_STG Env = "stg"
+	ENV_PRD Env = "prd"
+
+	MODE_LOCAL   Mode = "local"
+	MODE_RELEASE Mode = "release"
+)
+
 type Cfg struct {
 	Env      string `env:"PM_ENV" log:"environment"`
+	Mode     string `env:"PM_MODE" log:"deploy-mode"`
 	DBPath   string `env:"PM_DB_PATH" log:"db-path"`
 	Port     string `env:"PM_PORT" log:"port"`
 	TestUser string `env:"PM_TEST_USER,optional" log:"test-user-id"`
@@ -304,11 +317,14 @@ func main() {
 
 	var mailClient mail.MailClient
 	var authClient auth.Authorizer
-	if cfg.Env == "prd" {
+	switch Env(cfg.Env) {
+	case ENV_PRD:
+	case ENV_STG:
 		authClient = auth.NewSecureAuthorizer()
 		mailClient = mail.NewSesMailClient(ctx)
-	} else {
-		authClient = auth.NewTestAuthorizer(os.Getenv("PM_TEST_USER"))
+	case ENV_DEV:
+	default:
+		authClient = auth.NewTestAuthorizer(cfg.TestUser)
 		mailClient = &mail.TestClient{}
 	}
 
@@ -322,10 +338,12 @@ func main() {
 	e.Use(middlewares.GetLoggingMiddleware)
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
 
-	if cfg.Env == "prd" {
+	switch Mode(cfg.Mode) {
+	case MODE_RELEASE:
 		fs := echo.MustSubFS(public, "public")
 		e.StaticFS("/assets", fs)
-	} else {
+	case MODE_LOCAL:
+	default:
 		e.Static("/assets", "public")
 	}
 

@@ -43,6 +43,6 @@ do
 done
 
 # get ssl certificates
-certbot certonly --nginx -d "v2.pagemail.io,www.pagemail.io,pagemail.io,staging.pagemail.io" --expand --non-interactive
+certbot --nginx -d "v2.pagemail.io,www.pagemail.io,pagemail.io,staging.pagemail.io" --expand --non-interactive
 systemctl restart nginx
 systemctl start $svc
