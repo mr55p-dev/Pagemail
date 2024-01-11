@@ -299,11 +299,9 @@ func main() {
 	var mailClient mail.MailClient
 	var authClient auth.Authorizer
 	switch Env(cfg.Env) {
-	case ENV_PRD:
-	case ENV_STG:
+	case ENV_PRD, ENV_STG:
 		authClient = auth.NewSecureAuthorizer()
 		mailClient = mail.NewSesMailClient(ctx)
-	case ENV_DEV:
 	default:
 		authClient = auth.NewTestAuthorizer(cfg.TestUser)
 		mailClient = &mail.TestClient{}
@@ -323,7 +321,6 @@ func main() {
 	case MODE_RELEASE:
 		fs := echo.MustSubFS(public, "public")
 		e.StaticFS("/assets", fs)
-	case MODE_LOCAL:
 	default:
 		e.Static("/assets", "public")
 	}
