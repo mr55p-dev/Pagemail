@@ -4,6 +4,9 @@ name: Deploy code to stage
 on:
   workflow_dispatch:
   pull_request:
+  push:
+    branches:
+      - "refactor/htmx"
 
 permissions:
   contents: read
