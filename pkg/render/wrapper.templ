@@ -14,10 +14,6 @@ templ Wrapper(user *db.User, title string) {
 			} else {
 				<title>Pagemail</title>
 			}
-			<script src="/assets/js/htmx.min.js"></script>
-			<script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-			<script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
-			<script type="module" src="/assets/js/overflow-nav.js"></script>
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -30,12 +26,19 @@ templ Wrapper(user *db.User, title string) {
 				<h2>{ title }</h2>
 				{ children... }
 			</main>
+			<script src="/assets/js/htmx.min.js"></script>
+			<script src="/assets/js/sse.js"></script>
+			<script src="/assets/js/response-targets.js"></script>
+			<script src="/assets/js/overflow-nav.js" type="module"></script>
 		</body>
 	</html>
 }
 
 templ Header(user *db.User) {
-	<header class="navbar" data-overflow-nav>
+	<header
+		class="navbar"
+		data-overflow-nav
+	>
 		<button class="iconbutton" id="nav-icon" data-nav-expander aria-hidden>
 			&#x2630; 
 		</button>

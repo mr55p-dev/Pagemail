@@ -8,4 +8,6 @@ script {
 
 #nav-icon {
   margin-left: 0;
+  display: none;
+  visibility: hidden;
 }
