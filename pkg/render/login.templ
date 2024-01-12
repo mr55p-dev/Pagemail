@@ -2,8 +2,14 @@ package render
 
 templ Login() {
 	@Wrapper(nil, "Login") {
-		<div class="center box">
-			<form class="table rows" hx-post="/login">
+		<div class="center box" hx-ext="response-targets">
+			<form
+				class="table rows"
+				hx-post="/login"
+				hx-swap="outerHTML"
+				hx-target="#errors"
+				hx-target-error="#errors"
+			>
 				<p>
 					<label for="email">E-mail</label>
 					<input type="email" name="email" value=""/>
@@ -16,6 +22,7 @@ templ Login() {
 			</form>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
 		</div>
+		<div id="errors"></div>
 	}
 }
 

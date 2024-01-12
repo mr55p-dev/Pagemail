@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
@@ -71,16 +70,18 @@ func (s *Router) PostLogin(c echo.Context) error {
 	user, err := s.DBClient.ReadUserByEmail(c.Request().Context(), email)
 	if err != nil {
 		log.ReqErr(c, "DB error when logging in", err)
-		return c.NoContent(http.StatusBadRequest)
+		return MakeErrorResponse(
+			c, http.StatusInternalServerError, "Invalid username or password", err,
+		)
 	}
 
 	if !s.Authorizer.ValCredentialsAgainstUser(email, password, user) {
 		log.ReqErr(c, "Unauthorized login attempt", err, logging.UserMail, email)
-		return c.String(http.StatusBadRequest, "Invalid username or password")
+		return MakeErrorResponse(c, http.StatusUnauthorized, "Invalid username or password", err)
 	}
 
 	sess := s.Authorizer.GenSessionToken(user)
-	log.ReqDebug(c, "Login succesfull", logging.User, user)
+	log.ReqDebug(c, "Login succesful", logging.User, user)
 
 	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -263,14 +264,14 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func MakeErrorResponse(c echo.Context, status int, message string, err error, component templ.Component) error {
+func MakeErrorResponse(c echo.Context, status int, message string, err error) error {
 	switch GetAccept(c) {
 	case CONTENT_PLAIN:
 		return c.String(status, message)
 	case CONTENT_JSON:
 		return c.JSON(status, Error{message})
 	default:
-		return render.ReturnRender(c, component)
+		return render.ReturnRender(c, render.ErrorBox(message))
 	}
 }
 
@@ -289,10 +290,7 @@ func (r *Router) GetShortcutToken(c echo.Context) error {
 	if err != nil {
 		msg := "Failed to load entries from database"
 		log.ReqErr(c, msg, err, logging.User, user)
-		return MakeErrorResponse(
-			c, http.StatusInternalServerError,
-			msg, err, render.ErrorBox(msg),
-		)
+		return MakeErrorResponse(c, http.StatusInternalServerError, msg, err)
 	}
 	return c.String(http.StatusOK, token)
 }
