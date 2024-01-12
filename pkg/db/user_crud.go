@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/mr55p-dev/pagemail/pkg/logging"
@@ -39,6 +40,7 @@ func (client *Client) ReadUserById(c context.Context, id string) (*User, error) 
 	log.DebugContext(c, "Found user", logging.User, user)
 	return user, nil
 }
+
 func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, error) {
 	user := new(User)
 	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE email = ?`, email)
@@ -58,4 +60,42 @@ func (client *Client) ReadUsersWithMail(c context.Context) (users []User, err er
 	}
 	log.DebugContext(c, "Found users", "count", len(users))
 	return
+}
+
+type UserTokenPair struct {
+	UserId        string `db:"id"`
+	ShortcutToken string `db:"shortcut_token"`
+}
+
+func (client *Client) ReadUserShortcutTokens(c context.Context) (out []UserTokenPair, err error) {
+	err = client.db.Select(&out, `SELECT id, shortcut_token FROM users WHERE shortcut_token IS NOT NULL`)
+	if err != nil {
+		log.ErrContext(c, "Failed looking up users by token", err)
+	}
+	log.InfoContext(c, "Found users with tokens", logging.Rows, len(out))
+	return
+}
+
+func (client *Client) UpdateUser(c context.Context, user *User) error {
+	now := time.Now()
+	user.Updated = &now
+	_, err := client.db.NamedExecContext(c, `
+		UPDATE users SET 
+			username = :username,
+			email = :email,
+			password = :password,
+			name = :name,
+			avatar = :avatar,
+			subscribed = :subscribed,
+			shortcut_token = :shortcut_token,
+			has_readability = :has_readability,
+			updated = :updated
+		WHERE id = :id
+	`, user)
+	if err != nil {
+		log.ErrContext(c, "Failed updating user", err, logging.User, user)
+		return err
+	}
+	log.InfoContext(c, "Updated user", logging.User, user)
+	return nil
 }

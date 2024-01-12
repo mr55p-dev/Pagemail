@@ -20,6 +20,7 @@ import (
 
 type Env string
 type Mode string
+type ContentType string
 
 const (
 	ENV_DEV Env = "dev"
@@ -28,6 +29,11 @@ const (
 
 	MODE_LOCAL   Mode = "local"
 	MODE_RELEASE Mode = "release"
+
+	CONTENT_ANY   ContentType = "*/*"
+	CONTENT_HTML  ContentType = "text/html"
+	CONTENT_JSON  ContentType = "text/json"
+	CONTENT_PLAIN ContentType = "text/plain"
 )
 
 //go:embed public
@@ -40,10 +46,15 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
+func GetAccept(c echo.Context) ContentType {
+	accept := c.Request().Header.Get("Accept")
+	return ContentType(accept)
+}
+
 func (Router) GetRoot(c echo.Context) error {
 	var user *db.User
-	if c.Get("user") != nil {
-		user = c.Get("user").(*db.User)
+	if u := c.Get("user"); u != nil {
+		user = u.(*db.User)
 	}
 	return render.ReturnRender(c, render.Index(user))
 }
@@ -59,16 +70,18 @@ func (s *Router) PostLogin(c echo.Context) error {
 	user, err := s.DBClient.ReadUserByEmail(c.Request().Context(), email)
 	if err != nil {
 		log.ReqErr(c, "DB error when logging in", err)
-		return c.NoContent(http.StatusBadRequest)
+		return MakeErrorResponse(
+			c, http.StatusInternalServerError, "Invalid username or password", err,
+		)
 	}
 
 	if !s.Authorizer.ValCredentialsAgainstUser(email, password, user) {
 		log.ReqErr(c, "Unauthorized login attempt", err, logging.UserMail, email)
-		return c.String(http.StatusBadRequest, "Invalid username or password")
+		return MakeErrorResponse(c, http.StatusUnauthorized, "Invalid username or password", err)
 	}
 
 	sess := s.Authorizer.GenSessionToken(user)
-	log.ReqDebug(c, "Login succesfull", logging.User, user)
+	log.ReqDebug(c, "Login succesful", logging.User, user)
 
 	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
 	c.SetCookie(&http.Cookie{
@@ -247,6 +260,41 @@ func (r *Router) DeletePage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+type Error struct {
+	Message string `json:"message"`
+}
+
+func MakeErrorResponse(c echo.Context, status int, message string, err error) error {
+	switch GetAccept(c) {
+	case CONTENT_PLAIN:
+		return c.String(status, message)
+	case CONTENT_JSON:
+		return c.JSON(status, Error{message})
+	default:
+		return render.ReturnRender(c, render.ErrorBox(message))
+	}
+}
+
+func (r *Router) GetAccountPage(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	log.ReqDebug(c, "Account page", logging.User, user)
+	return render.ReturnRender(c, render.AccountPage(user))
+}
+
+func (r *Router) GetShortcutToken(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	log.DebugContext(c.Request().Context(), "Requested new shortcut token")
+	token := r.Authorizer.GenShortcutToken(user)
+	user.ShortcutToken = token
+	err := r.DBClient.UpdateUser(c.Request().Context(), user)
+	if err != nil {
+		msg := "Failed to load entries from database"
+		log.ReqErr(c, msg, err, logging.User, user)
+		return MakeErrorResponse(c, http.StatusInternalServerError, msg, err)
+	}
+	return c.String(http.StatusOK, token)
+}
+
 // func (r *Router) ListenPages(c echo.Context) error {
 // 	user, ok := c.Get("user").(*db.User)
 // 	if !ok || user == nil {
@@ -300,9 +348,11 @@ func main() {
 	var authClient auth.Authorizer
 	switch Env(cfg.Env) {
 	case ENV_PRD, ENV_STG:
-		authClient = auth.NewSecureAuthorizer()
+		log.Info("Using real auth")
+		authClient = auth.NewSecureAuthorizer(ctx, dbClient)
 		mailClient = mail.NewSesMailClient(ctx)
 	default:
+		log.Info("Using test auth")
 		authClient = auth.NewTestAuthorizer(cfg.TestUser)
 		mailClient = &mail.TestClient{}
 	}
@@ -315,7 +365,11 @@ func main() {
 
 	e.Use(middlewares.TraceMiddleware)
 	e.Use(middlewares.GetLoggingMiddleware)
-	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
+	if authClient == nil {
+		panic("nil auth client")
+	}
+	tryLoadUser := middlewares.GetProtectedMiddleware(authClient, dbClient, false)
+	protected := middlewares.GetProtectedMiddleware(authClient, dbClient, true)
 
 	switch Mode(cfg.Mode) {
 	case MODE_RELEASE:
@@ -325,7 +379,7 @@ func main() {
 		e.Static("/assets", "public")
 	}
 
-	e.GET("/", s.GetRoot)
+	e.GET("/", s.GetRoot, tryLoadUser)
 
 	e.GET("/login", s.GetLogin)
 	e.POST("/login", s.PostLogin)
@@ -334,6 +388,9 @@ func main() {
 	e.POST("/signup", s.PostSignup)
 
 	e.GET("/:id/logout", s.GetLogout, protected)
+
+	e.GET("/:id/account", s.GetAccountPage, protected)
+	e.GET("/:id/shortcut-token", s.GetShortcutToken, protected)
 
 	e.GET("/:id/pages", s.GetPages, protected)
 	e.DELETE("/:id/pages", s.DeletePages, protected)

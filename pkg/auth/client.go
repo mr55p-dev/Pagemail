@@ -42,3 +42,9 @@ func (a *SecureAuthorizer) RevokeSessionToken(token string) bool {
 	delete(a.store, token)
 	return ok
 }
+
+func (a *SecureAuthorizer) GenShortcutToken(user *db.User) string {
+	tkn := tools.GenerateNewShortcutToken()
+	a.store[tkn] = user.Id
+	return tkn
+}

@@ -97,10 +97,15 @@ func (l *Log) ReqInfo(c echo.Context, msg string, args ...any) {
 	l.InfoContext(c.Request().Context(), msg, callerArgs...)
 }
 
+func (l *Log) ReqError(c echo.Context, msg string, args ...any) {
+	_, file, line, _ := runtime.Caller(1)
+	callerArgs := []any{File, file, Line, line}
+	callerArgs = append(callerArgs, args...)
+	l.ErrorContext(c.Request().Context(), msg, callerArgs...)
+}
 func (l *Log) ReqErr(c echo.Context, msg string, err error, args ...any) {
 	_, file, line, _ := runtime.Caller(1)
 	callerArgs := []any{Error, err.Error(), File, file, Line, line}
 	callerArgs = append(callerArgs, args...)
 	l.InfoContext(c.Request().Context(), msg, callerArgs...)
 }
-

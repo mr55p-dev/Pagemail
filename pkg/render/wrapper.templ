@@ -14,9 +14,6 @@ templ Wrapper(user *db.User, title string) {
 			} else {
 				<title>Pagemail</title>
 			}
-			<script src="/assets/js/htmx.min.js"></script>
-			<script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-			<script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -29,19 +26,31 @@ templ Wrapper(user *db.User, title string) {
 				<h2>{ title }</h2>
 				{ children... }
 			</main>
+			<script src="/assets/js/htmx.min.js"></script>
+			<script src="/assets/js/sse.js"></script>
+			<script src="/assets/js/response-targets.js"></script>
+			<script src="/assets/js/overflow-nav.js" type="module"></script>
 		</body>
 	</html>
 }
 
 templ Header(user *db.User) {
-	<header class="navbar">
+	<header
+		class="navbar"
+		data-overflow-nav
+	>
+		<button class="iconbutton" id="nav-icon" data-nav-expander aria-hidden>
+			&#x2630; 
+		</button>
 		<nav aria-label="Site sections">
 			<ul role="list" class="align-items:center">
-				<li><a href="/"><img alt="Pagemail" class="brand-icon" src="/assets/img/default-monochrome-a.svg"/></a></li>
+				<li><a href="/"><img alt="Pagemail" class="brand-icon" src="/assets/img/default-icon.svg"/></a></li>
 				if user != nil {
 					<li><a href={ templ.URL(fmt.Sprintf("/%s/pages", user.Id)) }>Pages</a></li>
 					<li><a href={ templ.URL(fmt.Sprintf("/%s/account", user.Id)) }>Account</a></li>
-					<li><a href={ templ.URL(fmt.Sprintf("/%s/logout", user.Id)) }>Logout</a></li>
+					<li>
+						<a hx-get={ fmt.Sprintf("/%s/logout", user.Id) }>Logout</a>
+					</li>
 				} else {
 					<li><a href="/login">Login</a></li>
 				}
