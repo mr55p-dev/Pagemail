@@ -1,7 +1,11 @@
 script {
-	display: none !important;
+  display: none !important;
 }
 
 .brand-icon {
-	height: 25px;
+  height: 30px;
+}
+
+#nav-icon {
+  margin-left: 0;
 }

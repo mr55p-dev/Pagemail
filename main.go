@@ -53,8 +53,8 @@ func GetAccept(c echo.Context) ContentType {
 
 func (Router) GetRoot(c echo.Context) error {
 	var user *db.User
-	if c.Get("user") != nil {
-		user = c.Get("user").(*db.User)
+	if u := c.Get("user"); u != nil {
+		user = u.(*db.User)
 	}
 	return render.ReturnRender(c, render.Index(user))
 }
@@ -368,7 +368,8 @@ func main() {
 	if authClient == nil {
 		panic("nil auth client")
 	}
-	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
+	tryLoadUser := middlewares.GetProtectedMiddleware(authClient, dbClient, false)
+	protected := middlewares.GetProtectedMiddleware(authClient, dbClient, true)
 
 	switch Mode(cfg.Mode) {
 	case MODE_RELEASE:
@@ -378,7 +379,7 @@ func main() {
 		e.Static("/assets", "public")
 	}
 
-	e.GET("/", s.GetRoot)
+	e.GET("/", s.GetRoot, tryLoadUser)
 
 	e.GET("/login", s.GetLogin)
 	e.POST("/login", s.PostLogin)

@@ -9,31 +9,51 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/logging"
 )
 
-func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
+func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, block bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			cookie, err := c.Cookie(auth.SESS_COOKIE)
 			if err != nil || cookie == nil {
 				log.ReqErr(c, "Request blocked, no auth token", err)
-				return c.NoContent(http.StatusUnauthorized)
+				if block {
+					return c.NoContent(http.StatusUnauthorized)
+				} else {
+					next(c)
+					return nil
+				}
 			}
 
 			uid := authClient.ValSessionToken(cookie.Value)
 			if uid == "" {
 				log.ReqError(c, "Request blocked, session not valid")
-				return c.NoContent(http.StatusUnauthorized)
+				if block {
+					return c.NoContent(http.StatusUnauthorized)
+				} else {
+					next(c)
+					return nil
+				}
 			}
 
 			requestedId := c.Param("id")
 			if requestedId != "" && requestedId != uid {
 				log.ReqError(c, "Request blocked, requested resource does not match session")
-				return c.NoContent(http.StatusForbidden)
+				if block {
+					return c.NoContent(http.StatusForbidden)
+				} else {
+					next(c)
+					return nil
+				}
 			}
 
 			user, err := dbClient.ReadUserById(c.Request().Context(), uid)
 			if err != nil {
 				log.ReqErr(c, "Error, could not read user", err, logging.UserId, uid)
-				return c.NoContent(http.StatusInternalServerError)
+				if block {
+					return c.NoContent(http.StatusInternalServerError)
+				} else {
+					next(c)
+					return nil
+				}
 			}
 
 			c.Set("user", user)
