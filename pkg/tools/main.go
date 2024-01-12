@@ -21,7 +21,7 @@ func GenerateNewId(length int) string {
 	return out
 }
 
-func GenerateNewShortcutToken(id string) string {
-	return "123"
+func GenerateNewShortcutToken() string {
+	return GenerateNewId(20)
 }
 

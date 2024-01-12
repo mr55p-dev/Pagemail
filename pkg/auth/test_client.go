@@ -26,3 +26,7 @@ func (a *TestAuthorizer) ValSessionToken(token string) (userId string) {
 func (a *TestAuthorizer) RevokeSessionToken(token string) (ok bool) {
 	return true
 }
+
+func (a *TestAuthorizer) GenShortcutToken(*db.User) string {
+	return "123"
+}

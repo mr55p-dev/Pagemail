@@ -29,12 +29,10 @@ func (user *User) LogValue() slog.Value {
 func NewUser(email, password string) *User {
 	now := time.Now()
 	uid := tools.GenerateNewId(10)
-	token := tools.GenerateNewShortcutToken(uid)
 	return &User{
 		Id:             uid,
 		Email:          email,
 		Password:       password,
-		ShortcutToken:  token,
 		HasReadability: false,
 		Created:        &now,
 		Updated:        &now,

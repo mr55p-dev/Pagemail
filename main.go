@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
@@ -20,6 +21,7 @@ import (
 
 type Env string
 type Mode string
+type ContentType string
 
 const (
 	ENV_DEV Env = "dev"
@@ -28,6 +30,11 @@ const (
 
 	MODE_LOCAL   Mode = "local"
 	MODE_RELEASE Mode = "release"
+
+	CONTENT_ANY   ContentType = "*/*"
+	CONTENT_HTML  ContentType = "text/html"
+	CONTENT_JSON  ContentType = "text/json"
+	CONTENT_PLAIN ContentType = "text/plain"
 )
 
 //go:embed public
@@ -38,6 +45,11 @@ type Router struct {
 	DBClient   *db.Client
 	Authorizer auth.Authorizer
 	MailClient mail.MailClient
+}
+
+func GetAccept(c echo.Context) ContentType {
+	accept := c.Request().Header.Get("Accept")
+	return ContentType(accept)
 }
 
 func (Router) GetRoot(c echo.Context) error {
@@ -247,6 +259,44 @@ func (r *Router) DeletePage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+type Error struct {
+	Message string `json:"message"`
+}
+
+func MakeErrorResponse(c echo.Context, status int, message string, err error, component templ.Component) error {
+	switch GetAccept(c) {
+	case CONTENT_PLAIN:
+		return c.String(status, message)
+	case CONTENT_JSON:
+		return c.JSON(status, Error{message})
+	default:
+		return render.ReturnRender(c, component)
+	}
+}
+
+func (r *Router) GetAccountPage(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	log.ReqDebug(c, "Account page", logging.User, user)
+	return render.ReturnRender(c, render.AccountPage(user))
+}
+
+func (r *Router) GetShortcutToken(c echo.Context) error {
+	user := c.Get("user").(*db.User)
+	log.DebugContext(c.Request().Context(), "Requested new shortcut token")
+	token := r.Authorizer.GenShortcutToken(user)
+	user.ShortcutToken = token
+	err := r.DBClient.UpdateUser(c.Request().Context(), user)
+	if err != nil {
+		msg := "Failed to load entries from database"
+		log.ReqErr(c, msg, err, logging.User, user)
+		return MakeErrorResponse(
+			c, http.StatusInternalServerError,
+			msg, err, render.ErrorBox(msg),
+		)
+	}
+	return c.String(http.StatusOK, token)
+}
+
 // func (r *Router) ListenPages(c echo.Context) error {
 // 	user, ok := c.Get("user").(*db.User)
 // 	if !ok || user == nil {
@@ -299,12 +349,12 @@ func main() {
 	var mailClient mail.MailClient
 	var authClient auth.Authorizer
 	switch Env(cfg.Env) {
-	case ENV_PRD:
-	case ENV_STG:
-		authClient = auth.NewSecureAuthorizer()
+	case ENV_PRD, ENV_STG:
+		log.Info("Using real auth")
+		authClient = auth.NewSecureAuthorizer(ctx, dbClient)
 		mailClient = mail.NewSesMailClient(ctx)
-	case ENV_DEV:
 	default:
+		log.Info("Using test auth")
 		authClient = auth.NewTestAuthorizer(cfg.TestUser)
 		mailClient = &mail.TestClient{}
 	}
@@ -317,13 +367,15 @@ func main() {
 
 	e.Use(middlewares.TraceMiddleware)
 	e.Use(middlewares.GetLoggingMiddleware)
+	if authClient == nil {
+		panic("nil auth client")
+	}
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient)
 
 	switch Mode(cfg.Mode) {
 	case MODE_RELEASE:
 		fs := echo.MustSubFS(public, "public")
 		e.StaticFS("/assets", fs)
-	case MODE_LOCAL:
 	default:
 		e.Static("/assets", "public")
 	}
@@ -337,6 +389,9 @@ func main() {
 	e.POST("/signup", s.PostSignup)
 
 	e.GET("/:id/logout", s.GetLogout, protected)
+
+	e.GET("/:id/account", s.GetAccountPage, protected)
+	e.GET("/:id/shortcut-token", s.GetShortcutToken, protected)
 
 	e.GET("/:id/pages", s.GetPages, protected)
 	e.DELETE("/:id/pages", s.DeletePages, protected)

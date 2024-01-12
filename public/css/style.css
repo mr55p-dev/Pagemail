@@ -1,3 +1,7 @@
+script {
+	display: none !important;
+}
+
 .brand-icon {
 	height: 50px;
 }

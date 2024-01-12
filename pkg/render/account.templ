@@ -1,0 +1,34 @@
+package render
+
+import (
+	"github.com/mr55p-dev/pagemail/pkg/db"
+	"fmt"
+)
+
+templ AccountPage(user *db.User) {
+	@Wrapper(user, "Account") {
+		<div class="box center">
+			<form class="table rows" hx-put={ fmt.Sprintf("/%s/user", user.Id) }>
+				<p>
+					<label for="shortcut">Shortcut token</label>
+					<input disabled name="shortcut" type="text" value={ user.ShortcutToken }/>
+				</p>
+				<p>
+					<label for="email-list">Email list</label>
+					<input name="email-list" type="checkbox"/>
+				</p>
+				<div class="tool-bar">
+					<button type="submit">Save</button>
+					<button onClick={ CopyToClipboard(user.ShortcutToken) }>Copy token</button>
+				</div>
+			</form>
+		</div>
+	}
+}
+
+templ ErrorBox(msg string) {
+	<div class="box bad">
+		<strong class="sub-title">Error</strong>
+		<p>Error: { msg }</p>
+	</div>
+}
