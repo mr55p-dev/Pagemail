@@ -239,7 +239,7 @@ func (r *Router) PostPage(c echo.Context) error {
 	if ShouldRender(c) {
 		return render.ReturnRender(c, render.PageElementComponent(page))
 	} else {
-		return c.NoContent(http.StatusCreated)
+		return c.String(http.StatusCreated, fmt.Sprintf("URL %s added succesfully", url))
 	}
 }
 
@@ -370,6 +370,7 @@ func main() {
 	}
 	tryLoadUser := middlewares.GetProtectedMiddleware(authClient, dbClient, false)
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient, true)
+	shortcut := middlewares.GetShortcutProtected(authClient, dbClient)
 
 	switch Mode(cfg.Mode) {
 	case MODE_RELEASE:
@@ -398,6 +399,8 @@ func main() {
 	e.GET("/:id/page/:page_id", s.GetPage, protected)
 	e.DELETE("/:id/page/:page_id", s.DeletePage, protected)
 	e.POST("/:id/page", s.PostPage, protected)
+
+	e.POST("/shortcut/page", s.PostPage, shortcut)
 
 	// e.GET("/:id/pages/listen", s.ListenPages, protected)
 	// e.GET("/test", s.TestUpdate, protected)

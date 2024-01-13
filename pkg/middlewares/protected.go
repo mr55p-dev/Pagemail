@@ -9,6 +9,25 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/logging"
 )
 
+func GetShortcutProtected(authClient auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			token := c.Request().Header.Get("Authorization")
+			userId := authClient.ValSessionToken(token)
+			if userId == "" {
+				return c.NoContent(http.StatusUnauthorized)
+			}
+			user, err := dbClient.ReadUserById(c.Request().Context(), userId)
+			if err != nil {
+				return c.NoContent(http.StatusNotFound)
+			}
+			c.Set("user", user)
+			next(c)
+			return nil
+		}
+	}
+}
+
 func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, block bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
