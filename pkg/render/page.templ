@@ -31,15 +31,16 @@ templ PageElementComponent(page *db.Page) {
 		} else {
 			<p>{ *page.Description }</p>
 		}
-		<footer>
-			<small>Added { page.Created.Format("02-01-2006") }</small>
+		<footer style="padding-top: 4px;">
+			<button onClick={ OpenInNewTab(page.Url) }>Open</button>
+			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
 			<button
 				hx-delete={ fmt.Sprintf("/%s/page/%s", page.UserId, page.Id) }
 				hx-swap="outerHTML"
 				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
 				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
 			>Delete</button>
-			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
+			<small>Added { page.Created.Format("02-01-2006") }</small>
 		</footer>
 	</article>
 }
@@ -96,4 +97,8 @@ script PasteFromClipboard(toId string) {
 
 script CopyToClipboard(text string) {
 	navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!")).catch(() => alert("Something went wrong."))
+}
+
+script OpenInNewTab(url string) {
+	window.open(url, "_blank")
 }
