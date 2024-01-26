@@ -8,17 +8,17 @@ import (
 )
 
 type User struct {
-	Id             string     `db:"id" log:"id"`
-	Username       string     `db:"username" log:"username"`
-	Email          string     `db:"email" log:"email"`
-	Password       string     `db:"password"`
-	Name           string     `db:"name" log:"name"`
-	Avatar         string     `db:"avatar" log:"avatar"`
-	Subscribed     bool       `db:"subscribed" log:"subscribed"`
-	ShortcutToken  string     `db:"shortcut_token" log:"shortcut_token"`
-	HasReadability bool       `db:"has_readability" log:"has_readability"`
-	Created        *time.Time `db:"created" log:"created"`
-	Updated        *time.Time `db:"updated" log:"updated"`
+	Id             string     `db:"id" log:"id" json:"id"`
+	Username       string     `db:"username" log:"username" json:"username"`
+	Email          string     `db:"email" log:"email" json:"email"`
+	Password       string     `db:"password" json:"-"`
+	Name           string     `db:"name" log:"name" json:"name"`
+	Avatar         string     `db:"avatar" log:"avatar" json:"avatar"`
+	Subscribed     bool       `db:"subscribed" log:"subscribed" json:"subscribed"`
+	ShortcutToken  string     `db:"shortcut_token" log:"shortcut_token" json:"shortcut_token"`
+	HasReadability bool       `db:"has_readability" log:"has_readability" json:"has_readability"`
+	Created        *time.Time `db:"created" log:"created" json:"created"`
+	Updated        *time.Time `db:"updated" log:"updated" json:"updated"`
 }
 
 func (user *User) LogValue() slog.Value {
