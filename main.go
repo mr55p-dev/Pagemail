@@ -18,6 +18,7 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/render"
 	"github.com/robfig/cron/v3"
 	"github.com/swaggo/echo-swagger"
+	"github.com/timewasted/go-accept-headers"
 )
 
 type Env string
@@ -65,8 +66,14 @@ func SetLoginCookie(c echo.Context, val string) {
 }
 
 func GetAccept(c echo.Context) ContentType {
-	accept := c.Request().Header.Get("Accept")
-	return ContentType(accept)
+	accept := accept.Parse(c.Request().Header.Get("Accept"))
+	if accept.Accepts("text/html") {
+		return CONTENT_HTML
+	} else if accept.Accepts("application/json") {
+		return CONTENT_JSON
+	} else {
+		return CONTENT_ANY
+	}
 }
 
 //	@title			Pagemail API documentation
@@ -80,7 +87,7 @@ func GetAccept(c echo.Context) ContentType {
 //
 //	@Summary	Get the landing page
 //	@Tags		page
-//	@Produce	text/html,text/json
+//	@Produce	text/html,application/json
 //	@Success	200
 //	@Router		/ [get]
 func (Router) GetRoot(c echo.Context) error {
@@ -88,9 +95,10 @@ func (Router) GetRoot(c echo.Context) error {
 	if u := c.Get("user"); u != nil {
 		user = u.(*db.User)
 	}
-	if GetAccept(c) == CONTENT_HTML {
+	switch GetAccept(c) {
+	case CONTENT_HTML:
 		return render.ReturnRender(c, render.Index(user))
-	} else {
+	case CONTENT_JSON:
 		return c.JSON(http.StatusOK, struct {
 			LoggedIn bool     `json:"logged_in"`
 			User     *db.User `json:"user"`
@@ -98,6 +106,8 @@ func (Router) GetRoot(c echo.Context) error {
 			LoggedIn: user != nil,
 			User:     user,
 		})
+	default:
+		return c.NoContent(http.StatusOK)
 	}
 }
 

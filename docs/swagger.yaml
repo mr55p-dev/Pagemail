@@ -10,7 +10,7 @@ paths:
     get:
       produces:
       - text/html
-      - text/json
+      - application/json
       responses:
         "200":
           description: OK

@@ -19,7 +19,7 @@ const docTemplate = `{
             "get": {
                 "produces": [
                     "text/html",
-                    "text/json"
+                    "application/json"
                 ],
                 "tags": [
                     "page"
