@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	_ "github.com/mr55p-dev/pagemail/docs"
 	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/logging"
@@ -16,6 +17,8 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/preview"
 	"github.com/mr55p-dev/pagemail/pkg/render"
 	"github.com/robfig/cron/v3"
+	"github.com/swaggo/echo-swagger"
+	"github.com/timewasted/go-accept-headers"
 )
 
 type Env string
@@ -46,17 +49,66 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
-func GetAccept(c echo.Context) ContentType {
-	accept := c.Request().Header.Get("Accept")
-	return ContentType(accept)
+func SetRedirect(c echo.Context, dest string) {
+	c.Response().Header().Set("HX-Location", dest)
 }
 
+func SetLoginCookie(c echo.Context, val string) {
+	c.SetCookie(&http.Cookie{
+		Name:     auth.SESS_COOKIE,
+		Value:    val,
+		Path:     "/",
+		MaxAge:   864000,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
+func GetAccept(c echo.Context) ContentType {
+	accept := accept.Parse(c.Request().Header.Get("Accept"))
+	if accept.Accepts("text/html") {
+		return CONTENT_HTML
+	} else if accept.Accepts("application/json") {
+		return CONTENT_JSON
+	} else {
+		return CONTENT_ANY
+	}
+}
+
+//	@title			Pagemail API documentation
+//	@version		1.0
+//	@description	The documentation for the web-app and API of pagemail
+
+//	@host		localhost:8080
+//	@BasePath	/
+
+// GetRoot godoc
+//
+//	@Summary	Get the landing page
+//	@Tags		page
+//	@Produce	text/html,application/json
+//	@Success	200
+//	@Router		/ [get]
 func (Router) GetRoot(c echo.Context) error {
 	var user *db.User
 	if u := c.Get("user"); u != nil {
 		user = u.(*db.User)
 	}
-	return render.ReturnRender(c, render.Index(user))
+	switch GetAccept(c) {
+	case CONTENT_HTML:
+		return render.ReturnRender(c, render.Index(user))
+	case CONTENT_JSON:
+		return c.JSON(http.StatusOK, struct {
+			LoggedIn bool     `json:"logged_in"`
+			User     *db.User `json:"user"`
+		}{
+			LoggedIn: user != nil,
+			User:     user,
+		})
+	default:
+		return c.NoContent(http.StatusOK)
+	}
 }
 
 func (Router) GetLogin(c echo.Context) error {
@@ -83,12 +135,8 @@ func (s *Router) PostLogin(c echo.Context) error {
 	sess := s.Authorizer.GenSessionToken(user)
 	log.ReqDebug(c, "Login succesful", logging.User, user)
 
-	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
-	c.SetCookie(&http.Cookie{
-		Name:  auth.SESS_COOKIE,
-		Value: sess,
-		Path:  "/",
-	})
+	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
+	SetLoginCookie(c, sess)
 	return c.NoContent(http.StatusOK)
 }
 
@@ -117,24 +165,19 @@ func (s *Router) PostSignup(c echo.Context) error {
 	// Generate a token for the user from the session manager
 	token := s.Authorizer.GenSessionToken(user)
 
-	c.Response().Header().Set("HX-Location", fmt.Sprintf("/%s/pages", user.Id))
-	c.SetCookie(&http.Cookie{
-		Name:  auth.SESS_COOKIE,
-		Value: token,
-		Path:  "/",
-	})
+	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
+	SetLoginCookie(c, token)
 	return c.NoContent(http.StatusOK)
 }
 
 func (Router) GetLogout(c echo.Context) error {
-	c.Response().Header().Set("Location", "/login")
 	c.SetCookie(&http.Cookie{
 		Name:   auth.SESS_COOKIE,
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,
 	})
-	c.Response().Header().Set("HX-Location", "/")
+	SetRedirect(c, "/")
 	return c.NoContent(http.StatusOK)
 }
 
@@ -402,6 +445,8 @@ func main() {
 
 	e.POST("/shortcut/page", s.PostPage, shortcut)
 
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
 	// e.GET("/:id/pages/listen", s.ListenPages, protected)
 	// e.GET("/test", s.TestUpdate, protected)
 
@@ -415,7 +460,7 @@ func main() {
 		},
 	)
 
-	if err := e.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil {
+	if err := e.Start(fmt.Sprintf("127.0.0.1:%s", cfg.Port)); err != nil {
 		log.Err("Server exited with error", err)
 	}
 }
