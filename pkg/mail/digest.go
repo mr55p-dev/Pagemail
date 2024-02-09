@@ -16,7 +16,7 @@ func DoDigestJob(ctx context.Context, dbClient *db.Client, mailClient MailClient
 	}
 	for _, user := range users {
 		log.DebugContext(ctx, "Looking up pages", logging.UserId, user.Id)
-		pages, err := dbClient.ReadPagesByUserId(ctx, user.Id)
+		pages, err := dbClient.ReadPagesByUserId(ctx, user.Id, -1)
 		if err != nil {
 			log.ErrContext(ctx, "Failed looking up pages", err)
 		}

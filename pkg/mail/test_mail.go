@@ -12,7 +12,7 @@ func sendTestEmail() {
 	mailClient := NewSesMailClient(context.Background())
 	user, _ := dbClient.ReadUserById(context.Background(), "iy17XbjTy7")
 	log.Info("Got user", "user", user)
-	pages, _ := dbClient.ReadPagesByUserId(context.Background(), user.Id)
+	pages, _ := dbClient.ReadPagesByUserId(context.Background(), user.Id, -1)
 	msg, err := GenerateMailBody(context.Background(), user, pages)
 	os.WriteFile("html", msg, 0o777)
 	err = mailClient.SendMail(context.Background(), user, string(msg))

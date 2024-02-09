@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -155,22 +156,27 @@ func (Router) GetLogout(c echo.Context) error {
 }
 
 func (r *Router) GetDashboard(c echo.Context) error {
-	// user := LoadUser(c)
-	return nil
+	user := LoadUser(c)
+	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id, 1)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return render.ReturnRender(c, render.Dashboard(user, pages))
 }
 
 func (r *Router) GetPages(c echo.Context) error {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id)
+	user := LoadUser(c)
+	page, err := strconv.Atoi(c.QueryParam("p"))
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return MakeErrorResponse(c, http.StatusBadRequest, err)
 	}
 
-	return render.ReturnRender(c, render.PageView(user, pages))
+	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id, page)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	return render.ReturnRender(c, render.PageList(pages, page))
 }
 
 func (r *Router) DeletePages(c echo.Context) error {
@@ -202,12 +208,7 @@ func (r *Router) GetPage(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	render.PageElementComponent(page).Render(
-		c.Request().Context(),
-		c.Response().Writer,
-	)
-	c.Response().WriteHeader(http.StatusOK)
-	return nil
+	return render.ReturnRender(c, render.PageCard(page))
 }
 
 func (r *Router) PostPage(c echo.Context) error {
@@ -240,7 +241,7 @@ func (r *Router) PostPage(c echo.Context) error {
 		}
 	}(r.DBClient)
 
-	return render.ReturnRender(c, render.PageElementComponent(page))
+	return render.ReturnRender(c, render.PageCard(page))
 }
 
 func (r *Router) DeletePage(c echo.Context) error {

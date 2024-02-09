@@ -1,6 +1,10 @@
 package db
 
-import "context"
+import (
+	"context"
+)
+
+const PAGE_SIZE int = 3
 
 func (client *Client) CreatePage(ctx context.Context, p *Page) error {
 	_, err := client.db.ExecContext(ctx, `
@@ -23,25 +27,27 @@ func (client *Client) DeletePage(c context.Context, id string) error {
 	return err
 }
 
-func (client *Client) ReadPagesByUserId(c context.Context, id string) ([]Page, error) {
+func (client *Client) ReadPagesByUserId(c context.Context, id string, page int) ([]Page, error) {
+	var skip, limit int
+	if page == 0 {
+		page = 1
+	}
+	if page > 0 {
+		skip = PAGE_SIZE * (page - 1)
+		limit = PAGE_SIZE
+	} else if page <= 0 {
+		skip = 0
+		limit = 9999
+	}
 	var pages []Page
-	rows, err := client.db.Query(`
-		SELECT * FROM pages WHERE user_id = ? ORDER BY created DESC
-	`, id)
+	err := client.db.SelectContext(
+		c, &pages,
+		`SELECT * FROM pages WHERE user_id = ? ORDER BY created DESC LIMIT ? OFFSET ?`,
+		id, limit, skip,
+	)
 	if err != nil {
 		return nil, err
 	}
-	for rows.Next() {
-		v := Page{}
-		rows.Scan(
-			&v.Id, &v.UserId, &v.Url,
-			&v.Title, &v.Description, &v.ImageUrl,
-			&v.ReadabilityStatus, &v.ReadabilityTaskData, &v.IsReadable,
-			&v.Created, &v.Updated,
-		)
-		pages = append(pages, v)
-	}
-
 	return pages, err
 }
 
