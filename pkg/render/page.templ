@@ -7,11 +7,13 @@ templ PageList(pages []db.Page, p int) {
 	for _, v := range pages {
 		@PageCard(&v)
 	}
-	<button
-		hx-get={ fmt.Sprintf("/pages?p=%d", p+1) }
-		hx-swap="outerHTML"
-		hx-trigger="click"
-	>Load more</button>
+	if len(pages) >= db.PAGE_SIZE {
+		<button
+			hx-get={ fmt.Sprintf("/pages?p=%d", p+1) }
+			hx-swap="outerHTML"
+			hx-trigger="click, intersect once"
+		>Load more</button>
+	}
 }
 
 templ PageCard(page *db.Page) {
