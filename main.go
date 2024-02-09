@@ -18,7 +18,6 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/render"
 	"github.com/robfig/cron/v3"
 	"github.com/swaggo/echo-swagger"
-	"github.com/timewasted/go-accept-headers"
 )
 
 type Env string
@@ -65,74 +64,48 @@ func SetLoginCookie(c echo.Context, val string) {
 	})
 }
 
-func GetAccept(c echo.Context) ContentType {
-	accept := accept.Parse(c.Request().Header.Get("Accept"))
-	if accept.Accepts("text/html") {
-		return CONTENT_HTML
-	} else if accept.Accepts("application/json") {
-		return CONTENT_JSON
-	} else {
-		return CONTENT_ANY
+func LoadUser(c echo.Context) *db.User {
+	user, ok := c.Get("user").(*db.User)
+	if !ok {
+		panic(fmt.Errorf("Could not load request user"))
 	}
+	return user
 }
 
-//	@title			Pagemail API documentation
-//	@version		1.0
-//	@description	The documentation for the web-app and API of pagemail
+func MakeErrorResponse(c echo.Context, status int, err error) error {
+	return render.ReturnRender(c, render.ErrorBox(err.Error()))
+}
 
-//	@host		localhost:8080
-//	@BasePath	/
-
-// GetRoot godoc
-//
-//	@Summary	Get the landing page
-//	@Tags		page
-//	@Produce	text/html,application/json
-//	@Success	200
-//	@Router		/ [get]
 func (Router) GetRoot(c echo.Context) error {
 	var user *db.User
 	if u := c.Get("user"); u != nil {
 		user = u.(*db.User)
 	}
-	switch GetAccept(c) {
-	case CONTENT_HTML:
-		return render.ReturnRender(c, render.Index(user))
-	case CONTENT_JSON:
-		return c.JSON(http.StatusOK, struct {
-			LoggedIn bool     `json:"logged_in"`
-			User     *db.User `json:"user"`
-		}{
-			LoggedIn: user != nil,
-			User:     user,
-		})
-	default:
-		return c.NoContent(http.StatusOK)
-	}
+	return render.ReturnRender(c, render.Index(user))
 }
 
 func (Router) GetLogin(c echo.Context) error {
 	return render.ReturnRender(c, render.Login())
 }
 
-func (s *Router) PostLogin(c echo.Context) error {
+func (r *Router) PostLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	log.ReqInfo(c, "requested login", logging.UserMail, email)
-	user, err := s.DBClient.ReadUserByEmail(c.Request().Context(), email)
+	user, err := r.DBClient.ReadUserByEmail(c.Request().Context(), email)
 	if err != nil {
 		log.ReqErr(c, "DB error when logging in", err)
 		return MakeErrorResponse(
-			c, http.StatusInternalServerError, "Invalid username or password", err,
+			c, http.StatusInternalServerError, err,
 		)
 	}
 
-	if !s.Authorizer.ValCredentialsAgainstUser(email, password, user) {
+	if !r.Authorizer.ValCredentialsAgainstUser(email, password, user) {
 		log.ReqErr(c, "Unauthorized login attempt", err, logging.UserMail, email)
-		return MakeErrorResponse(c, http.StatusUnauthorized, "Invalid username or password", err)
+		return MakeErrorResponse(c, http.StatusUnauthorized, err)
 	}
 
-	sess := s.Authorizer.GenSessionToken(user)
+	sess := r.Authorizer.GenSessionToken(user)
 	log.ReqDebug(c, "Login succesful", logging.User, user)
 
 	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
@@ -144,7 +117,7 @@ func (Router) GetSignup(c echo.Context) error {
 	return render.ReturnRender(c, render.Signup())
 }
 
-func (s *Router) PostSignup(c echo.Context) error {
+func (r *Router) PostSignup(c echo.Context) error {
 	// Read the form requests
 	username := c.FormValue("username")
 	email := c.FormValue("email")
@@ -155,15 +128,15 @@ func (s *Router) PostSignup(c echo.Context) error {
 	}
 
 	// Generate a new user
-	user := db.NewUser(email, s.Authorizer.GenPasswordHash(password))
+	user := db.NewUser(email, r.Authorizer.GenPasswordHash(password))
 	user.Username = username
-	err := s.DBClient.CreateUser(c.Request().Context(), user)
+	err := r.DBClient.CreateUser(c.Request().Context(), user)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Something went wrong")
 	}
 
 	// Generate a token for the user from the session manager
-	token := s.Authorizer.GenSessionToken(user)
+	token := r.Authorizer.GenSessionToken(user)
 
 	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
 	SetLoginCookie(c, token)
@@ -179,6 +152,11 @@ func (Router) GetLogout(c echo.Context) error {
 	})
 	SetRedirect(c, "/")
 	return c.NoContent(http.StatusOK)
+}
+
+func (r *Router) GetDashboard(c echo.Context) error {
+	// user := LoadUser(c)
+	return nil
 }
 
 func (r *Router) GetPages(c echo.Context) error {
@@ -205,17 +183,12 @@ func (r *Router) DeletePages(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-
-	if ShouldRender(c) {
-		return render.ReturnRender(c, render.SavePageSuccess(fmt.Sprintf("Deleted %d records", n)))
-	} else {
-		return c.String(http.StatusOK, fmt.Sprintf("Deleted %d records", n))
-	}
+	return render.ReturnRender(c, render.SavePageSuccess(fmt.Sprintf("Deleted %d records", n)))
 
 }
 
 func (r *Router) GetPage(c echo.Context) error {
-	user := c.Get("user").(*db.User)
+	user := LoadUser(c)
 	pageId := c.Param("page_id")
 	page, err := r.DBClient.ReadPage(c.Request().Context(), pageId)
 	if err != nil {
@@ -237,10 +210,6 @@ func (r *Router) GetPage(c echo.Context) error {
 	return nil
 }
 
-func ShouldRender(c echo.Context) bool {
-	return c.Request().Header.Get("Accept") == "*/*"
-}
-
 func (r *Router) PostPage(c echo.Context) error {
 
 	user, ok := c.Get("user").(*db.User)
@@ -250,20 +219,12 @@ func (r *Router) PostPage(c echo.Context) error {
 
 	url := c.FormValue("url")
 	if url == "" {
-		if ShouldRender(c) {
-			return render.ReturnRender(c, render.SavePageError("URL field must be present"))
-		} else {
-			return c.String(http.StatusBadRequest, "URL field must be present")
-		}
+		return render.ReturnRender(c, render.SavePageError("URL field must be present"))
 	}
 
 	page := db.NewPage(user.Id, url)
 	if err := r.DBClient.CreatePage(c.Request().Context(), page); err != nil {
-		if ShouldRender(c) {
-			return render.ReturnRender(c, render.SavePageError(err.Error()))
-		} else {
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
+		return render.ReturnRender(c, render.SavePageError(err.Error()))
 	}
 
 	go func(cli *db.Client) {
@@ -279,15 +240,11 @@ func (r *Router) PostPage(c echo.Context) error {
 		}
 	}(r.DBClient)
 
-	if ShouldRender(c) {
-		return render.ReturnRender(c, render.PageElementComponent(page))
-	} else {
-		return c.String(http.StatusCreated, fmt.Sprintf("URL %s added succesfully", url))
-	}
+	return render.ReturnRender(c, render.PageElementComponent(page))
 }
 
 func (r *Router) DeletePage(c echo.Context) error {
-	user := c.Get("user").(*db.User)
+	user := LoadUser(c)
 	id := c.Param("page_id")
 	page, err := r.DBClient.ReadPage(c.Request().Context(), id)
 	if err != nil {
@@ -303,29 +260,14 @@ func (r *Router) DeletePage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-type Error struct {
-	Message string `json:"message"`
-}
-
-func MakeErrorResponse(c echo.Context, status int, message string, err error) error {
-	switch GetAccept(c) {
-	case CONTENT_PLAIN:
-		return c.String(status, message)
-	case CONTENT_JSON:
-		return c.JSON(status, Error{message})
-	default:
-		return render.ReturnRender(c, render.ErrorBox(message))
-	}
-}
-
 func (r *Router) GetAccountPage(c echo.Context) error {
-	user := c.Get("user").(*db.User)
+	user := LoadUser(c)
 	log.ReqDebug(c, "Account page", logging.User, user)
 	return render.ReturnRender(c, render.AccountPage(user))
 }
 
 func (r *Router) GetShortcutToken(c echo.Context) error {
-	user := c.Get("user").(*db.User)
+	user := LoadUser(c)
 	log.DebugContext(c.Request().Context(), "Requested new shortcut token")
 	token := r.Authorizer.GenShortcutToken(user)
 	user.ShortcutToken = token
@@ -333,46 +275,10 @@ func (r *Router) GetShortcutToken(c echo.Context) error {
 	if err != nil {
 		msg := "Failed to load entries from database"
 		log.ReqErr(c, msg, err, logging.User, user)
-		return MakeErrorResponse(c, http.StatusInternalServerError, msg, err)
+		return MakeErrorResponse(c, http.StatusInternalServerError, err)
 	}
 	return c.String(http.StatusOK, token)
 }
-
-// func (r *Router) ListenPages(c echo.Context) error {
-// 	user, ok := c.Get("user").(*db.User)
-// 	if !ok || user == nil {
-// 		return c.NoContent(http.StatusInternalServerError)
-// 	}
-//
-// 	// create listener to updates
-// 	events := make(chan db.Event[db.Page])
-//
-// 	r.DBClient.AddPageListener(user.Id, events)
-//
-// 	c.Response().WriteHeader(http.StatusOK)
-// 	c.Response().Header().Add("Content-Type", "text/event-stream")
-// 	c.Response().Flush()
-//
-// 	defer r.DBClient.RemovePageListener(user.Id)
-// 	for event := range events {
-// 		fmt.Println("Event", event)
-// 		c.Response().Write([]byte("<p>Message sent</p>\n\n"))
-// 		c.Response().Flush()
-// 	}
-//
-// 	return nil
-// }
-
-// func (r *Router) TestUpdate(c echo.Context) error {
-// 	user, _ := c.Get("user").(*db.User)
-// 	page := db.NewPage(user.Id, "https://example.com")
-// 	page.Id = "123456"
-// 	err := r.DBClient.UpsertPage(c.Request().Context(), page)
-// 	if err != nil {
-// 		return c.String(http.StatusInternalServerError, err.Error())
-// 	}
-// 	return c.String(200, "Updated")
-// }
 
 func main() {
 	log = logging.GetLogger("root")
@@ -431,17 +337,18 @@ func main() {
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
 
-	e.GET("/:id/logout", s.GetLogout, protected)
+	e.GET("/logout", s.GetLogout, protected)
 
-	e.GET("/:id/account", s.GetAccountPage, protected)
-	e.GET("/:id/shortcut-token", s.GetShortcutToken, protected)
+	e.GET("/account", s.GetAccountPage, protected)
+	e.GET("/shortcut-token", s.GetShortcutToken, protected)
 
-	e.GET("/:id/pages", s.GetPages, protected)
-	e.DELETE("/:id/pages", s.DeletePages, protected)
+	e.GET("/dashboard", s.GetDashboard, protected)
+	e.GET("/pages", s.GetPages, protected)
+	e.DELETE("/pages", s.DeletePages, protected)
 
-	e.GET("/:id/page/:page_id", s.GetPage, protected)
-	e.DELETE("/:id/page/:page_id", s.DeletePage, protected)
-	e.POST("/:id/page", s.PostPage, protected)
+	e.GET("/page/:page_id", s.GetPage, protected)
+	e.DELETE("/page/:page_id", s.DeletePage, protected)
+	e.POST("/page", s.PostPage, protected)
 
 	e.POST("/shortcut/page", s.PostPage, shortcut)
 

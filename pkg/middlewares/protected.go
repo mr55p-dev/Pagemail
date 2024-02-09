@@ -53,17 +53,6 @@ func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, blo
 				}
 			}
 
-			requestedId := c.Param("id")
-			if requestedId != "" && requestedId != uid {
-				log.ReqError(c, "Request blocked, requested resource does not match session")
-				if block {
-					return c.NoContent(http.StatusForbidden)
-				} else {
-					next(c)
-					return nil
-				}
-			}
-
 			user, err := dbClient.ReadUserById(c.Request().Context(), uid)
 			if err != nil {
 				log.ReqErr(c, "Error, could not read user", err, logging.UserId, uid)

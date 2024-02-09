@@ -1,20 +1,4 @@
-basePath: /
-host: localhost:8080
 info:
   contact: {}
-  description: The documentation for the web-app and API of pagemail
-  title: Pagemail API documentation
-  version: "1.0"
-paths:
-  /:
-    get:
-      produces:
-      - text/html
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Get the landing page
-      tags:
-      - page
+paths: {}
 swagger: "2.0"
