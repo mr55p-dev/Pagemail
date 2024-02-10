@@ -109,7 +109,7 @@ func (r *Router) PostLogin(c echo.Context) error {
 	sess := r.Authorizer.GenSessionToken(user)
 	log.ReqDebug(c, "Login succesful", logging.User, user)
 
-	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
+	SetRedirect(c, "/dashboard")
 	SetLoginCookie(c, sess)
 	return c.NoContent(http.StatusOK)
 }
@@ -139,7 +139,7 @@ func (r *Router) PostSignup(c echo.Context) error {
 	// Generate a token for the user from the session manager
 	token := r.Authorizer.GenSessionToken(user)
 
-	SetRedirect(c, fmt.Sprintf("/%s/pages", user.Id))
+	SetRedirect(c, "/dashboard")
 	SetLoginCookie(c, token)
 	return c.NoContent(http.StatusOK)
 }
