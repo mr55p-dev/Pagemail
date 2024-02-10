@@ -35,7 +35,7 @@ templ PageCard(page *db.Page) {
 			<button onClick={ OpenInNewTab(page.Url) }>Open</button>
 			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
 			<button
-				hx-delete={ fmt.Sprintf("/%s/page/%s", page.UserId, page.Id) }
+				hx-delete={ fmt.Sprintf("/page/%s", page.Id) }
 				hx-swap="outerHTML"
 				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
 				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
