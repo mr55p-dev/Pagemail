@@ -49,6 +49,10 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
+type AccountForm struct {
+	Subscribed string `form:"email-list"`
+}
+
 func SetRedirect(c echo.Context, dest string) {
 	c.Response().Header().Set("HX-Location", dest)
 }
@@ -263,8 +267,24 @@ func (r *Router) DeletePage(c echo.Context) error {
 
 func (r *Router) GetAccountPage(c echo.Context) error {
 	user := LoadUser(c)
-	log.ReqDebug(c, "Account page", logging.User, user)
 	return render.ReturnRender(c, render.AccountPage(user))
+}
+
+func (r *Router) PutAccount(c echo.Context) error {
+	user := LoadUser(c)
+	form := new(AccountForm)
+	err := c.Bind(form)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusBadRequest, err)
+	}
+	log.ReqDebug(c, "updating account")
+	user.Subscribed = form.Subscribed == "on"
+	err = r.DBClient.UpdateUser(c.Request().Context(), user)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.String(http.StatusOK, "Success!")
 }
 
 func (r *Router) GetShortcutToken(c echo.Context) error {
@@ -346,6 +366,7 @@ func main() {
 	e.POST("/page", s.PostPage, protected)
 
 	e.GET("/account", s.GetAccountPage, protected)
+	e.PUT("/account", s.PutAccount, protected)
 
 	e.GET("/shortcut-token", s.GetShortcutToken, protected)
 	e.POST("/shortcut/page", s.PostPage, shortcut)

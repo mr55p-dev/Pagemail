@@ -46,6 +46,7 @@ func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, blo
 			if uid == "" {
 				log.ReqError(c, "Request blocked, session not valid")
 				if block {
+					c.Response().Header().Add("HX-Location", "/login")
 					return c.NoContent(http.StatusUnauthorized)
 				} else {
 					next(c)
