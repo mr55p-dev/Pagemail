@@ -21,9 +21,7 @@ func (client *Client) ReadPage(ctx context.Context, id string) (*Page, error) {
 }
 
 func (client *Client) DeletePage(c context.Context, id string) error {
-	_, err := client.db.Exec(`
-		DELETE FROM pages WHERE id = ?
-	`, id)
+	_, err := client.db.Exec(`DELETE FROM pages WHERE id = ?`, id)
 	return err
 }
 

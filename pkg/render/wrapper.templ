@@ -19,7 +19,7 @@ templ Wrapper(user *db.User, title string) {
 			<link rel="stylesheet" href="/assets/css/missing.css"/>
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
 		</head>
-		<body>
+		<body hx-boost="true">
 			@Header(user)
 			<main class="wrapper">
 				<h2>{ title }</h2>

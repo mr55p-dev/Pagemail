@@ -49,6 +49,10 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
+type AccountForm struct {
+	Subscribed string `form:"email-list"`
+}
+
 func SetRedirect(c echo.Context, dest string) {
 	c.Response().Header().Set("HX-Location", dest)
 }
@@ -263,8 +267,24 @@ func (r *Router) DeletePage(c echo.Context) error {
 
 func (r *Router) GetAccountPage(c echo.Context) error {
 	user := LoadUser(c)
-	log.ReqDebug(c, "Account page", logging.User, user)
 	return render.ReturnRender(c, render.AccountPage(user))
+}
+
+func (r *Router) PutAccount(c echo.Context) error {
+	user := LoadUser(c)
+	form := new(AccountForm)
+	err := c.Bind(form)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusBadRequest, err)
+	}
+	log.ReqDebug(c, "updating account")
+	user.Subscribed = form.Subscribed == "on"
+	err = r.DBClient.UpdateUser(c.Request().Context(), user)
+	if err != nil {
+		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+	}
+
+	return c.String(http.StatusOK, "Success!")
 }
 
 func (r *Router) GetShortcutToken(c echo.Context) error {
@@ -276,7 +296,7 @@ func (r *Router) GetShortcutToken(c echo.Context) error {
 	if err != nil {
 		msg := "Failed to load entries from database"
 		log.ReqErr(c, msg, err, logging.User, user)
-		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	return c.String(http.StatusOK, token)
 }
@@ -334,29 +354,24 @@ func main() {
 
 	e.GET("/login", s.GetLogin)
 	e.POST("/login", s.PostLogin)
-
 	e.GET("/signup", s.GetSignup)
 	e.POST("/signup", s.PostSignup)
-
 	e.GET("/logout", s.GetLogout, protected)
-
-	e.GET("/account", s.GetAccountPage, protected)
-	e.GET("/shortcut-token", s.GetShortcutToken, protected)
 
 	e.GET("/dashboard", s.GetDashboard, protected)
 	e.GET("/pages", s.GetPages, protected)
 	e.DELETE("/pages", s.DeletePages, protected)
-
 	e.GET("/page/:page_id", s.GetPage, protected)
 	e.DELETE("/page/:page_id", s.DeletePage, protected)
 	e.POST("/page", s.PostPage, protected)
 
+	e.GET("/account", s.GetAccountPage, protected)
+	e.PUT("/account", s.PutAccount, protected)
+
+	e.GET("/shortcut-token", s.GetShortcutToken, protected)
 	e.POST("/shortcut/page", s.PostPage, shortcut)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
-	// e.GET("/:id/pages/listen", s.ListenPages, protected)
-	// e.GET("/test", s.TestUpdate, protected)
 
 	cr := cron.New()
 	cr.AddFunc(

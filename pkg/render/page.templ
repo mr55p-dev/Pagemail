@@ -1,7 +1,9 @@
 package render
 
-import "github.com/mr55p-dev/pagemail/pkg/db"
-import "fmt"
+import (
+	"github.com/mr55p-dev/pagemail/pkg/db"
+	"fmt"
+)
 
 templ PageList(pages []db.Page, p int) {
 	for _, v := range pages {

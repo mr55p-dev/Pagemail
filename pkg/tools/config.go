@@ -5,29 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"reflect"
-	"strings"
 )
-
-type EnvTag struct {
-	Value    string
-	Required bool
-}
-
-func ParseEnvTag(tag string) *EnvTag {
-	vals := strings.Split(tag, ",")
-	out := &EnvTag{
-		Value: vals[0],
-	}
-	if len(vals) > 1 {
-		for _, v := range vals[1:] {
-			switch v {
-			case "required":
-				out.Required = true
-			}
-		}
-	}
-	return out
-}
 
 func LoadFromEnv(obj any) {
 	// Loads strings from environment variables specified in `env` tag
@@ -45,16 +23,30 @@ func LoadFromEnv(obj any) {
 		}
 		typeField := cType.Field(i)
 		tag := typeField.Tag.Get("env")
-		envTag := ParseEnvTag(tag)
-		val, ok := os.LookupEnv(envTag.Value)
-		if envTag.Required && !ok {
-			panic(fmt.Sprintf("Could not read env %s", tag))
-		}
+		val, ok := os.LookupEnv(tag)
 		if ok {
 			valField.SetString(val)
 		}
 	}
 	return
+}
+
+func ValidateRequiredFields(obj any) error {
+	rawVal := reflect.ValueOf(obj)
+	if !isStructPtr(rawVal) {
+		return fmt.Errorf("non struct type passed")
+	}
+	cVal := rawVal.Elem()
+	cType := cVal.Type()
+	for i := 0; i < cType.NumField(); i++ {
+		valField := cVal.Field(i)
+		typeField := cType.Field(i)
+		tag := typeField.Tag.Get("required")
+		if tag == "true" && valField.IsZero() {
+			return fmt.Errorf("Zero value provided for required field %s", typeField.Name)
+		}
+	}
+	return nil
 }
 
 func isStructPtr(v reflect.Value) bool {
