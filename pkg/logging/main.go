@@ -28,12 +28,19 @@ var BaseLog *slog.Logger
 var Config *Cfg
 
 type Cfg struct {
-	Env      string `env:"PM_ENV" log:"environment"`
-	Mode     string `env:"PM_MODE" log:"deploy-mode"`
-	DBPath   string `env:"PM_DB_PATH" log:"db-path"`
-	Port     string `env:"PM_PORT" log:"port"`
-	TestUser string `env:"PM_TEST_USER,optional" log:"test-user-id"`
-	LogLevel string `env:"PM_LVL,optional" log:"log-level"`
+	Env      string `env:"PM_ENV" yaml:"env" log:"environment"`
+	Mode     string `env:"PM_MODE" yaml:"mode" log:"deploy-mode"`
+	DBPath   string `env:"PM_DB_PATH" yaml:"dbpath" log:"db-path"`
+	Port     string `env:"PM_PORT" yaml:"port" log:"port"`
+	TestUser string `env:"PM_TEST_USER,optional" yaml:"testuser" log:"test-user-id"`
+	LogLevel string `env:"PM_LVL,optional" yaml:"loglevel" log:"log-level"`
+}
+
+func NewCfg() *Cfg {
+	cfg := new(Cfg)
+	// scan for a yaml file to load from
+	os.Stat("pagemail.yaml")
+	return cfg
 }
 
 func (c Cfg) LogValue() slog.Value {
