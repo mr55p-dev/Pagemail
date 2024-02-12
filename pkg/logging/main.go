@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/pkg/tools"
+	"gopkg.in/yaml.v3"
 )
 
 type Log struct{ *slog.Logger }
@@ -28,18 +29,28 @@ var BaseLog *slog.Logger
 var Config *Cfg
 
 type Cfg struct {
-	Env      string `env:"PM_ENV" yaml:"env" log:"environment"`
-	Mode     string `env:"PM_MODE" yaml:"mode" log:"deploy-mode"`
-	DBPath   string `env:"PM_DB_PATH" yaml:"dbpath" log:"db-path"`
-	Port     string `env:"PM_PORT" yaml:"port" log:"port"`
-	TestUser string `env:"PM_TEST_USER,optional" yaml:"testuser" log:"test-user-id"`
-	LogLevel string `env:"PM_LVL,optional" yaml:"loglevel" log:"log-level"`
+	Env      string `env:"PM_ENV" required:"true" yaml:"env" log:"environment"`
+	Mode     string `env:"PM_MODE" required:"true" yaml:"mode" log:"deploy-mode"`
+	DBPath   string `env:"PM_DB_PATH" required:"true" yaml:"dbpath" log:"db-path"`
+	Port     string `env:"PM_PORT" required:"true" yaml:"port" log:"port"`
+	TestUser string `env:"PM_TEST_USER" yaml:"testuser" log:"test-user-id"`
+	LogLevel string `env:"PM_LVL" yaml:"loglevel" log:"log-level"`
 }
 
 func NewCfg() *Cfg {
 	cfg := new(Cfg)
-	// scan for a yaml file to load from
-	os.Stat("pagemail.yaml")
+	// Parse from file
+	_, err := os.Stat("pagemail.yaml")
+	if err == nil {
+		data, _ := os.ReadFile("pagemail.yaml")
+		yaml.Unmarshal(data, cfg)
+	}
+	// Parse from environment
+	tools.LoadFromEnv(cfg)
+	err = tools.ValidateRequiredFields(cfg)
+	if err != nil {
+		panic(err)
+	}
 	return cfg
 }
 
@@ -49,8 +60,7 @@ func (c Cfg) LogValue() slog.Value {
 }
 
 func init() {
-	Config = new(Cfg)
-	tools.LoadFromEnv(Config)
+	Config = NewCfg()
 
 	var handler slog.Handler
 	var level slog.Level
