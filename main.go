@@ -53,6 +53,10 @@ type AccountForm struct {
 	Subscribed string `form:"email-list"`
 }
 
+func IsHtmx(c echo.Context) bool {
+	return c.Request().Header.Get("HX-Request") == "true"
+}
+
 func SetRedirect(c echo.Context, dest string) {
 	c.Response().Header().Set("HX-Location", dest)
 }
@@ -245,7 +249,11 @@ func (r *Router) PostPage(c echo.Context) error {
 		}
 	}(r.DBClient)
 
-	return render.ReturnRender(c, render.PageCard(page))
+	if IsHtmx(c) {
+		return render.ReturnRender(c, render.PageCard(page))
+	} else {
+		return c.String(http.StatusOK, fmt.Sprintf("Added %s succesfully", url))
+	}
 }
 
 func (r *Router) DeletePage(c echo.Context) error {
