@@ -5,7 +5,7 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/db"
 )
 
-templ MailDigest(date *time.Time, user *db.User, pages []db.Page) {
+templ MailDigest(date *time.Time, name string, pages []db.Page) {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -393,7 +393,7 @@ templ MailDigest(date *time.Time, user *db.User, pages []db.Page) {
 										>
 											<tr>
 												<td>
-													<p>Good morning { user.Username }</p>
+													<p>Good morning { name }</p>
 													<p>
 														Here are all the pages you've saved since { date.Format("02-01-2006") }
 													</p>

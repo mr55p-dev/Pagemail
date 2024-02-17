@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-const PAGE_SIZE int = 3
+const PAGE_SIZE int = 10
 
 func (client *Client) CreatePage(ctx context.Context, p *Page) error {
 	_, err := client.db.ExecContext(ctx, `
