@@ -75,3 +75,25 @@ func LogValue(v any) []slog.Attr {
 	}
 	return vals
 }
+
+func PrintValue(v any) (vals []string) {
+	rawVal := reflect.ValueOf(v)
+	if !isStructPtr(rawVal) {
+		return vals
+	}
+
+	cVal := rawVal.Elem()
+	cType := cVal.Type()
+	for i := 0; i < cType.NumField(); i++ {
+		valField := cVal.Field(i)
+		if valField.Kind() != reflect.String {
+			continue
+		}
+		typeField := cType.Field(i)
+		env := typeField.Tag.Get("log")
+		if env != "" {
+			vals = append(vals, fmt.Sprintf("%s: %s", env, valField.String()))
+		}
+	}
+	return vals
+}
