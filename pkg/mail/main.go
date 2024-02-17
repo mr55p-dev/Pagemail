@@ -17,24 +17,18 @@ import (
 
 var log logging.Log
 
-const (
-	Sender = "ellis@pagemail.io"
-)
-
 func init() {
 	log = logging.GetLogger("mail")
 }
 
-func GenerateMailBody(ctx context.Context, user *db.User, pages []db.Page) ([]byte, error) {
-	now := time.Now()
-	dt := time.Date(now.Year(), now.Month(), now.Day()-1, 7, 0, 0, 0, time.UTC)
+func GenerateMailBody(ctx context.Context, user *User, pages []db.Page, since time.Time) ([]byte, error) {
 	dest := new(bytes.Buffer)
-	err := render.MailDigest(&dt, user, pages).Render(ctx, dest)
+	err := render.MailDigest(&since, user.Name, pages).Render(ctx, dest)
 	return dest.Bytes(), err
 }
 
 type MailClient interface {
-	SendMail(context.Context, *db.User, string) error
+	SendMail(context.Context, *User, string) error
 }
 
 type SesMailClient struct {
@@ -50,16 +44,17 @@ func NewSesMailClient(ctx context.Context) *SesMailClient {
 	client := ses.NewFromConfig(cfg)
 	return &SesMailClient{
 		SesClient: client,
+		FromAddr:  "mail@pagemail.io",
 	}
 }
 
-func (c *SesMailClient) SendMail(ctx context.Context, user *db.User, body string) error {
-	log.Debug("Sending mail", logging.UserMail, user.Email)
+func (c *SesMailClient) SendMail(ctx context.Context, user *User, body string) error {
+	log.Debug("Sending mail", logging.UserMail, user.Email, "from", c.FromAddr)
 	out, err := c.SesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
 			ToAddresses: []string{user.Email},
 		},
-		Source: &c.FromAddr,
+		Source: aws.String(c.FromAddr),
 		Message: &types.Message{
 			Body: &types.Body{
 				Html: &types.Content{
@@ -72,7 +67,7 @@ func (c *SesMailClient) SendMail(ctx context.Context, user *db.User, body string
 				Charset: aws.String("UTF-8"),
 			},
 		},
-		ReplyToAddresses: []string{Sender},
+		ReplyToAddresses: []string{c.FromAddr},
 		Tags: []types.MessageTag{
 			{
 				Name:  aws.String("purpose"),

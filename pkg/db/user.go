@@ -1,7 +1,9 @@
 package db
 
 import (
+	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/mr55p-dev/pagemail/pkg/tools"
@@ -24,6 +26,11 @@ type User struct {
 func (user *User) LogValue() slog.Value {
 	vals := tools.LogValue(user)
 	return slog.GroupValue(vals...)
+}
+
+func (user *User) String() string {
+	vals := tools.PrintValue(user)
+	return fmt.Sprintf("User: { %s }\n", strings.Join(vals, ", "))
 }
 
 func NewUser(email, password string) *User {

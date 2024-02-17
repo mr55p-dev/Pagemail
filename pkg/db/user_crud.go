@@ -53,7 +53,7 @@ func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, e
 }
 
 func (client *Client) ReadUsersWithMail(c context.Context) (users []User, err error) {
-	err = client.db.Select(&users, `SELECT * FROM users`)
+	err = client.db.Select(&users, `SELECT * FROM users WHERE subscribed = true`)
 	if err != nil {
 		log.ErrContext(c, "Failed looking up user", err)
 		return
