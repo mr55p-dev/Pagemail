@@ -30,13 +30,8 @@ func init() {
 	log = logging.GetLogger("authorizer")
 }
 
-func NewSecureAuthorizer(ctx context.Context, client *db.Client) Authorizer {
-	users, err := client.ReadUserShortcutTokens(ctx)
-	if err != nil {
-		log.ErrContext(ctx, "Failed to load user tokens for authorizer", err)
-		panic(err.Error())
-	}
-	baseStore := LoadShortcutTokens(users)
+func NewSecureAuthorizer(ctx context.Context, shortcutTokens ...db.UserTokenPair) Authorizer {
+	baseStore := LoadShortcutTokens(shortcutTokens)
 	return &SecureAuthorizer{
 		store: baseStore,
 	}

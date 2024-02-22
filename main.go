@@ -327,7 +327,12 @@ func main() {
 	switch Env(cfg.Env) {
 	case ENV_PRD, ENV_STG:
 		log.Info("Using real auth")
-		authClient = auth.NewSecureAuthorizer(ctx, dbClient)
+		tokens, err := dbClient.ReadUserShortcutTokens(ctx)
+		if err != nil {
+			log.ErrContext(ctx, "Failed to load user tokens for authorizer", err)
+			panic(err.Error())
+		}
+		authClient = auth.NewSecureAuthorizer(ctx, tokens...)
 		mailClient = mail.NewSesMailClient(ctx)
 	default:
 		log.Info("Using test auth")
