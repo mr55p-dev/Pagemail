@@ -7,13 +7,35 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/mr55p-dev/pagemail/pkg/auth"
 	"github.com/mr55p-dev/pagemail/pkg/db"
 	"github.com/mr55p-dev/pagemail/pkg/mail"
 	"github.com/mr55p-dev/pagemail/pkg/tools"
 	"github.com/urfave/cli/v2"
 )
 
-var dbClient *db.Client
+var (
+	dbClient   *db.Client
+	authClient auth.Authorizer
+)
+
+func init() {
+	authClient = auth.NewSecureAuthorizer(context.TODO())
+}
+
+func GetUser(ctx *cli.Context) (user *db.User, err error) {
+	if id := ctx.String("user-id"); id != "" {
+		user, err = dbClient.ReadUserById(context.TODO(), id)
+	} else if email := ctx.String("user-email"); email != "" {
+		user, err = dbClient.ReadUserByEmail(context.TODO(), email)
+	} else {
+		return nil, fmt.Errorf("No user parameters given")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 
 func main() {
 	app := cli.App{
@@ -33,7 +55,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
-				Name: "get-user",
+				Name: "user",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name: "user-id",
@@ -41,33 +63,51 @@ func main() {
 					&cli.StringFlag{
 						Name: "user-email",
 					},
-					&cli.BoolFlag{
-						Name: "json",
-					},
 				},
-				Action: func(ctx *cli.Context) (err error) {
-					var user *db.User
-					if id := ctx.String("user-id"); id != "" {
-						user, err = dbClient.ReadUserById(context.TODO(), id)
-					} else if email := ctx.String("user-email"); email != "" {
-						user, err = dbClient.ReadUserByEmail(context.TODO(), email)
-					} else {
-						return fmt.Errorf("No user parameters given")
-					}
-					if err != nil {
-						return
-					}
-					if ctx.Bool("json") {
-						var data []byte
-						data, err = json.Marshal(user)
-						if err != nil {
+				Subcommands: []*cli.Command{
+					{
+						Name: "get",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name: "json",
+							},
+						},
+						Action: func(ctx *cli.Context) (err error) {
+							user, err := GetUser(ctx)
+							if err != nil {
+								return err
+							}
+							if ctx.Bool("json") {
+								var data []byte
+								data, err = json.Marshal(user)
+								if err != nil {
+									return
+								}
+								os.Stdout.Write(data)
+							} else {
+								fmt.Print(user)
+							}
 							return
-						}
-						os.Stdout.Write(data)
-					} else {
-						fmt.Print(user)
-					}
-					return
+						},
+					},
+					{
+						Name: "set-password",
+						Action: func(ctx *cli.Context) error {
+							user, err := GetUser(ctx)
+							if err != nil {
+								return err
+							}
+							password := ctx.Args().First()
+							if password == "" {
+								return fmt.Errorf("Password must be provided")
+							}
+							user.Password = authClient.GenPasswordHash(password)
+							return dbClient.UpdateUser(
+								context.TODO(),
+								user,
+							)
+						},
+					},
 				},
 			},
 			{
