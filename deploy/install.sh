@@ -29,18 +29,18 @@ fi
 
 # install service
 systemctl stop $svc
-cp $base/services/$svc.service /etc/systemd/system/$svc.service
+cp $base/deploy/services/$svc.service /etc/systemd/system/$svc.service
 chmod a+x /home/ec2-user/$env/pagemail/main
 systemctl daemon-reload
 
 # install test sites
 rm /var/www/testsites/*
-cp $base/test_pages/* /var/www/testsites
+cp $base/deploy/test_pages/* /var/www/testsites
 
 # install nginx configs
-for f in $(ls $base/nginx)
+for f in $(ls $base/deploy/nginx)
 do
-	cp $base/nginx/$f /etc/nginx/conf.d/$f
+	cp $base/deploy/nginx/$f /etc/nginx/conf.d/$f
 done
 
 # get ssl certificates
