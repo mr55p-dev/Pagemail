@@ -82,9 +82,22 @@ func TestGetEnvNameWithPrefix(t *testing.T) {
 
 func TestParseTag(t *testing.T) {
 	assert := assert.New(t)
-	key, path := parseConfigTag("path.segment.key")
-	assert.Equal("key", key)
-	assert.Equal([]string{"path", "segment"}, path)
+	config := "path.segment.key"
+	tag := parseConfigTag(config)
+	assert.Equal("key", tag.key)
+	assert.Equal([]string{"path", "segment"}, tag.path)
+	assert.Equal(config, tag.config)
+	assert.False(tag.options.optional)
+}
+
+func TestParseTagOptional(t *testing.T) {
+	assert := assert.New(t)
+	config := "path.segment.key,optional"
+	tag := parseConfigTag(config)
+	assert.Equal("key", tag.key)
+	assert.Equal([]string{"path", "segment"}, tag.path)
+	assert.Equal(config, tag.config)
+	assert.True(tag.options.optional)
 }
 
 type TestConfig struct {

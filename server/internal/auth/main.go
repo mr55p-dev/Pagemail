@@ -9,7 +9,6 @@ import (
 // maps tokens to user ids
 var SESS_COOKIE string = "pm-auth-tkn"
 var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-var log logging.Log
 
 type Authorizer interface {
 	ValCredentialsAgainstUser(email, password string, user *db.User) bool
@@ -23,10 +22,6 @@ type Authorizer interface {
 
 type SecureAuthorizer struct {
 	store map[string]string
-}
-
-func init() {
-	log = logging.GetLogger("authorizer")
 }
 
 func NewSecureAuthorizer(ctx context.Context, shortcutTokens ...db.UserTokenPair) Authorizer {
@@ -44,10 +39,8 @@ func LoadShortcutTokens(users []db.UserTokenPair) map[string]string {
 	return out
 }
 
-type TestAuthorizer struct {
-	userId string
-}
+type TestAuthorizer struct { }
 
 func NewTestAuthorizer(userId string) Authorizer {
-	return &TestAuthorizer{userId}
+	return &TestAuthorizer{}
 }

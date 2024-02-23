@@ -15,12 +15,11 @@ func (*TestAuthorizer) GenPasswordHash(pass string) string {
 }
 
 func (a *TestAuthorizer) GenSessionToken(user *db.User) string {
-	a.userId = user.Id
 	return "PM_SESSION_TOKEN"
 }
 
 func (a *TestAuthorizer) ValSessionToken(token string) (userId string) {
-	return a.userId
+	return "123"
 }
 
 func (a *TestAuthorizer) RevokeSessionToken(token string) (ok bool) {

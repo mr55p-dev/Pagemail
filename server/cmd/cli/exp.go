@@ -9,6 +9,7 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/urfave/cli/v2"
@@ -38,6 +39,7 @@ func GetUser(ctx *cli.Context) (user *db.User, err error) {
 }
 
 func main() {
+	log := logging.NewVoid()
 	app := cli.App{
 		Name:        "pmtk",
 		Description: "Toolkit for pagemail services and debugging",
@@ -48,7 +50,7 @@ func main() {
 				EnvVars:  []string{"PM_DB_PATH"},
 				Required: true,
 				Action: func(ctx *cli.Context, p cli.Path) error {
-					dbClient = db.NewClient(p)
+					dbClient = db.NewClient(p, log)
 					return nil
 				},
 			},
