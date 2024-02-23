@@ -298,9 +298,9 @@ func (r *Router) GetShortcutToken(c echo.Context) error {
 }
 
 type AppConfig struct {
-	Environment string `config:"env"`
-	LogLevel    string `config:"log-level"`
-	TestUser    string `config:"test.user-id,optional"`
+	Environment string `config:"app.environment"`
+	LogLevel    string `config:"app.log-level"`
+	DBPath      string `config:"db.path"`
 }
 
 func main() {
