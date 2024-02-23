@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
-	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/robfig/cron/v3"
 	"github.com/swaggo/echo-swagger"
 )
@@ -54,7 +52,9 @@ func main() {
 		Level:     slog.LevelDebug,
 		AddSource: true,
 	})
-	baseLog := slog.New(handler)
+	baseLog := logging.Logger{
+		Logger: slog.New(handler),
+	}
 	log := baseLog.With("module", "main")
 
 	cfg := new(AppConfig)
@@ -64,7 +64,7 @@ func main() {
 		configLoader.FileLoader("config.yaml", true),
 	)
 	if err != nil {
-		logging.Error(log, err)
+		log.Error("failed to load config", err)
 	}
 
 	e := echo.New()
@@ -72,12 +72,12 @@ func main() {
 	e.HidePort = true
 
 	ctx := context.Background()
-	dbClient := db.NewClient()
+	dbClient := db.NewClient(cfg.DBPath, baseLog.Module("db"))
 	defer dbClient.Close()
 
 	var mailClient mail.MailClient
 	var authClient auth.Authorizer
-	switch Env(cfg.Env) {
+	switch Env(cfg.Environment) {
 	case ENV_PRD, ENV_STG:
 		tokens, err := dbClient.ReadUserShortcutTokens(ctx)
 		if err != nil {
