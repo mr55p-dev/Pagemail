@@ -1,7 +1,8 @@
 ---
-env: dev
-mode: local
-dbpath: ./db/pagemail.sqlite3
-port: 8080
-testuser:
-loglevel: DEBUG
+app:
+  environment: dev
+  log-level: DEBUG
+  host: 127.0.0.1
+  port: 8080
+db:
+  path: ./db/pagemail.sqlite3

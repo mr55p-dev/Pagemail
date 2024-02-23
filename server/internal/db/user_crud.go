@@ -9,14 +9,14 @@ import (
 )
 
 func (client *Client) CreateUser(c context.Context, u *User) error {
-	res, err := client.db.NamedExec(`
+	_, err := client.db.NamedExec(`
 		INSERT INTO users 
 		VALUES (:id, :username, :email, :password, :name, :avatar, :subscribed, :shortcut_token, :has_readability, :created, :updated)`,
 		u,
 	)
 
 	if err != nil {
-		log.ErrContext(c, "Failed creating user", err, logging.UserId, u.Id)
+		client.log.Errc(c, "Failed creating user", err)
 		sqlErr := err.(sqlite3.Error)
 		switch sqlErr.Code {
 		case sqlite3.ErrNo(sqlite3.ErrConstraintUnique), sqlite3.ErrNo(sqlite3.ErrConstraint):
@@ -24,8 +24,7 @@ func (client *Client) CreateUser(c context.Context, u *User) error {
 		}
 		return err
 	}
-	rows, _ := res.RowsAffected()
-	log.DebugContext(c, "Created user", logging.User, u, logging.Rows, rows)
+	client.log.DebugContext(c, "Created user")
 	return nil
 }
 
@@ -33,10 +32,10 @@ func (client *Client) ReadUserById(c context.Context, id string) (*User, error) 
 	user := new(User)
 	err := client.db.Get(user, `SELECT * FROM users WHERE id = ?`, id)
 	if err != nil {
-		log.ErrContext(c, "Failed to read user", err, logging.UserId, id)
+		client.log.Errc(c, "Failed to read user", err)
 		return nil, err
 	}
-	log.DebugContext(c, "Found user", logging.User, user)
+	client.log.DebugContext(c, "Found user")
 	return user, nil
 }
 
@@ -44,20 +43,20 @@ func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, e
 	user := new(User)
 	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE email = ?`, email)
 	if err != nil {
-		log.ErrContext(c, "Failed to read user", err, logging.UserMail, email)
+		client.log.Errc(c, "Failed to read user", err)
 		return nil, err
 	}
-	log.DebugContext(c, "Found user", logging.User, user)
+	client.log.DebugContext(c, "Found user")
 	return user, nil
 }
 
 func (client *Client) ReadUsersWithMail(c context.Context) (users []User, err error) {
 	err = client.db.Select(&users, `SELECT * FROM users WHERE subscribed = true`)
 	if err != nil {
-		log.ErrContext(c, "Failed looking up user", err)
+		client.log.Errc(c, "Failed looking up user", err)
 		return
 	}
-	log.DebugContext(c, "Found users", "count", len(users))
+	client.log.DebugContext(c, "Found users", "count", len(users))
 	return
 }
 
@@ -69,9 +68,9 @@ type UserTokenPair struct {
 func (client *Client) ReadUserShortcutTokens(c context.Context) (out []UserTokenPair, err error) {
 	err = client.db.Select(&out, `SELECT id, shortcut_token FROM users WHERE shortcut_token IS NOT NULL`)
 	if err != nil {
-		log.ErrContext(c, "Failed looking up users by token", err)
+		client.log.Errc(c, "Failed looking up users by token", err)
 	}
-	log.InfoContext(c, "Found users with tokens", logging.Rows, len(out))
+	client.log.InfoContext(c, "Found users with tokens")
 	return
 }
 
@@ -92,9 +91,9 @@ func (client *Client) UpdateUser(c context.Context, user *User) error {
 		WHERE id = :id
 	`, user)
 	if err != nil {
-		log.ErrContext(c, "Failed updating user", err, logging.User, user)
+		client.log.Errc(c, "Failed updating user", err)
 		return err
 	}
-	log.InfoContext(c, "Updated user", logging.User, user)
+	client.log.InfoContext(c, "Updated user")
 	return nil
 }
