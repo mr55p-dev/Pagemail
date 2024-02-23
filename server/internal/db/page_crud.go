@@ -56,16 +56,6 @@ func (client *Client) UpsertPage(c context.Context, p *Page) error {
 		p.Description, p.ImageUrl, p.ReadabilityStatus,
 		p.ReadabilityTaskData, p.IsReadable, p.Created, p.Updated,
 	)
-	if err == nil {
-		listener, ok := PageEventMap[p.UserId]
-		if ok {
-			listener <- Event[Page]{
-				Event:  EventType("Update"),
-				Record: p,
-			}
-		} else {
-		}
-	}
 	return err
 }
 

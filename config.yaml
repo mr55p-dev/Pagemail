@@ -1,6 +1,0 @@
----
-app:
-  environment: dev
-  log-level: DEBUG
-db:
-  path: ./db/pagemail.sqlite3
