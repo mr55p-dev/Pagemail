@@ -105,12 +105,12 @@ func main() {
 	protected := middlewares.GetProtectedMiddleware(authClient, dbClient, true)
 	shortcut := middlewares.GetShortcutProtected(authClient, dbClient)
 
-	switch Mode() {
-	case MODE_RELEASE:
+	switch Env(cfg.Environment) {
+	case ENV_STG, ENV_PRD:
 		fs := echo.MustSubFS(assets.FS, "public")
 		e.StaticFS("/assets", fs)
 	default:
-		e.Static("/assets", "public")
+		e.Static("/assets", "server/internal/assets/public")
 	}
 
 	e.GET("/", s.GetRoot, tryLoadUser)
