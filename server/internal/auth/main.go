@@ -41,6 +41,6 @@ func LoadShortcutTokens(users []db.UserTokenPair) map[string]string {
 
 type TestAuthorizer struct { }
 
-func NewTestAuthorizer(userId string) Authorizer {
+func NewTestAuthorizer() Authorizer {
 	return &TestAuthorizer{}
 }
