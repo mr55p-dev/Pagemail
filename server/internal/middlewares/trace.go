@@ -7,7 +7,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-func TraceMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (p *Provider) TraceMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id := tools.GenerateNewId(10)
 		ctx := context.WithValue(c.Request().Context(), "trace-id", id)

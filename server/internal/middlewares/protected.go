@@ -6,9 +6,20 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 )
 
-func GetShortcutProtected(authClient auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
+type Provider struct {
+	log *logging.Logger
+}
+
+func New(log *logging.Logger) *Provider {
+	return &Provider{
+		log: log,
+	}
+}
+
+func (p *Provider) GetShortcutProtected(authClient auth.Authorizer, dbClient *db.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token := c.Request().Header.Get("Authorization")
@@ -27,12 +38,12 @@ func GetShortcutProtected(authClient auth.Authorizer, dbClient *db.Client) echo.
 	}
 }
 
-func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, block bool) echo.MiddlewareFunc {
+func (p *Provider) GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, block bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			cookie, err := c.Cookie(auth.SESS_COOKIE)
 			if err != nil || cookie == nil {
-				log.ReqErr(c, "Request blocked, no auth token", err)
+				p.log.Errc(c.Request().Context(), "Request blocked, no auth token", err)
 				if block {
 					return c.NoContent(http.StatusUnauthorized)
 				} else {
@@ -43,7 +54,7 @@ func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, blo
 
 			uid := authClient.ValSessionToken(cookie.Value)
 			if uid == "" {
-				log.ReqError(c, "Request blocked, session not valid")
+				p.log.ErrorContext(c.Request().Context(), "Request blocked, session not valid")
 				if block {
 					c.Response().Header().Add("HX-Location", "/login")
 					return c.NoContent(http.StatusUnauthorized)
@@ -55,7 +66,7 @@ func GetProtectedMiddleware(authClient auth.Authorizer, dbClient *db.Client, blo
 
 			user, err := dbClient.ReadUserById(c.Request().Context(), uid)
 			if err != nil {
-				log.ReqErr(c, "Error, could not read user", err, logging.UserId, uid)
+				p.log.Errc(c.Request().Context(), "Error, could not read user", err)
 				if block {
 					return c.NoContent(http.StatusInternalServerError)
 				} else {

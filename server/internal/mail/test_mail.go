@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 )
 
 func mapDbUser(u *db.User) User {
@@ -16,8 +17,9 @@ func mapDbUser(u *db.User) User {
 }
 
 func sendTestEmail() {
-	dbClient := db.NewClient("db/test.sqlite3")
-	mailClient := NewSesMailClient(context.Background())
+	log := logging.NewVoid()
+	dbClient := db.NewClient("db/test.sqlite3", log)
+	mailClient := NewSesMailClient(context.Background(), log)
 	user, _ := dbClient.ReadUserById(context.Background(), "iy17XbjTy7")
 	log.Info("Got user", "user", user)
 	u := mapDbUser(user)
@@ -25,7 +27,7 @@ func sendTestEmail() {
 	since := Yesterday()
 	msg, err := GenerateMailBody(context.Background(), &u, pages, since)
 	os.WriteFile("html", msg, 0o777)
-	err = mailClient.SendMail(context.Background(), &u, string(msg))
+	err = mailClient.SendMail(context.Background(), log, &u, string(msg))
 	if err != nil {
 		log.Err("Error sending", err)
 	} else {
@@ -35,9 +37,10 @@ func sendTestEmail() {
 }
 
 func testUserGeneration() {
-	dbClient := db.NewClient("db/test.sqlite3")
+	log := logging.NewVoid()
+	dbClient := db.NewClient("db/test.sqlite3", log)
 	mailClient := new(TestClient)
-	err := DoDigestJob(context.Background(), dbClient, mailClient)
+	err := DoDigestJob(context.Background(), log, dbClient, mailClient)
 	if err != nil {
 		log.Err("Error sending", err)
 	} else {
