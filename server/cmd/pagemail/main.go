@@ -84,7 +84,7 @@ func main() {
 			panic(err.Error())
 		}
 		authClient = auth.NewSecureAuthorizer(ctx, tokens...)
-		mailClient = mail.NewSesMailClient(ctx)
+		mailClient = mail.NewSesMailClient(ctx, baseLog.Module("mail"))
 	default:
 		authClient = auth.NewTestAuthorizer()
 		mailClient = &mail.TestClient{}
@@ -96,6 +96,7 @@ func main() {
 		MailClient: mailClient,
 	}
 
+	middlewares := middlewares.New(baseLog.Module("middleware"))
 	e.Use(middlewares.TraceMiddleware)
 	e.Use(middlewares.GetLoggingMiddleware)
 	if authClient == nil {
@@ -136,13 +137,14 @@ func main() {
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
+	mailLog := baseLog.Module("mail")
 	cr := cron.New()
 	cr.AddFunc(
 		"0 7 * * *",
 		func() {
 			ctx, cancel := context.WithTimeout(ctx, 20*time.Minute)
 			defer cancel()
-			mail.DoDigestJob(ctx, dbClient, mailClient)
+			mail.DoDigestJob(ctx, mailLog, dbClient, mailClient)
 		},
 	)
 

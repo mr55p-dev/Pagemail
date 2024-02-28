@@ -127,13 +127,14 @@ func main() {
 						Action: func(ctx *cli.Context) error {
 							var mailClient mail.MailClient
 							if ctx.Bool("real-client") {
-								mailClient = mail.NewSesMailClient(context.TODO())
+								mailClient = mail.NewSesMailClient(context.TODO(), log)
 							} else {
 								mailClient = &mail.TestClient{}
 							}
 							slog.Info("Starting to send mail")
 							mail.DoDigestJob(
 								context.TODO(),
+								log,
 								dbClient,
 								mailClient,
 							)
@@ -159,6 +160,7 @@ func main() {
 							}
 							msg, err := mail.GetEmailForUser(
 								context.TODO(),
+								log,
 								dbClient,
 								mail.User{
 									Id:    id,

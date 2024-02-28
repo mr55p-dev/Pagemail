@@ -4,11 +4,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetLoggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	log := logging.GetLogger("requestLogger")
+func (p *Provider) GetLoggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// log the request
-		log.With(
+		p.log.With(
 			"method", c.Request().Method,
 			"uri", c.Request().URL.Path,
 			"query", c.Request().URL.RawQuery,
@@ -17,7 +16,7 @@ func GetLoggingMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		// call the next middleware/handler
 		err := next(c)
 		if err != nil {
-			log.With("error", err.Error()).Error("Response")
+			p.log.With("error", err.Error()).Error("Response")
 			return err
 		}
 

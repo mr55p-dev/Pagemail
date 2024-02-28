@@ -11,14 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 
 	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
-
-var log logging.Log
-
-func init() {
-	log = logging.GetLogger("mail")
-}
 
 func GenerateMailBody(ctx context.Context, user *User, pages []db.Page, since time.Time) ([]byte, error) {
 	dest := new(bytes.Buffer)
@@ -27,29 +22,31 @@ func GenerateMailBody(ctx context.Context, user *User, pages []db.Page, since ti
 }
 
 type MailClient interface {
-	SendMail(context.Context, *User, string) error
+	SendMail(context.Context, *logging.Logger, *User, string) error
 }
 
 type SesMailClient struct {
 	FromAddr  string
 	SesClient *ses.Client
+	log       *logging.Logger
 }
 
-func NewSesMailClient(ctx context.Context) *SesMailClient {
+func NewSesMailClient(ctx context.Context, log *logging.Logger) *SesMailClient {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		panic(err.Error())
 	}
 	client := ses.NewFromConfig(cfg)
 	return &SesMailClient{
+		log:       log,
 		SesClient: client,
 		FromAddr:  "mail@pagemail.io",
 	}
 }
 
-func (c *SesMailClient) SendMail(ctx context.Context, user *User, body string) error {
-	log.Debug("Sending mail", logging.UserMail, user.Email, "from", c.FromAddr)
-	out, err := c.SesClient.SendEmail(ctx, &ses.SendEmailInput{
+func (c *SesMailClient) SendMail(ctx context.Context, log *logging.Logger, user *User, body string) error {
+	c.log.DebugContext(ctx, "Sending mail")
+	_, err := c.SesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
 			ToAddresses: []string{user.Email},
 		},
@@ -75,9 +72,9 @@ func (c *SesMailClient) SendMail(ctx context.Context, user *User, body string) e
 		},
 	})
 	if err != nil {
-		log.ErrorContext(ctx, "Error sending mail", logging.Error, err.Error())
+		c.log.Errc(ctx, "Error sending mail", err)
 		return err
 	}
-	log.InfoContext(ctx, "Sent mail", logging.UserMail, user.Email, "message-id", out.MessageId)
+	c.log.InfoContext(ctx, "Sent mail")
 	return nil
 }
