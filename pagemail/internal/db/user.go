@@ -19,6 +19,7 @@ type User struct {
 	Subscribed     bool       `db:"subscribed" log:"subscribed" json:"subscribed"`
 	ShortcutToken  string     `db:"shortcut_token" log:"shortcut_token" json:"shortcut_token"`
 	HasReadability bool       `db:"has_readability" log:"has_readability" json:"has_readability"`
+	Scopes         string     `db:"scopes" log:"scopes" json:"-"`
 	Created        *time.Time `db:"created" log:"created" json:"created"`
 	Updated        *time.Time `db:"updated" log:"updated" json:"updated"`
 }

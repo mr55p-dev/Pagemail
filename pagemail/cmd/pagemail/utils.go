@@ -22,8 +22,8 @@ func LoadUser(c echo.Context) *db.User {
 	return user
 }
 
-func SetLoginCookie(c echo.Context, val string) {
-	c.SetCookie(&http.Cookie{
+func GetLoginCookie(val string) http.Cookie {
+	return http.Cookie{
 		Name:     auth.SESS_COOKIE,
 		Value:    val,
 		Path:     "/",
@@ -31,7 +31,7 @@ func SetLoginCookie(c echo.Context, val string) {
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
-	})
+	}
 }
 
 func IsHtmx(c echo.Context) bool {

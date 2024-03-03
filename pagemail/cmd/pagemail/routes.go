@@ -7,158 +7,162 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/a-h/templ"
+	"github.com/mr55p-dev/go-httpit"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
 
-func (Router) GetRoot(c echo.Context) error {
-	var user *db.User
-	if u := c.Get("user"); u != nil {
-		user = u.(*db.User)
-	}
-	return render.ReturnRender(c, render.Index(user))
+func (Router) GetRoot(ctx httpit.Context) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	return render.Index(user), nil
 }
 
-func (Router) GetLogin(c echo.Context) error {
-	return render.ReturnRender(c, render.Login())
+func (Router) GetLogin(ctx httpit.Context) (templ.Component, error) {
+	return render.Login(), nil
 }
 
-func (r *Router) PostLogin(c echo.Context) error {
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-	user, err := r.DBClient.ReadUserByEmail(c.Request().Context(), email)
-	if err != nil {
-		return MakeErrorResponse(
-			c, http.StatusInternalServerError, err,
-		)
-	}
+type PostLoginRequest struct {
+	email    string `form:"email"`
+	password string `form:"password"`
+}
 
-	if !r.Authorizer.ValCredentialsAgainstUser(email, password, user) {
-		return MakeErrorResponse(c, http.StatusUnauthorized, err)
+func (r *Router) PostLogin(ctx httpit.Context, req *PostLoginRequest) error {
+	user, err := r.DBClient.ReadUserByEmail(ctx, req.email)
+
+	if !r.Authorizer.ValCredentialsAgainstUser(req.email, req.password, user) {
+		return httpit.Error(err.Error(), http.StatusUnauthorized)
 	}
 
 	sess := r.Authorizer.GenSessionToken(user)
+	cookie := GetLoginCookie(sess)
 
-	SetRedirect(c, "/dashboard")
-	SetLoginCookie(c, sess)
-	return c.NoContent(http.StatusOK)
+	ctx.SetRedirect("/dashboard")
+	ctx.SetCookie(cookie)
+	return nil
 }
 
-func (Router) GetSignup(c echo.Context) error {
-	return render.ReturnRender(c, render.Signup())
+func (Router) GetSignup(ctx httpit.Context) (templ.Component, error) {
+	return render.Signup(), nil
 }
 
-func (r *Router) PostSignup(c echo.Context) error {
+type PostSignupRequest struct {
+	username       string `form:"username"`
+	email          string `form:"email"`
+	password       string `form:"password"`
+	passwordRepeat string `form:"password-repeat"`
+}
+
+func (r *Router) PostSignup(ctx httpit.Context, req *PostSignupRequest) error {
 	// Read the form requests
-	username := c.FormValue("username")
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-	passwordRepeat := c.FormValue("password-repeat")
-	if password != passwordRepeat {
-		return c.String(http.StatusBadRequest, "Passwords do not match")
+	if req.password != req.passwordRepeat {
+		return httpit.Error("Passwords do not match", http.StatusBadRequest)
 	}
 
 	// Generate a new user
-	user := db.NewUser(email, r.Authorizer.GenPasswordHash(password))
-	user.Username = username
-	err := r.DBClient.CreateUser(c.Request().Context(), user)
+	user := db.NewUser(req.email, r.Authorizer.GenPasswordHash(req.password))
+	user.Username = req.username
+	err := r.DBClient.CreateUser(ctx, user)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "Something went wrong")
+		return httpit.Error("Something went wrong", http.StatusBadRequest)
 	}
 
 	// Generate a token for the user from the session manager
 	token := r.Authorizer.GenSessionToken(user)
+	cookie := GetLoginCookie(token)
 
-	SetRedirect(c, "/dashboard")
-	SetLoginCookie(c, token)
-	return c.NoContent(http.StatusOK)
+	ctx.SetRedirect("/dashboard")
+	ctx.SetCookie(cookie)
+	return nil
 }
 
-func (Router) GetLogout(c echo.Context) error {
-	c.SetCookie(&http.Cookie{
+func (Router) GetLogout(ctx httpit.Context) error {
+	cookie := http.Cookie{
 		Name:   auth.SESS_COOKIE,
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,
-	})
-	SetRedirect(c, "/")
-	return c.NoContent(http.StatusOK)
+	}
+	ctx.SetCookie(cookie)
+	ctx.SetRedirect("/")
+	return nil
 }
 
-func (r *Router) GetDashboard(c echo.Context) error {
-	user := LoadUser(c)
-	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id, 1)
+func (r *Router) GetDashboard(ctx httpit.Context) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	pages, err := r.DBClient.ReadPagesByUserId(ctx, user.Id, 1)
 	if err != nil {
-		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+		return nil, httpit.Error(err.Error(), http.StatusInternalServerError)
 	}
 
-	return render.ReturnRender(c, render.Dashboard(user, pages))
+	return render.Dashboard(user, pages), nil
 }
 
-func (r *Router) GetPages(c echo.Context) error {
-	user := LoadUser(c)
-	page, err := strconv.Atoi(c.QueryParam("p"))
-	if err != nil {
-		return MakeErrorResponse(c, http.StatusBadRequest, err)
-	}
-
-	pages, err := r.DBClient.ReadPagesByUserId(c.Request().Context(), user.Id, page)
-	if err != nil {
-		return MakeErrorResponse(c, http.StatusInternalServerError, err)
-	}
-	return render.ReturnRender(c, render.PageList(pages, page))
+type GetPagesRequest struct {
+	Page string `query:"p"`
 }
 
-func (r *Router) DeletePages(c echo.Context) error {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return c.NoContent(http.StatusInternalServerError)
+func (r *Router) GetPages(ctx httpit.Context, req *GetPagesRequest) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	page, err := strconv.Atoi(req.Page)
+	if err != nil {
+		return nil, httpit.Error(err.Error(), http.StatusBadRequest)
 	}
 
-	n, err := r.DBClient.DeletePagesByUserId(c.Request().Context(), user.Id)
+	pages, err := r.DBClient.ReadPagesByUserId(ctx, user.Id, page)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return nil, httpit.Error(err.Error(), http.StatusInternalServerError)
 	}
-	return render.ReturnRender(c, render.SavePageSuccess(fmt.Sprintf("Deleted %d records", n)))
+	return render.PageList(pages, page), nil
+}
+
+func (r *Router) DeletePages(ctx httpit.Context) (templ.Component, error) {
+	user := db.GetUser(ctx)
+
+	n, err := r.DBClient.DeletePagesByUserId(ctx, user.Id)
+	if err != nil {
+		return nil, httpit.Error(err.Error(), http.StatusInternalServerError)
+	}
+	return render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), nil
 
 }
 
-func (r *Router) GetPage(c echo.Context) error {
-	user := LoadUser(c)
-	pageId := c.Param("page_id")
-	page, err := r.DBClient.ReadPage(c.Request().Context(), pageId)
+type GetPageRequest struct {
+	PageId string `param:"page_id"`
+}
+
+func (r *Router) GetPage(ctx httpit.Context, req *GetPageRequest) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	page, err := r.DBClient.ReadPage(ctx, req.PageId)
 	if err != nil {
-		c.Logger().Error(err.Error())
-		return c.String(http.StatusInternalServerError, "Failed to get page id")
+		return nil, httpit.Error("Failed to get page id", http.StatusInternalServerError)
 	}
 	if page.UserId != user.Id {
-		return c.NoContent(http.StatusForbidden)
+		return nil, httpit.Error("Not found", http.StatusNotFound)
 	}
-	err = r.DBClient.DeletePage(c.Request().Context(), pageId)
+	err = r.DBClient.DeletePage(ctx, req.PageId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return nil, httpit.Error(err.Error(), http.StatusInternalServerError)
 	}
-	return render.ReturnRender(c, render.PageCard(page))
+	return render.PageCard(page), nil
 }
 
-func (r *Router) PostPage(c echo.Context) error {
+type PostPageRequest struct {
+	Url string `form:"url"`
+}
 
-	user, ok := c.Get("user").(*db.User)
-	if !ok || user == nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	url := c.FormValue("url")
+func (r *Router) PostPage(ctx httpit.Context, req *PostPageRequest) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	url := req.Url
 	if url == "" {
-		return render.ReturnRender(c, render.SavePageError("URL field must be present"))
+		return render.SavePageError("URL field must be present"), nil
 	}
 
 	page := db.NewPage(user.Id, url)
-	if err := r.DBClient.CreatePage(c.Request().Context(), page); err != nil {
-		return render.ReturnRender(c, render.SavePageError(err.Error()))
+	if err := r.DBClient.CreatePage(ctx, page); err != nil {
+		return render.SavePageError(err.Error()), nil
 	}
 
 	go func(cli *db.Client) {
@@ -174,58 +178,54 @@ func (r *Router) PostPage(c echo.Context) error {
 		}
 	}(r.DBClient)
 
-	if IsHtmx(c) {
-		return render.ReturnRender(c, render.PageCard(page))
-	} else {
-		return c.String(http.StatusOK, fmt.Sprintf("Added %s succesfully", url))
-	}
+	return render.PageCard(page), nil
 }
 
-func (r *Router) DeletePage(c echo.Context) error {
-	user := LoadUser(c)
-	id := c.Param("page_id")
-	page, err := r.DBClient.ReadPage(c.Request().Context(), id)
+type DeletePageRequest struct {
+	PageId string `query:"page_id"`
+}
+
+func (r *Router) DeletePage(ctx httpit.Context, req *DeletePageRequest) error {
+	user := db.GetUser(ctx)
+	page, err := r.DBClient.ReadPage(ctx, req.PageId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "Something went wrong")
+		return httpit.Error("Something went wrong", http.StatusInternalServerError)
 	}
 
 	if !r.Authorizer.ValUserAgainstPage(user, page) {
-		return c.String(http.StatusForbidden, "Permission denied")
+		return httpit.Error("Permission denied", http.StatusForbidden)
 	}
 
-	r.DBClient.DeletePage(c.Request().Context(), page.Id)
+	r.DBClient.DeletePage(ctx, page.Id)
 
-	return c.NoContent(http.StatusOK)
+	return nil
 }
 
-func (r *Router) GetAccountPage(c echo.Context) error {
-	user := LoadUser(c)
-	return render.ReturnRender(c, render.AccountPage(user))
+func (r *Router) GetAccountPage(ctx httpit.Context) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	return render.AccountPage(user), nil
 }
 
-func (r *Router) PutAccount(c echo.Context) error {
-	user := LoadUser(c)
-	form := new(AccountForm)
-	err := c.Bind(form)
-	if err != nil {
-		return MakeErrorResponse(c, http.StatusBadRequest, err)
-	}
+func (r *Router) PutAccount(ctx httpit.Context) (templ.Component, error) {
+	user := db.GetUser(ctx)
+	form := new(AccountData)
 	user.Subscribed = form.Subscribed == "on"
-	err = r.DBClient.UpdateUser(c.Request().Context(), user)
+	err := r.DBClient.UpdateUser(ctx, user)
 	if err != nil {
-		return MakeErrorResponse(c, http.StatusInternalServerError, err)
+		return nil, httpit.Error(err.Error(), http.StatusInternalServerError)
 	}
 
-	return c.String(http.StatusOK, "Success!")
+	return templ.NopComponent, nil
 }
 
-func (r *Router) GetShortcutToken(c echo.Context) error {
-	user := LoadUser(c)
+func (r *Router) GetShortcutToken(ctx httpit.Context) error {
+	user := db.GetUser(ctx)
 	token := r.Authorizer.GenShortcutToken(user)
 	user.ShortcutToken = token
-	err := r.DBClient.UpdateUser(c.Request().Context(), user)
+	err := r.DBClient.UpdateUser(ctx, user)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return httpit.Error(err.Error(), http.StatusInternalServerError)
 	}
-	return c.String(http.StatusOK, token)
+	// return c.String(http.StatusOK, token)
+	return nil
 }

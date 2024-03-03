@@ -39,6 +39,17 @@ func (client *Client) ReadUserById(c context.Context, id string) (*User, error) 
 	return user, nil
 }
 
+func (client *Client) ReadUserByShortcutToken(c context.Context, token string) (*User, error) {
+	user := new(User)
+	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE shortcut_token = ?`, token)
+	if err != nil {
+		client.log.Errc(c, "Failed to read user", err)
+		return nil, err
+	}
+	client.log.DebugContext(c, "Found user")
+	return user, nil
+}
+
 func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, error) {
 	user := new(User)
 	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE email = ?`, email)
