@@ -3,20 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
-	"github.com/labstack/echo/v4"
 	configLoader "github.com/mr55p-dev/config-loader"
+	"github.com/mr55p-dev/go-httpit"
+	httpItMiddlewares "github.com/mr55p-dev/go-httpit/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
+	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/robfig/cron/v3"
-	"github.com/swaggo/echo-swagger"
 )
 
 type Env string
@@ -43,7 +46,7 @@ type Router struct {
 	MailClient mail.MailClient
 }
 
-type AccountForm struct {
+type AccountData struct {
 	Subscribed string `form:"email-list"`
 }
 
@@ -67,9 +70,10 @@ func main() {
 		log.Error("failed to load config", err)
 	}
 
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
+	httpit.UseGlobal(
+		httpItMiddlewares.Recover,
+		httpItMiddlewares.RequestLogger(baseLog.With("module", "request logger")),
+	)
 
 	ctx := context.Background()
 	dbClient := db.NewClient(cfg.DBPath, baseLog.Module("db"))
@@ -96,46 +100,50 @@ func main() {
 		MailClient: mailClient,
 	}
 
-	middlewares := middlewares.New(baseLog.Module("middleware"))
-	e.Use(middlewares.TraceMiddleware)
-	e.Use(middlewares.GetLoggingMiddleware)
+	httpit.UseGlobal(
+		httpItMiddlewares.Trace(func() string {
+			return tools.GenerateNewId(10)
+		}),
+	)
 	if authClient == nil {
 		panic("nil auth client")
 	}
-	tryLoadUser := middlewares.GetProtectedMiddleware(authClient, dbClient, false)
-	protected := middlewares.GetProtectedMiddleware(authClient, dbClient, true)
-	shortcut := middlewares.GetShortcutProtected(authClient, dbClient)
+
+	protector := middlewares.NewProtector(authClient, dbClient, baseLog.Module("protection middleware"))
+	httpit.UseGlobal(protector.LoadUser)
+	mux := http.NewServeMux()
 
 	switch Env(cfg.Environment) {
 	case ENV_STG, ENV_PRD:
-		fs := echo.MustSubFS(assets.FS, "public")
-		e.StaticFS("/assets", fs)
+		subdir, err := fs.Sub(assets.FS, "public")
+		if err != nil {
+			panic(err)
+		}
+		mux.Handle("GET /assets", http.FileServerFS(subdir))
 	default:
-		e.Static("/assets", "server/internal/assets/public")
+		mux.Handle("GET /assets", http.FileServer(http.Dir("server/internal/assets/public")))
 	}
 
-	e.GET("/", s.GetRoot, tryLoadUser)
+	mux.HandleFunc("GET /", httpit.NewTemplHandler(s.GetRoot))
 
-	e.GET("/login", s.GetLogin)
-	e.POST("/login", s.PostLogin)
-	e.GET("/signup", s.GetSignup)
-	e.POST("/signup", s.PostSignup)
-	e.GET("/logout", s.GetLogout, protected)
+	mux.HandleFunc("GET /login", httpit.NewTemplHandler(s.GetLogin))
+	mux.HandleFunc("POST /login", httpit.NewInHandler(s.PostLogin))
+	mux.HandleFunc("GET /signup", httpit.NewTemplHandler(s.GetSignup))
+	mux.HandleFunc("POST /signup", httpit.NewInHandler(s.PostSignup))
+	mux.HandleFunc("GET /logout", httpit.NewHandler(s.GetLogout, protector.ProtectRoute()))
 
-	e.GET("/dashboard", s.GetDashboard, protected)
-	e.GET("/pages", s.GetPages, protected)
-	e.DELETE("/pages", s.DeletePages, protected)
-	e.GET("/page/:page_id", s.GetPage, protected)
-	e.DELETE("/page/:page_id", s.DeletePage, protected)
-	e.POST("/page", s.PostPage, protected)
+	mux.HandleFunc("GET /dashboard", httpit.NewTemplHandler(s.GetDashboard, protector.ProtectRoute()))
+	mux.HandleFunc("GET /pages", httpit.NewTemplMappedHandler(s.GetPages, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /pages", httpit.NewTemplHandler(s.DeletePages, protector.ProtectRoute()))
+	mux.HandleFunc("GET /page/:page_id", httpit.NewTemplMappedHandler(s.GetPage, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /page/:page_id", httpit.NewInHandler(s.DeletePage, protector.ProtectRoute()))
+	mux.HandleFunc("POST /page", httpit.NewTemplMappedHandler(s.PostPage, protector.ProtectRoute()))
 
-	e.GET("/account", s.GetAccountPage, protected)
-	e.PUT("/account", s.PutAccount, protected)
+	mux.HandleFunc("GET /account", httpit.NewTemplHandler(s.GetAccountPage, protector.ProtectRoute()))
+	mux.HandleFunc("PUT /account", httpit.NewTemplHandler(s.PutAccount, protector.ProtectRoute()))
 
-	e.GET("/shortcut-token", s.GetShortcutToken, protected)
-	e.POST("/shortcut/page", s.PostPage, shortcut)
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	mux.HandleFunc("GET /shortcut-token", httpit.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
+	mux.HandleFunc("POST /shortcut/page", httpit.NewTemplMappedHandler(s.PostPage, protector.LoadFromShortcut()))
 
 	mailLog := baseLog.Module("mail")
 	cr := cron.New()
@@ -148,6 +156,7 @@ func main() {
 		},
 	)
 
-	if err := e.Start(fmt.Sprintf("127.0.0.1:%s", "8080")); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf("127.0.0.1:%s", "8080"), mux); err != nil {
+		panic(err)
 	}
 }

@@ -1,11 +1,11 @@
-root = "server"
+root = "pagemail"
 testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
   args_bin = []
   bin = "tmp/pagemail"
-  cmd = "go build -o tmp/pagemail ./server/cmd/pagemail"
+  cmd = "go build -o tmp/pagemail ./pagemail/cmd/pagemail"
   delay = 0
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
