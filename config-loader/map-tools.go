@@ -4,29 +4,29 @@ import (
 	"fmt"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
-func traverseMap[T any](target map[string]any, key string, segments ...string) (T, error) {
+func traverseMap[T string | int](dest *T, target map[string]any, key string, segments ...string) error {
 	// Traverse the config file
-	zero := *new(T)
 	configFileKey := target
 	for _, segment := range segments {
 		var ok bool
 		configFileKey, ok = configFileKey[segment].(map[string]any)
 		if !ok {
-			return zero, errKeyNotPresent(key)
+			return errKeyNotPresent(key)
 		}
 	}
 	value, ok := configFileKey[key]
 	if !ok {
-		return zero, errKeyNotPresent(key)
+		return errKeyNotPresent(key)
 	}
 	castedValue, ok := value.(T)
 	if !ok {
-		return zero, fmt.Errorf("Invalid type for variable %v", value)
+		return fmt.Errorf("Invalid type for variable %v", value)
 	}
-	return castedValue, nil
+	(*dest) = castedValue
+	return nil
 }
 
 func loadYamlFile(filename string) (map[string]any, error) {
@@ -41,4 +41,3 @@ func loadYamlFile(filename string) (map[string]any, error) {
 	}
 	return out, nil
 }
-
