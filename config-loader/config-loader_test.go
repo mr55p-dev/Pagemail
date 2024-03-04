@@ -17,7 +17,9 @@ func TestTraverseMap(t *testing.T) {
 			},
 		},
 	}
-	val, err := traverseMap[string](
+	var val string
+	err := traverseMap[string](
+		&val,
 		testMap,
 		"nested_value",
 		"nested_key_1",
@@ -26,7 +28,9 @@ func TestTraverseMap(t *testing.T) {
 	assert.Nil(err, "there should be no error")
 	assert.Equal("nested_value", val, "key should be nested_value")
 
-	intVal, err := traverseMap[int](
+	var intVal int
+	err = traverseMap[int](
+		&intVal,
 		testMap,
 		"nested_int",
 		"nested_key_1",
@@ -35,6 +39,7 @@ func TestTraverseMap(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(intVal, 2)
 }
+
 func TestNoKeyTraverseMap(t *testing.T) {
 	assert := assert.New(t)
 	testMap := map[string]any{
@@ -45,7 +50,9 @@ func TestNoKeyTraverseMap(t *testing.T) {
 			},
 		},
 	}
-	val, err := traverseMap[string](
+	var val string
+	err := traverseMap[string](
+		&val,
 		testMap,
 		"nested_value",
 		"nested_key_1",
@@ -99,45 +106,3 @@ func TestParseTagOptional(t *testing.T) {
 	assert.Equal(config, tag.config)
 	assert.True(tag.options.optional)
 }
-
-type TestConfig struct {
-	Param1       string `config:"param1"`
-	AnotherParam int    `config:"another-param"`
-	NestedParam  string `config:"nested.param"`
-}
-
-// func TestLoadConfig(t *testing.T) {
-// 	assert := assert.New(t)
-// 	yml := map[string]any{
-// 		"param1":        "hello, world",
-// 		"another-param": 123,
-// 		"nested": map[string]any{
-// 			"param": "here",
-// 		},
-// 	}
-// 	out := new(TestConfig)
-// 	err := loadConfig(out, yml)
-// 	assert.Nil(err)
-// 	assert.Equal("hello, world", out.Param1)
-// 	assert.Equal(123, out.AnotherParam)
-// 	assert.Equal("here", out.NestedParam)
-// }
-
-// func TestLoadConfigFromEnv(t *testing.T) {
-// 	assert := assert.New(t)
-// 	os.Setenv("QE_PARAM1", "hello, world")
-// 	os.Setenv("QE_ANOTHER_PARAM", "123")
-// 	os.Setenv("QE_NESTED_PARAM", "here")
-// 	out := new(TestConfig)
-// 	err := loadConfig(out, map[string]any{})
-//
-// 	assert.Nil(err)
-// 	assert.Equal("hello, world", out.Param1)
-// 	assert.Equal(123, out.AnotherParam)
-// 	assert.Equal("here", out.NestedParam)
-// }
-
-// func TestLoadConfigFromFile(t *testing.T) {
-// 	LoadConfig("/Users/ellis.lunnon/Documents/betaworks-2023-store-activity/config.yaml")
-// 	assert.NotZero(t, cfg.Warehouse)
-// }

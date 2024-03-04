@@ -6,18 +6,19 @@ import (
 	"strconv"
 )
 
-type ApplyFunc func(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error
+type Loader func(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error
 
-func nilApplyFunc(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error {
+func nilLoaderFn(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error {
 	return nil
 }
 
-func MapLoader(configFile map[string]any) ApplyFunc {
+func MapLoader(configFile map[string]any) Loader {
 	return func(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error {
 		// Set the value
 		switch fieldType.Type.Kind() {
 		case reflect.String:
-			value, err := traverseMap[string](configFile, tag.key, tag.path...)
+			var value string
+			err := traverseMap[string](&value, configFile, tag.key, tag.path...)
 			if err != nil {
 				if _, isPresent := err.(*KeyNotPresent); isPresent {
 					return err
@@ -26,9 +27,9 @@ func MapLoader(configFile map[string]any) ApplyFunc {
 				}
 			}
 			fieldValue.SetString(value)
-			err = nil
 		case reflect.Int:
-			value, err := traverseMap[int](configFile, tag.key, tag.path...)
+			var value int
+			err := traverseMap[int](&value, configFile, tag.key, tag.path...)
 			if err != nil {
 				if _, isPresent := err.(*KeyNotPresent); isPresent {
 					return err
@@ -37,17 +38,16 @@ func MapLoader(configFile map[string]any) ApplyFunc {
 				}
 			}
 			fieldValue.SetInt(int64(value))
-			err = nil
 		}
 		return nil
 	}
 }
 
-func FileLoader(configFile string, ignoreMissing bool) ApplyFunc {
+func FileLoader(configFile string, ignoreMissing bool) Loader {
 	file, err := loadYamlFile(configFile)
 	if err != nil {
 		if ignoreMissing {
-			return nilApplyFunc
+			return nilLoaderFn
 		} else {
 			panic(err)
 		}
@@ -56,13 +56,13 @@ func FileLoader(configFile string, ignoreMissing bool) ApplyFunc {
 
 }
 
-func EnvironmentLoader(envPrefix string) ApplyFunc {
+func EnvironmentLoader(envPrefix string) Loader {
 	return func(fieldType reflect.StructField, fieldValue reflect.Value, tag tagData) error {
 		// Read the environment variables
-		envName := getEnvName(tag.config, envPrefix)
+		envName := getEnvName(tag.key, envPrefix)
 		envVal, ok := os.LookupEnv(envName)
 		if !ok {
-			return nil
+			return &KeyNotPresent{"Key expected in variable " + envName}
 		}
 		switch fieldType.Type.Kind() {
 		case reflect.String:

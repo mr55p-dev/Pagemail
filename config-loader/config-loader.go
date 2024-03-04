@@ -43,7 +43,7 @@ func parseConfigTag(config string) tagData {
 	return data
 }
 
-func LoadConfig(dest any, loaders ...ApplyFunc) error {
+func LoadConfig(dest any, loaders ...Loader) error {
 	var err error
 	defer func() {
 		if v := recover(); v != nil {
@@ -70,8 +70,9 @@ func LoadConfig(dest any, loaders ...ApplyFunc) error {
 				} else {
 					return fmt.Errorf("Error loading %s: %s", config, err.Error())
 				}
+			} else {
+				isLoaded = true
 			}
-			isLoaded = true
 		}
 
 		if err != nil { // check any errors after loading
