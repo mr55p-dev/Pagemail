@@ -108,7 +108,7 @@ func ErrorBox(msg string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/account.templ`, Line: 32, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/account.templ`, Line: 32, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

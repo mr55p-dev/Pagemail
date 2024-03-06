@@ -35,7 +35,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(date.Format("02-01-2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 13, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 13, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -48,7 +48,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(date.Format("02-01-2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 370, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 370, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -61,7 +61,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 395, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 395, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -74,7 +74,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(date.Format("02-01-2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 397, Col: 83}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 397, Col: 83}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -106,7 +106,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(*page.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 404, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 404, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -124,7 +124,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(*page.Description)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 406, Col: 40}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 406, Col: 40}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -139,7 +139,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(page.Url)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 409, Col: 31}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 409, Col: 31}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -157,7 +157,7 @@ func MailDigest(date *time.Time, name string, pages []db.Page) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(page.Created.Format("02/01 15:04"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/mail.templ`, Line: 412, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/mail.templ`, Line: 412, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {

@@ -17,11 +17,11 @@ import (
 
 var (
 	dbClient   *db.Client
-	authClient auth.Authorizer
+	authClient *auth.Authorizer
 )
 
 func init() {
-	authClient = auth.NewSecureAuthorizer(context.TODO())
+	authClient = auth.NewAuthorizer(context.TODO())
 }
 
 func GetUser(ctx *cli.Context) (user *db.User, err error) {

@@ -10,15 +10,11 @@ type Logger struct {
 	*slog.Logger
 }
 
-func (l *Logger) Module(name string) *Logger {
-	return &Logger{l.With("module", name)}
-}
-
-func (l Logger) Err(msg string, err error) {
+func (l *Logger) Err(msg string, err error) {
 	l.Error(msg, "error", err.Error())
 }
 
-func (l Logger) Errc(ctx context.Context, msg string, err error) {
+func (l *Logger) Errc(ctx context.Context, msg string, err error) {
 	l.ErrorContext(ctx, msg, "error", err.Error())
 }
 

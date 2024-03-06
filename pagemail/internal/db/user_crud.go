@@ -43,7 +43,7 @@ func (client *Client) ReadUserByShortcutToken(c context.Context, token string) (
 	user := new(User)
 	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE shortcut_token = ?`, token)
 	if err != nil {
-		client.log.Errc(c, "Failed to read user", err)
+		client.log.ErrorContext(c, "Failed to read user", "error", err)
 		return nil, err
 	}
 	client.log.DebugContext(c, "Found user")
@@ -51,13 +51,14 @@ func (client *Client) ReadUserByShortcutToken(c context.Context, token string) (
 }
 
 func (client *Client) ReadUserByEmail(c context.Context, email string) (*User, error) {
+	log := client.log.With("package", "db")
 	user := new(User)
 	err := client.db.GetContext(c, user, `SELECT * FROM users WHERE email = ?`, email)
 	if err != nil {
-		client.log.Errc(c, "Failed to read user", err)
+		log.ErrorContext(c, "Failed to read user", "email", email, "err", err.Error())
 		return nil, err
 	}
-	client.log.DebugContext(c, "Found user")
+	log.DebugContext(c, "Found user")
 	return user, nil
 }
 

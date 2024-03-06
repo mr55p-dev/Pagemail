@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	configLoader "github.com/mr55p-dev/config-loader"
@@ -42,55 +43,70 @@ const (
 
 type Router struct {
 	DBClient   *db.Client
-	Authorizer auth.Authorizer
+	Authorizer *auth.Authorizer
 	MailClient mail.MailClient
+	log        *logging.Logger
 }
 
 type AccountData struct {
 	Subscribed string `form:"email-list"`
 }
 
+func ParseLogLvl(level string) slog.Level {
+	switch strings.ToUpper(level) {
+	case "DEBUG":
+		return slog.LevelDebug
+	case "ERROR":
+		return slog.LevelError
+	case "WARN":
+		return slog.LevelWarn
+	case "INFO":
+		return slog.LevelInfo
+	default:
+		return slog.LevelInfo
+	}
+}
+
 func main() {
+	// Load config
+	cfg := new(AppConfig)
+	err := configLoader.LoadConfig(
+		cfg,
+		configLoader.FileLoader("pagemail.yaml", true),
+		configLoader.EnvironmentLoader("pm"),
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
+		panic(err)
+	}
+
+	// Setup logging
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
+		Level:     ParseLogLvl(cfg.LogLevel),
 		AddSource: true,
 	})
 	baseLog := logging.Logger{
 		Logger: slog.New(handler),
 	}
-	log := baseLog.With("module", "main")
 
-	cfg := new(AppConfig)
-	err := configLoader.LoadConfig(
-		cfg,
-		configLoader.EnvironmentLoader("pm"),
-		configLoader.FileLoader("config.yaml", true),
-	)
-	if err != nil {
-		log.Error("failed to load config", err)
-	}
-
+	// Basic middleware
 	httpit.UseGlobal(
 		httpItMiddlewares.Recover,
 		httpItMiddlewares.RequestLogger(baseLog.With("module", "request logger")),
 	)
 
+	// Start the clients
 	ctx := context.Background()
-	dbClient := db.NewClient(cfg.DBPath, baseLog.Module("db"))
+	dbClient := db.NewClient(cfg.DBPath, &baseLog)
 	defer dbClient.Close()
 
+	authClient := auth.NewAuthorizer(ctx)
+
 	var mailClient mail.MailClient
-	var authClient auth.Authorizer
 	switch Env(cfg.Environment) {
 	case ENV_PRD, ENV_STG:
-		tokens, err := dbClient.ReadUserShortcutTokens(ctx)
-		if err != nil {
-			panic(err.Error())
-		}
-		authClient = auth.NewSecureAuthorizer(ctx, tokens...)
-		mailClient = mail.NewSesMailClient(ctx, baseLog.Module("mail"))
+		mailClient = mail.NewSesMailClient(ctx, logging.New(baseLog.With("package", "mail")))
 	default:
-		authClient = auth.NewTestAuthorizer()
 		mailClient = &mail.TestClient{}
 	}
 
@@ -98,6 +114,7 @@ func main() {
 		DBClient:   dbClient,
 		Authorizer: authClient,
 		MailClient: mailClient,
+		log:        &baseLog,
 	}
 
 	httpit.UseGlobal(
@@ -109,9 +126,34 @@ func main() {
 		panic("nil auth client")
 	}
 
-	protector := middlewares.NewProtector(authClient, dbClient, baseLog.Module("protection middleware"))
+	protector := middlewares.NewProtector(
+		authClient,
+		dbClient,
+		logging.New(baseLog.With("package", "protection middleware")),
+	)
 	httpit.UseGlobal(protector.LoadUser)
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /", httpit.NewHandler(s.GetRoot))
+
+	mux.HandleFunc("GET /login", httpit.NewHandler(s.GetLogin))
+	mux.HandleFunc("POST /login", httpit.NewBoundHandler(s.PostLogin))
+	mux.HandleFunc("GET /signup", httpit.NewHandler(s.GetSignup))
+	mux.HandleFunc("POST /signup", httpit.NewBoundHandler(s.PostSignup))
+	mux.HandleFunc("GET /logout", httpit.NewHandler(s.GetLogout, protector.ProtectRoute()))
+
+	mux.HandleFunc("GET /dashboard", httpit.NewHandler(s.GetDashboard, protector.ProtectRoute()))
+	mux.HandleFunc("GET /pages", httpit.NewBoundHandler(s.GetPages, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /pages", httpit.NewHandler(s.DeletePages, protector.ProtectRoute()))
+	mux.HandleFunc("GET /page/:page_id", httpit.NewBoundHandler(s.GetPage, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /page/:page_id", httpit.NewBoundHandler(s.DeletePage, protector.ProtectRoute()))
+	mux.HandleFunc("POST /page", httpit.NewBoundHandler(s.PostPage, protector.ProtectRoute()))
+
+	mux.HandleFunc("GET /account", httpit.NewHandler(s.GetAccountPage, protector.ProtectRoute()))
+	mux.HandleFunc("PUT /account", httpit.NewHandler(s.PutAccount, protector.ProtectRoute()))
+
+	mux.HandleFunc("GET /shortcut-token", httpit.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
+	mux.HandleFunc("POST /shortcut/page", httpit.NewBoundHandler(s.PostPage, protector.LoadFromShortcut()))
 
 	switch Env(cfg.Environment) {
 	case ENV_STG, ENV_PRD:
@@ -119,33 +161,15 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		mux.Handle("GET /assets", http.FileServerFS(subdir))
+		mux.Handle("GET /assets/", http.FileServerFS(subdir))
 	default:
-		mux.Handle("GET /assets", http.FileServer(http.Dir("server/internal/assets/public")))
+		mux.Handle("GET /assets/", http.StripPrefix(
+			"/assets",
+			http.FileServer(http.Dir("pagemail/internal/assets/public/"))),
+		)
 	}
 
-	mux.HandleFunc("GET /", httpit.NewTemplHandler(s.GetRoot))
-
-	mux.HandleFunc("GET /login", httpit.NewTemplHandler(s.GetLogin))
-	mux.HandleFunc("POST /login", httpit.NewInHandler(s.PostLogin))
-	mux.HandleFunc("GET /signup", httpit.NewTemplHandler(s.GetSignup))
-	mux.HandleFunc("POST /signup", httpit.NewInHandler(s.PostSignup))
-	mux.HandleFunc("GET /logout", httpit.NewHandler(s.GetLogout, protector.ProtectRoute()))
-
-	mux.HandleFunc("GET /dashboard", httpit.NewTemplHandler(s.GetDashboard, protector.ProtectRoute()))
-	mux.HandleFunc("GET /pages", httpit.NewTemplMappedHandler(s.GetPages, protector.ProtectRoute()))
-	mux.HandleFunc("DELETE /pages", httpit.NewTemplHandler(s.DeletePages, protector.ProtectRoute()))
-	mux.HandleFunc("GET /page/:page_id", httpit.NewTemplMappedHandler(s.GetPage, protector.ProtectRoute()))
-	mux.HandleFunc("DELETE /page/:page_id", httpit.NewInHandler(s.DeletePage, protector.ProtectRoute()))
-	mux.HandleFunc("POST /page", httpit.NewTemplMappedHandler(s.PostPage, protector.ProtectRoute()))
-
-	mux.HandleFunc("GET /account", httpit.NewTemplHandler(s.GetAccountPage, protector.ProtectRoute()))
-	mux.HandleFunc("PUT /account", httpit.NewTemplHandler(s.PutAccount, protector.ProtectRoute()))
-
-	mux.HandleFunc("GET /shortcut-token", httpit.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
-	mux.HandleFunc("POST /shortcut/page", httpit.NewTemplMappedHandler(s.PostPage, protector.LoadFromShortcut()))
-
-	mailLog := baseLog.Module("mail")
+	mailLog := logging.New(baseLog.With("package", "mail"))
 	cr := cron.New()
 	cr.AddFunc(
 		"0 7 * * *",
@@ -156,7 +180,8 @@ func main() {
 		},
 	)
 
-	if err := http.ListenAndServe(fmt.Sprintf("127.0.0.1:%s", "8080"), mux); err != nil {
+	baseLog.Info("Starting http server", "config", cfg)
+	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), mux); err != nil {
 		panic(err)
 	}
 }
