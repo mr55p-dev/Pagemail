@@ -130,7 +130,7 @@ func SavePageSuccess(msg string) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/dashboard.templ`, Line: 45, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/dashboard.templ`, Line: 45, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -184,7 +184,7 @@ func SavePageError(msg string) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `server/internal/render/dashboard.templ`, Line: 53, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pagemail/internal/render/dashboard.templ`, Line: 53, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {

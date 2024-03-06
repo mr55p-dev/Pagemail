@@ -3,15 +3,23 @@ package middlewares
 import (
 	"log/slog"
 	"net/http"
+	"path"
 
 	"github.com/mr55p-dev/go-httpit"
 	"github.com/mr55p-dev/go-httpit/pkg/trace"
 )
 
-func RequestLogger(log *slog.Logger) httpit.MiddlewareFunc {
+func RequestLogger(log *slog.Logger, excludePaths ...string) httpit.MiddlewareFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
+			for _, v := range excludePaths {
+				ok, _ := path.Match(v, r.URL.Path)
+				if ok {
+					goto next
+				}
+			}
 			log.InfoContext(r.Context(), "Request", "method", r.Method, "path", r.URL.Path)
+		next:
 			next(w, r)
 		}
 	}
