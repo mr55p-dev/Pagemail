@@ -7,3 +7,4 @@ pkg/render/*.go
 *.key
 *.pub
 *.pem
+pagemail
