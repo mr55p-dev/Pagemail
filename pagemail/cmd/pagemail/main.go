@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	configLoader "github.com/mr55p-dev/config-loader"
+	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/htmx-utils"
 	hutMiddlewares "github.com/mr55p-dev/htmx-utils/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/internal/assets"
@@ -70,10 +70,10 @@ func ParseLogLvl(level string) slog.Level {
 func main() {
 	// Load config
 	cfg := new(AppConfig)
-	err := configLoader.LoadConfig(
+	err := gonk.LoadConfig(
 		cfg,
-		configLoader.FileLoader("pagemail.yaml", true),
-		configLoader.EnvironmentLoader("pm"),
+		gonk.FileLoader("pagemail.yaml", true),
+		gonk.EnvironmentLoader("pm"),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
