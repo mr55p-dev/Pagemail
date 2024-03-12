@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/mr55p-dev/go-httpit"
+	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/logging"
@@ -51,7 +51,7 @@ func (p *Protector) LoadUser(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (p *Protector) LoadFromShortcut() httpit.MiddlewareFunc {
+func (p *Protector) LoadFromShortcut() hut.MiddlewareFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			tkn := r.Header.Get("Authorization")
@@ -72,7 +72,7 @@ func (p *Protector) LoadFromShortcut() httpit.MiddlewareFunc {
 	}
 }
 
-func (p *Protector) ProtectRoute() httpit.MiddlewareFunc {
+func (p *Protector) ProtectRoute() hut.MiddlewareFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			user := reqGetUser(r)
