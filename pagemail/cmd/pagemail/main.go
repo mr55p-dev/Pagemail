@@ -11,8 +11,8 @@ import (
 	"time"
 
 	configLoader "github.com/mr55p-dev/config-loader"
-	"github.com/mr55p-dev/go-httpit"
-	httpItMiddlewares "github.com/mr55p-dev/go-httpit/pkg/middlewares"
+	"github.com/mr55p-dev/htmx-utils"
+	hutMiddlewares "github.com/mr55p-dev/htmx-utils/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
@@ -90,9 +90,9 @@ func main() {
 	}
 
 	// Basic middleware
-	httpit.UseGlobal(
-		httpItMiddlewares.Recover,
-		httpItMiddlewares.RequestLogger(baseLog.With("module", "request logger")),
+	hut.UseGlobal(
+		hutMiddlewares.Recover,
+		hutMiddlewares.RequestLogger(baseLog.With("module", "request logger")),
 	)
 
 	// Start the clients
@@ -117,8 +117,8 @@ func main() {
 		log:        &baseLog,
 	}
 
-	httpit.UseGlobal(
-		httpItMiddlewares.Trace(func() string {
+	hut.UseGlobal(
+		hutMiddlewares.Trace(func() string {
 			return tools.GenerateNewId(10)
 		}),
 	)
@@ -131,29 +131,29 @@ func main() {
 		dbClient,
 		logging.New(baseLog.With("package", "protection middleware")),
 	)
-	httpit.UseGlobal(protector.LoadUser)
+	hut.UseGlobal(protector.LoadUser)
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", httpit.NewHandler(s.GetRoot))
+	mux.HandleFunc("GET /", hut.NewHandler(s.GetRoot))
 
-	mux.HandleFunc("GET /login", httpit.NewHandler(s.GetLogin))
-	mux.HandleFunc("POST /login", httpit.NewBoundHandler(s.PostLogin))
-	mux.HandleFunc("GET /signup", httpit.NewHandler(s.GetSignup))
-	mux.HandleFunc("POST /signup", httpit.NewBoundHandler(s.PostSignup))
-	mux.HandleFunc("GET /logout", httpit.NewHandler(s.GetLogout, protector.ProtectRoute()))
+	mux.HandleFunc("GET /login", hut.NewHandler(s.GetLogin))
+	mux.HandleFunc("POST /login", hut.NewBoundHandler(s.PostLogin))
+	mux.HandleFunc("GET /signup", hut.NewHandler(s.GetSignup))
+	mux.HandleFunc("POST /signup", hut.NewBoundHandler(s.PostSignup))
+	mux.HandleFunc("GET /logout", hut.NewHandler(s.GetLogout, protector.ProtectRoute()))
 
-	mux.HandleFunc("GET /dashboard", httpit.NewHandler(s.GetDashboard, protector.ProtectRoute()))
-	mux.HandleFunc("GET /pages", httpit.NewBoundHandler(s.GetPages, protector.ProtectRoute()))
-	mux.HandleFunc("DELETE /pages", httpit.NewHandler(s.DeletePages, protector.ProtectRoute()))
-	mux.HandleFunc("GET /page/:page_id", httpit.NewBoundHandler(s.GetPage, protector.ProtectRoute()))
-	mux.HandleFunc("DELETE /page/:page_id", httpit.NewBoundHandler(s.DeletePage, protector.ProtectRoute()))
-	mux.HandleFunc("POST /page", httpit.NewBoundHandler(s.PostPage, protector.ProtectRoute()))
+	mux.HandleFunc("GET /dashboard", hut.NewHandler(s.GetDashboard, protector.ProtectRoute()))
+	mux.HandleFunc("GET /pages", hut.NewBoundHandler(s.GetPages, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /pages", hut.NewHandler(s.DeletePages, protector.ProtectRoute()))
+	mux.HandleFunc("GET /page/:page_id", hut.NewBoundHandler(s.GetPage, protector.ProtectRoute()))
+	mux.HandleFunc("DELETE /page/:page_id", hut.NewBoundHandler(s.DeletePage, protector.ProtectRoute()))
+	mux.HandleFunc("POST /page", hut.NewBoundHandler(s.PostPage, protector.ProtectRoute()))
 
-	mux.HandleFunc("GET /account", httpit.NewHandler(s.GetAccountPage, protector.ProtectRoute()))
-	mux.HandleFunc("PUT /account", httpit.NewHandler(s.PutAccount, protector.ProtectRoute()))
+	mux.HandleFunc("GET /account", hut.NewHandler(s.GetAccountPage, protector.ProtectRoute()))
+	mux.HandleFunc("PUT /account", hut.NewHandler(s.PutAccount, protector.ProtectRoute()))
 
-	mux.HandleFunc("GET /shortcut-token", httpit.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
-	mux.HandleFunc("POST /shortcut/page", httpit.NewBoundHandler(s.PostPage, protector.LoadFromShortcut()))
+	mux.HandleFunc("GET /shortcut-token", hut.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
+	mux.HandleFunc("POST /shortcut/page", hut.NewBoundHandler(s.PostPage, protector.LoadFromShortcut()))
 
 	switch Env(cfg.Environment) {
 	case ENV_STG, ENV_PRD:
