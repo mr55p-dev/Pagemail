@@ -1,5 +1,7 @@
 # Pagemail
 
+Pagemail is a tool for saving and rembering links.
+
 ## Environment
 
 - `PM_ENV`: `dev`, `stg` or `prd`
