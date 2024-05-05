@@ -72,8 +72,8 @@ func main() {
 	cfg := new(AppConfig)
 	err := gonk.LoadConfig(
 		cfg,
+		gonk.FileLoader("pagemail.yaml", true),
 		gonk.EnvironmentLoader("pm"),
-		// gonk.FileLoader("pagemail.yaml", true),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
