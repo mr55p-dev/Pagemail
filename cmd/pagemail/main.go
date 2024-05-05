@@ -72,8 +72,8 @@ func main() {
 	cfg := new(AppConfig)
 	err := gonk.LoadConfig(
 		cfg,
-		gonk.FileLoader("pagemail.yaml", true),
 		gonk.EnvironmentLoader("pm"),
+		// gonk.FileLoader("pagemail.yaml", true),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
@@ -181,7 +181,7 @@ func main() {
 	)
 
 	baseLog.Info("Starting http server", "config", cfg)
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), mux); err != nil {
+	if err := http.ListenAndServe(cfg.Host, mux); err != nil {
 		panic(err)
 	}
 }
