@@ -1,3 +1,5 @@
+version: v3
+name: pagemail
 services:
   pagemail:
     image: pagemail:latest
