@@ -23,21 +23,24 @@ func NewProtector(authorizer *auth.Authorizer, dbclient *db.Client, logger *logg
 	}
 }
 
-func (p *Protector) LoadUser(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (p *Protector) LoadUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tkn, err := r.Cookie("pm-auth-tkn")
 		if err != nil {
-			next(w, reqWithError(r, "could not decode session cookie", http.StatusBadRequest))
+			p.log.DebugCtx(r.Context(), "No session cookie found")
+			next.ServeHTTP(w, reqWithError(r, "could not decode session cookie", http.StatusBadRequest))
 			return
 		}
+
 		if tkn.Value == "" {
-			next(w, reqWithError(r, "missing user session", http.StatusBadRequest))
+			http.Error(w, "missing session cookie", http.StatusBadRequest)
 			return
 		}
 
 		uid := p.auth.ValSessionToken(tkn.Value)
 		if uid == "" {
-			next(w, reqWithError(r, "cookie not matched with session", http.StatusBadRequest))
+			p.log.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
+			next.ServeHTTP(w, reqWithError(r, "cookie not matched with session", http.StatusBadRequest))
 			return
 		}
 
@@ -48,8 +51,8 @@ func (p *Protector) LoadUser(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		p.log.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
-		next(w, reqWithUser(r, user))
-	}
+		next.ServeHTTP(w, reqWithUser(r, user))
+	})
 }
 
 func (p *Protector) LoadFromShortcut() hut.MiddlewareFunc {
