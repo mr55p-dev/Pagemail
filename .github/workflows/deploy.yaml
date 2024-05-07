@@ -15,79 +15,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v4
-        with:
-          go-version: "1.21.5"
-          cache: true
-          cache-dependency-path: go.sum
-
-      - name: Install dependencies
-        run: make install
-
-      - name: Build binary
-        run: make build
-
-      - name: Store build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: ${{ github.workspace }}/tmp/main
-
   deploy:
     runs-on: ubuntu-latest
     environment: Production
-    needs: [build]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download backend
-        uses: actions/download-artifact@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          name: build
-          path: build/
+          role-to-assume: ${{ var.AWS_ROLE }}
+          aws-region: ${{ var.AWS_REGION }}
 
-      - name: Clean environment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: rm -rf /home/ec2-user/pagemail
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Copy build artifact onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "build/main"
-          target: /home/ec2-user/${{ vars.env }}/pagemail/
-          strip_components: 1
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: pagemail
+          IMAGE_TAG: prd
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Copy server files onto server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          source: "install.sh,nginx/*,services/*,test_pages/*"
-          target: /home/ec2-user/pagemail
+      - name: Configure SSH id
+        run: |
+          echo "${{ secrets.SSH_KEY }}" | tr -d '\r' > key.pem
+          ssh-add key.pem
 
-      - name: Run install script
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          key: ${{ secrets.key }}
-          port: ${{ secrets.port }}
-          script: sudo bash /home/ec2-user/pagemail/install.sh /home/ec2-user/pagemail prd
+      - name: Deploy to server
+        env:
+          DOCKER_HOST: ${{ var.DOCKER_HOST }}
+        run: |
+          docker compose restart
