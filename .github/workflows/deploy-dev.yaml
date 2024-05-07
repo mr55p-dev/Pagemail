@@ -1,5 +1,5 @@
 ---
-name: Deploy to dev
+name: Deploy to development
 on:
   push:
     branches-ignore:
@@ -7,6 +7,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy development
     uses: ./.github/workflows/deploy-env.yaml
     with:
       environment: Development
