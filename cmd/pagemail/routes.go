@@ -26,9 +26,13 @@ func GetLoginCookie(val string) *http.Cookie {
 	}
 }
 
-func (Router) GetRoot(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
-	return hut.Component(render.Index(user))
+	err := render.Index(user).Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Failed to render index", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (Router) GetLogin(w http.ResponseWriter, r *http.Request) hut.Writer {

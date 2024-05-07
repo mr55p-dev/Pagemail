@@ -24,16 +24,12 @@ import (
 )
 
 type Env string
-type Mode string
 type ContentType string
 
 const (
 	ENV_DEV Env = "dev"
 	ENV_STG Env = "stg"
 	ENV_PRD Env = "prd"
-
-	MODE_LOCAL   Mode = "local"
-	MODE_RELEASE Mode = "release"
 
 	CONTENT_ANY   ContentType = "*/*"
 	CONTENT_HTML  ContentType = "text/html"
@@ -134,7 +130,7 @@ func main() {
 	hut.UseGlobal(protector.LoadUser)
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", hut.NewHandler(s.GetRoot))
+	mux.HandleFunc("GET /", s.GetRoot)
 
 	mux.HandleFunc("GET /login", hut.NewHandler(s.GetLogin))
 	mux.HandleFunc("POST /login", hut.NewBoundHandler(s.PostLogin))
@@ -161,11 +157,14 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		mux.Handle("GET /assets/", http.FileServerFS(subdir))
+		mux.Handle("GET /assets/", http.StripPrefix(
+			"/assets",
+			http.FileServerFS(subdir),
+		))
 	default:
 		mux.Handle("GET /assets/", http.StripPrefix(
 			"/assets",
-			http.FileServer(http.Dir("pagemail/internal/assets/public/"))),
+			http.FileServer(http.Dir("internal/assets/public/"))),
 		)
 	}
 
