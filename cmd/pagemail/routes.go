@@ -146,42 +146,50 @@ func (Router) GetLogout(w http.ResponseWriter, r *http.Request) hut.Writer {
 	return hut.Redirect("/")
 }
 
-func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
 	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.Id, 1)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-
-	return hut.Component(render.Dashboard(user, pages))
+	staticRender(render.Dashboard(user, pages), w, r)
 }
 
 type GetPagesRequest struct {
 	Page string `query:"p"`
 }
 
-func (router *Router) GetPages(w http.ResponseWriter, r *http.Request, req *GetPagesRequest) hut.Writer {
+func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[GetPagesRequest](w, r)
+	if req == nil {
+		return
+	}
+
 	user := db.GetUser(r.Context())
 	page, err := strconv.Atoi(req.Page)
 	if err != nil {
-		return hut.Error(err, http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.Id, page)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	return hut.Component(render.PageList(pages, page))
+	staticRender(render.PageList(pages, page), w, r)
 }
 
-func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
 
 	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.Id)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		serverError(w, r)
+		return
 	}
-	return hut.Component(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)))
+	staticRender(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
 
 }
 
@@ -189,36 +197,50 @@ type GetPageRequest struct {
 	PageId string `param:"page_id"`
 }
 
-func (router *Router) GetPage(w http.ResponseWriter, r *http.Request, req *GetPageRequest) hut.Writer {
+func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[GetPageRequest](w, r)
+	if req == nil {
+		return
+	}
+
 	user := db.GetUser(r.Context())
 	page, err := router.DBClient.ReadPage(r.Context(), req.PageId)
 	if err != nil {
-		return hut.ErrorMsg("Failed to get page id", http.StatusInternalServerError)
+		http.Error(w, "Failed to get page id", http.StatusInternalServerError)
+		return
 	}
 	if page.UserId != user.Id {
-		return hut.ErrorMsg("Not found", http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
 	}
 	err = router.DBClient.DeletePage(r.Context(), req.PageId)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		serverError(w, r)
+		return
 	}
-	return hut.Component(render.PageCard(page))
+	staticRender(render.PageCard(page), w, r)
 }
 
 type PostPageRequest struct {
 	Url string `form:"url"`
 }
 
-func (router *Router) PostPage(w http.ResponseWriter, r *http.Request, req *PostPageRequest) hut.Writer {
+func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[PostPageRequest](w, r)
+	if req == nil {
+		return
+	}
+
 	user := db.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
-		return hut.Component(render.SavePageError("URL field must be present"))
+		staticRender(render.SavePageError("URL field must be present"), w, r)
+		return
 	}
 
 	page := db.NewPage(user.Id, url)
 	if err := router.DBClient.CreatePage(r.Context(), page); err != nil {
-		return hut.Component(render.SavePageError(err.Error()))
+		staticRender(render.SavePageError(err.Error()), w, r)
 	}
 
 	go func(cli *db.Client) {
@@ -234,27 +256,33 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request, req *Post
 		}
 	}(router.DBClient)
 
-	return hut.Component(render.PageCard(page))
+	staticRender(render.PageCard(page), w, r)
+	return
 }
 
 type DeletePageRequest struct {
 	PageId string `query:"page_id"`
 }
 
-func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request, req *DeletePageRequest) hut.Writer {
+func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[DeletePageRequest](w, r)
+	if req == nil {
+		return
+	}
 	user := db.GetUser(r.Context())
 	page, err := router.DBClient.ReadPage(r.Context(), req.PageId)
 	if err != nil {
-		return hut.ErrorMsg("Something went wrong", http.StatusInternalServerError)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
 	}
 
 	if !router.Authorizer.ValUserAgainstPage(user, page) {
-		return hut.ErrorMsg("Permission denied", http.StatusForbidden)
+		http.Error(w, "Permission denied", http.StatusForbidden)
+		return
 	}
 
 	router.DBClient.DeletePage(r.Context(), page.Id)
-
-	return nil
+	w.WriteHeader(http.StatusOK)
 }
 
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) hut.Writer {

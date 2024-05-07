@@ -113,8 +113,8 @@ func main() {
 		dbClient,
 		logging.NewLogger("protector"),
 	)
-	httpMux := http.NewServeMux()
 
+	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("GET /", s.GetRoot)
 
 	httpMux.HandleFunc("GET /login", s.GetLogin)
@@ -122,19 +122,32 @@ func main() {
 	httpMux.HandleFunc("GET /signup", s.GetSignup)
 	httpMux.HandleFunc("POST /signup", s.PostSignup)
 
-	protectedMux := http.NewServeMux()
-	protectedMux.HandleFunc("GET /logout", hut.NewHandler(s.GetLogout, protector.ProtectRoute()))
-	protectedMux.HandleFunc("GET /dashboard", hut.NewHandler(s.GetDashboard, protector.ProtectRoute()))
-	protectedMux.HandleFunc("GET /pages", hut.NewBoundHandler(s.GetPages, protector.ProtectRoute()))
-	protectedMux.HandleFunc("DELETE /pages", hut.NewHandler(s.DeletePages, protector.ProtectRoute()))
-	protectedMux.HandleFunc("GET /page/:page_id", hut.NewBoundHandler(s.GetPage, protector.ProtectRoute()))
-	protectedMux.HandleFunc("DELETE /page/:page_id", hut.NewBoundHandler(s.DeletePage, protector.ProtectRoute()))
-	protectedMux.HandleFunc("POST /page", hut.NewBoundHandler(s.PostPage, protector.ProtectRoute()))
-	protectedMux.HandleFunc("GET /account", hut.NewHandler(s.GetAccountPage, protector.ProtectRoute()))
-	protectedMux.HandleFunc("PUT /account", hut.NewHandler(s.PutAccount, protector.ProtectRoute()))
-	protectedMux.HandleFunc("GET /shortcut-token", hut.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
-	protectedMux.HandleFunc("POST /shortcut/page", hut.NewBoundHandler(s.PostPage, protector.LoadFromShortcut()))
+	// Serve pages
+	pagesMux := http.NewServeMux()
+	pagesMux.HandleFunc("GET /", s.GetPages)
+	pagesMux.HandleFunc("GET /:page_id", s.GetPage)
+	pagesMux.HandleFunc("GET /dashboard", s.GetDashboard)
+	pagesMux.HandleFunc("POST /", s.PostPage)
+	pagesMux.HandleFunc("POST /shortcut", s.PostPage)
+	pagesMux.HandleFunc("DELETE /", s.DeletePages)
+	pagesMux.HandleFunc("DELETE /:page_id", s.DeletePage)
+	pagesMux.Handle("GET POST DELETE /pages", WithMiddleware(
+		http.StripPrefix("/pages", pagesMux),
+		protector.ProtectRoute(),
+	))
 
+	// Serve users
+	userMux := http.NewServeMux()
+	userMux.HandleFunc("GET /logout", hut.NewHandler(s.GetLogout, protector.ProtectRoute()))
+	userMux.HandleFunc("GET /account", hut.NewHandler(s.GetAccountPage, protector.ProtectRoute()))
+	userMux.HandleFunc("PUT /account", hut.NewHandler(s.PutAccount, protector.ProtectRoute()))
+	userMux.HandleFunc("GET /token/shortcut", hut.NewHandler(s.GetShortcutToken, protector.ProtectRoute()))
+	userMux.Handle("GET POST DELETE /users", WithMiddleware(
+		http.StripPrefix("/users", userMux),
+		protector.ProtectRoute(),
+	))
+
+	// Serve static assets
 	var fileHandler http.Handler
 	switch Env(cfg.Environment) {
 	case ENV_STG, ENV_PRD:
@@ -142,21 +155,17 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fileHandler = http.StripPrefix(
-			"/assets",
-			http.FileServerFS(subdir),
-		)
+		fileHandler = http.StripPrefix("/assets", http.FileServerFS(subdir))
 	default:
-		fileHandler = http.StripPrefix(
-			"/assets",
-			http.FileServer(http.Dir("internal/assets/public/")),
-		)
+		fileHandler = http.StripPrefix("/assets", http.FileServer(http.Dir("internal/assets/public/")))
 
 	}
 
+	// Start the background timer
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
 	timer := timer.NewCronTimer(time.Hour*24, start)
+	defer timer.Stop()
 	go func() {
 		for now := range timer.T {
 			slog.Info("Starting mail digest", "time", now.Format(time.Stamp))
