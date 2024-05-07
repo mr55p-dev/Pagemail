@@ -137,8 +137,12 @@ func main() {
 	rootMux := http.NewServeMux()
 	rootMux.HandleFunc("/", s.GetRoot)
 	rootMux.Handle("/login", HandleMethods(map[string]http.Handler{
-		http.MethodPost: http.HandlerFunc(s.PostLogin),
 		http.MethodGet:  http.HandlerFunc(s.GetLogin),
+		http.MethodPost: http.HandlerFunc(s.PostLogin),
+	}))
+	rootMux.Handle("/signup", HandleMethods(map[string]http.Handler{
+		http.MethodGet:  http.HandlerFunc(s.GetSignup),
+		http.MethodPost: http.HandlerFunc(s.PostSignup),
 	}))
 
 	// Serve pages
