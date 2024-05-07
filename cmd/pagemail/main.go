@@ -12,7 +12,6 @@ import (
 
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/htmx-utils"
-	hutMiddlewares "github.com/mr55p-dev/htmx-utils/pkg/middlewares"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
@@ -20,7 +19,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 	"github.com/mr55p-dev/pagemail/internal/timer"
-	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
 var logger = logging.NewLogger("routes")
@@ -79,16 +77,10 @@ func main() {
 
 	// Setup logging
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     ParseLogLvl(cfg.LogLevel),
-		AddSource: true,
+		Level: ParseLogLvl(cfg.LogLevel),
 	})
 	logger := logging.NewLogger("main")
 	logging.SetHandler(handler)
-
-	// Basic middleware
-	hut.UseGlobal(
-		hutMiddlewares.Recover,
-	)
 
 	logger.Info("Setting up db client")
 	// Start the clients
@@ -119,17 +111,17 @@ func main() {
 	protector := middlewares.NewProtector(
 		authClient,
 		dbClient,
-		nil,
+		logging.NewLogger("protector"),
 	)
 	hut.UseGlobal(protector.LoadUser)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /", s.GetRoot)
 
-	mux.HandleFunc("GET /login", hut.NewHandler(s.GetLogin))
-	mux.HandleFunc("POST /login", hut.NewBoundHandler(s.PostLogin))
-	mux.HandleFunc("GET /signup", hut.NewHandler(s.GetSignup))
-	mux.HandleFunc("POST /signup", hut.NewBoundHandler(s.PostSignup))
+	mux.HandleFunc("GET /login", s.GetLogin)
+	mux.HandleFunc("POST /login", s.PostLogin)
+	mux.HandleFunc("GET /signup", s.GetSignup)
+	mux.HandleFunc("POST /signup", s.PostSignup)
 	mux.HandleFunc("GET /logout", hut.NewHandler(s.GetLogout, protector.ProtectRoute()))
 
 	mux.HandleFunc("GET /dashboard", hut.NewHandler(s.GetDashboard, protector.ProtectRoute()))
@@ -177,7 +169,12 @@ func main() {
 		}
 	}()
 
-	httpHandler := WithMiddleware(mux, Tracer, RequestLogger)
+	httpHandler := WithMiddleware(
+		mux,
+		Recover,
+		Tracer,
+		RequestLogger,
+	)
 
 	logger.Info("Starting http server", "config", cfg)
 	if err := http.ListenAndServe(cfg.Host, httpHandler); err != nil {

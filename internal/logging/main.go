@@ -2,59 +2,88 @@ package logging
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"runtime"
+	"runtime/debug"
 )
 
-var logger *slog.Logger
+var logger *Logger = &Logger{slog.Default()}
 
-func init() {
-	logger = slog.Default()
-}
+// Callee stack depth to get out of when deferring a panic recover
+const PANIC_STACK_DEPTH = 5 // tested on one function, might be different for different go versions
 
 func SetHandler(h slog.Handler) {
-	logger = slog.New(h)
+	logger = &Logger{
+		out: slog.New(h),
+	}
 }
 
 func Info(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.InfoContext(ctx, msg, keyvals...)
+	logger.out.InfoContext(ctx, msg, keyvals...)
 }
 
 func Debug(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.DebugContext(ctx, msg, keyvals...)
+	logger.out.DebugContext(ctx, msg, keyvals...)
 }
 
 func Error(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.ErrorContext(ctx, msg, keyvals...)
+	logger.out.ErrorContext(ctx, msg, keyvals...)
+}
+
+func WithError(err error) *Logger {
+	_, file, line, _ := runtime.Caller(1)
+	return &Logger{
+		out: logger.out.With("error", err.Error(), "file", file, "lineno", line),
+	}
+}
+
+func WithRecover(r any) *Logger {
+	return logger.WithRecover(r)
 }
 
 func Warn(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.WarnContext(ctx, msg, keyvals...)
+	logger.out.WarnContext(ctx, msg, keyvals...)
 }
 
 type Logger struct {
-	logger *slog.Logger
+	out *slog.Logger
 }
 
 func NewLogger(name string) *Logger {
 	return &Logger{
-		logger: logger.With("name", name),
+		out: logger.out.With("name", name),
 	}
 }
 
 func (l *Logger) InfoCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.logger.InfoContext(ctx, msg, keyvals...)
+	l.out.InfoContext(ctx, msg, keyvals...)
 }
 
 func (l *Logger) DebugCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.logger.DebugContext(ctx, msg, keyvals...)
+	l.out.DebugContext(ctx, msg, keyvals...)
 }
 
 func (l *Logger) ErrorCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.logger.ErrorContext(ctx, msg, keyvals...)
+	l.out.ErrorContext(ctx, msg, keyvals...)
 }
 
 func (l *Logger) WarnCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.logger.WarnContext(ctx, msg, keyvals...)
+	l.out.WarnContext(ctx, msg, keyvals...)
+}
+
+func (l *Logger) WithError(err error) *Logger {
+	_, file, line, _ := runtime.Caller(1)
+	return &Logger{
+		out: l.out.With("error", err.Error(), "file", file, "lineno", line),
+	}
+}
+
+func (l *Logger) WithRecover(r any) *Logger {
+	debug.PrintStack()
+	return &Logger{
+		out: l.out.With("recover", fmt.Sprintf("%v", r)),
+	}
 }
 
 func (l *Logger) Info(msg string, keyvals ...interface{}) {

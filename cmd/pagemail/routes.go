@@ -7,12 +7,36 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
+
+func staticRender(component templ.Component, w http.ResponseWriter, r *http.Request) {
+	err := component.Render(r.Context(), w)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Error rendering response")
+		http.Error(w, "Error rendering response", http.StatusInternalServerError)
+	}
+}
+
+func requestBind[T any](w http.ResponseWriter, r *http.Request) *T {
+	out := new(T)
+	err := Bind(out, r)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to bind request")
+		http.Error(w, "Failed to bind request", http.StatusBadRequest)
+		return nil
+	}
+	return out
+}
+
+func serverError(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
 
 func GetLoginCookie(val string) *http.Cookie {
 	return &http.Cookie{
@@ -35,8 +59,8 @@ func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (Router) GetLogin(w http.ResponseWriter, r *http.Request) hut.Writer {
-	return hut.Component(render.Login())
+func (Router) GetLogin(w http.ResponseWriter, r *http.Request) {
+	staticRender(render.Login(), w, r)
 }
 
 type PostLoginRequest struct {
@@ -44,47 +68,63 @@ type PostLoginRequest struct {
 	Password string `form:"password"`
 }
 
-func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request, req *PostLoginRequest) hut.Writer {
+func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[PostLoginRequest](w, r)
+	if req == nil {
+		return
+	}
+
 	logger.DebugCtx(r.Context(), "Received bound data", "email", req.Email, "req", req)
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user) {
-		return hut.Error(err, http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
 	}
 
 	sess := router.Authorizer.GenSessionToken(user)
 	cookie := GetLoginCookie(sess)
 
 	http.SetCookie(w, cookie)
-	return hut.Redirect("/dashboard")
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	return
 }
 
-func (Router) GetSignup(w http.ResponseWriter, r *http.Request) hut.Writer {
-	return hut.Component(render.Signup())
+func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
+	staticRender(render.Signup(), w, r)
+	return
 }
 
 type PostSignupRequest struct {
-	username       string `form:"username"`
-	email          string `form:"email"`
-	password       string `form:"password"`
-	passwordRepeat string `form:"password-repeat"`
+	Username       string `form:"username"`
+	Email          string `form:"email"`
+	Password       string `form:"password"`
+	PasswordRepeat string `form:"password-repeat"`
 }
 
-func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request, req *PostSignupRequest) hut.Writer {
+func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[PostSignupRequest](w, r)
+	if req == nil {
+		return
+	}
+
 	// Read the form requests
-	if req.password != req.passwordRepeat {
-		return hut.ErrorMsg("Passwords do not match", http.StatusBadRequest)
+	if req.Password != req.PasswordRepeat {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
 	}
 
 	// Generate a new user
-	user := db.NewUser(req.email, router.Authorizer.GenPasswordHash(req.password))
-	user.Username = req.username
+	user := db.NewUser(req.Email, router.Authorizer.GenPasswordHash(req.Password))
+	user.Username = req.Username
 	err := router.DBClient.CreateUser(r.Context(), user)
 	if err != nil {
-		return hut.ErrorMsg("Something went wrong", http.StatusBadRequest)
+		serverError(w, r)
+		return
 	}
 
 	// Generate a token for the user from the session manager
@@ -92,7 +132,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request, req *Po
 	cookie := GetLoginCookie(token)
 
 	http.SetCookie(w, cookie)
-	return hut.Redirect("/dashboard")
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 }
 
 func (Router) GetLogout(w http.ResponseWriter, r *http.Request) hut.Writer {

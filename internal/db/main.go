@@ -18,7 +18,7 @@ func (c *Client) Close() {
 func NewClient(path string, log *logging.Logger) *Client {
 	conn := sqlx.MustOpen("sqlite3", path)
 	return &Client{
-		log: log,
+		log: logging.NewLogger("db-client"),
 		db:  conn,
 	}
 }

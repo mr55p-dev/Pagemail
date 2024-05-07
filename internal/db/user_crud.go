@@ -16,7 +16,7 @@ func (client *Client) CreateUser(c context.Context, u *User) error {
 	)
 
 	if err != nil {
-		client.log.ErrorCtx(c, "Failed creating user", err)
+		client.log.WithError(err).ErrorCtx(c, "Failed creating user")
 		sqlErr := err.(sqlite3.Error)
 		switch sqlErr.Code {
 		case sqlite3.ErrNo(sqlite3.ErrConstraintUnique), sqlite3.ErrNo(sqlite3.ErrConstraint):

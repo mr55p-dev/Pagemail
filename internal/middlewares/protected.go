@@ -28,6 +28,7 @@ func (p *Protector) LoadUser(next http.HandlerFunc) http.HandlerFunc {
 		tkn, err := r.Cookie("pm-auth-tkn")
 		if err != nil {
 			next(w, reqWithError(r, "could not decode session cookie", http.StatusBadRequest))
+			return
 		}
 		if tkn.Value == "" {
 			next(w, reqWithError(r, "missing user session", http.StatusBadRequest))
