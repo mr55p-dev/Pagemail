@@ -7,7 +7,6 @@ services:
     environment:
       PM_ENVIRONMENT: prd
       PM_LOG_LEVEL: INFO
-      PM_MODE: release
       PM_HOST: 0.0.0.0:80
       PM_PATH: /app/db/pagemail.sqlite3
     expose:
