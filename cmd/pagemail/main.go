@@ -23,6 +23,8 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
+var logger = logging.NewLogger("routes")
+
 type Env string
 type ContentType string
 
@@ -76,29 +78,35 @@ func main() {
 	}
 
 	// Setup logging
-	// handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-	// 	Level:     ParseLogLvl(cfg.LogLevel),
-	// 	AddSource: true,
-	// })
-	baseLog := logging.NewLogger("main")
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     ParseLogLvl(cfg.LogLevel),
+		AddSource: true,
+	})
+	logger := logging.NewLogger("main")
+	logging.SetHandler(handler)
 
 	// Basic middleware
 	hut.UseGlobal(
 		hutMiddlewares.Recover,
 	)
 
+	logger.Info("Setting up db client")
 	// Start the clients
 	ctx := context.Background()
 	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
+	logger.Info("Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)
 
+	logger.Info("Setting up mail client")
 	var mailClient mail.Sender
 	switch Env(cfg.Environment) {
 	case ENV_PRD, ENV_STG:
+		logger.Debug("Using SES mail client")
 		mailClient = mail.NewSesMailClient(ctx)
 	default:
+		logger.Debug("Using test mail client")
 		mailClient = &mail.TestClient{}
 	}
 
@@ -106,15 +114,6 @@ func main() {
 		DBClient:   dbClient,
 		Authorizer: authClient,
 		MailClient: mailClient,
-	}
-
-	hut.UseGlobal(
-		hutMiddlewares.Trace(func() string {
-			return tools.GenerateNewId(10)
-		}),
-	)
-	if authClient == nil {
-		panic("nil auth client")
 	}
 
 	protector := middlewares.NewProtector(
@@ -178,8 +177,10 @@ func main() {
 		}
 	}()
 
-	baseLog.Info("Starting http server", "config", cfg)
-	if err := http.ListenAndServe(cfg.Host, mux); err != nil {
+	httpHandler := WithMiddleware(mux, Tracer, RequestLogger)
+
+	logger.Info("Starting http server", "config", cfg)
+	if err := http.ListenAndServe(cfg.Host, httpHandler); err != nil {
 		panic(err)
 	}
 }

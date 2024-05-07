@@ -10,12 +10,9 @@ import (
 	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
-	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
-
-var logger = logging.NewLogger("routes")
 
 func GetLoginCookie(val string) *http.Cookie {
 	return &http.Cookie{

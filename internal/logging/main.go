@@ -11,6 +11,10 @@ func init() {
 	logger = slog.Default()
 }
 
+func SetHandler(h slog.Handler) {
+	logger = slog.New(h)
+}
+
 func Info(ctx context.Context, msg string, keyvals ...interface{}) {
 	logger.InfoContext(ctx, msg, keyvals...)
 }
