@@ -25,9 +25,10 @@ func NewProtector(authorizer *auth.Authorizer, dbclient *db.Client, logger *logg
 
 func (p *Protector) LoadUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log := p.log.WithRequest(r)
 		tkn, err := r.Cookie("pm-auth-tkn")
 		if err != nil {
-			p.log.DebugCtx(r.Context(), "No session cookie found")
+			log.DebugCtx(r.Context(), "No session cookie found")
 			next.ServeHTTP(w, reqWithError(r, "could not decode session cookie", http.StatusBadRequest))
 			return
 		}
@@ -39,8 +40,8 @@ func (p *Protector) LoadUser(next http.Handler) http.Handler {
 
 		uid := p.auth.ValSessionToken(tkn.Value)
 		if uid == "" {
-			p.log.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
-			next.ServeHTTP(w, reqWithError(r, "cookie not matched with session", http.StatusBadRequest))
+			log.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
+			next.ServeHTTP(w, r)
 			return
 		}
 
@@ -50,7 +51,7 @@ func (p *Protector) LoadUser(next http.Handler) http.Handler {
 			return
 		}
 
-		p.log.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
+		log.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
 		next.ServeHTTP(w, reqWithUser(r, user))
 	})
 }
@@ -76,16 +77,17 @@ func (p *Protector) LoadFromShortcut() hut.MiddlewareFunc {
 	}
 }
 
-func (p *Protector) ProtectRoute() hut.MiddlewareFunc {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
+func (p *Protector) ProtectRoute() MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			user := reqGetUser(r)
 			if user == nil {
 				err := reqGetError(r)
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				p.log.WithRequest(r).WithError(err).ErrorCtx(r.Context(), "User access forbidden")
+				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 				return
 			}
-			next(w, r)
-		}
+			next.ServeHTTP(w, r)
+		})
 	}
 }

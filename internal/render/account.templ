@@ -7,7 +7,7 @@ import (
 templ AccountPage(user *db.User) {
 	@Wrapper(user, "Account") {
 		<div class="box center">
-			<form class="table rows" hx-put="/account" hx-target="#account-status">
+			<form class="table rows" hx-put="/user/account" hx-target="#account-status">
 				<p>
 					<label for="shortcut">Shortcut token</label>
 					<input disabled name="shortcut" type="text" value={ user.ShortcutToken }/>

@@ -33,7 +33,7 @@ func AccountPage(user *db.User) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box center\"><form class=\"table rows\" hx-put=\"/account\" hx-target=\"#account-status\"><p><label for=\"shortcut\">Shortcut token</label> <input disabled name=\"shortcut\" type=\"text\" value=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box center\"><form class=\"table rows\" hx-put=\"/user/account\" hx-target=\"#account-status\"><p><label for=\"shortcut\">Shortcut token</label> <input disabled name=\"shortcut\" type=\"text\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

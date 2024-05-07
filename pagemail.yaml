@@ -1,7 +1,7 @@
 ---
 app:
   environment: dev
-  log-level: DEBUG
+  log-level: INFO
   host: 127.0.0.1:8080
 db:
   path: ./db/pagemail.sqlite3

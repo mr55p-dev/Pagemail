@@ -82,7 +82,7 @@ func SavePageWidget() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"tool-bar\"><form hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/page\" hx-target=\"#pageview\" hx-target-error=\"#save-response\" hx-swap=\"afterbegin\"><input type=\"url\" name=\"url\" placeholder=\"url\" id=\"save-page-input\"></form><button type=\"submit\" id=\"save-page-submit\">Save</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"tool-bar\"><form hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/pages\" hx-target=\"#pageview\" hx-target-error=\"#save-response\" hx-swap=\"afterbegin\"><input type=\"url\" name=\"url\" placeholder=\"url\" id=\"save-page-input\"></form><button type=\"submit\" id=\"save-page-submit\">Save</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

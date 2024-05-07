@@ -45,10 +45,10 @@ templ Header(user *db.User) {
 			<ul role="list" class="align-items:center">
 				<li><a href="/"><img alt="pagemail" class="brand-icon" src="/assets/img/default-icon.svg"/></a></li>
 				if user != nil {
-					<li><a href={ templ.URL("/dashboard") }>Pages</a></li>
-					<li><a href={ templ.URL("/account") }>Account</a></li>
+					<li><a href={ templ.URL("/pages/dashboard") }>Pages</a></li>
+					<li><a href={ templ.URL("/user/account") }>Account</a></li>
 					<li>
-						<a hx-get="/logout">Logout</a>
+						<a hx-get="/user/logout">Logout</a>
 					</li>
 				} else {
 					<li><a href="/login">Login</a></li>

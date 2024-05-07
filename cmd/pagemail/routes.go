@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/preview"
@@ -90,12 +89,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	cookie := GetLoginCookie(sess)
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-	return
-}
-
-func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
-	staticRender(render.Signup(), w, r)
+	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
 
@@ -132,10 +126,16 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	cookie := GetLoginCookie(token)
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+	w.Header().Add("HX-Redirect", "/pages/dashboard")
+	return
 }
 
-func (Router) GetLogout(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
+	staticRender(render.Signup(), w, r)
+	return
+}
+
+func (Router) GetLogout(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:   auth.SESS_COOKIE,
 		Value:  "",
@@ -143,7 +143,8 @@ func (Router) GetLogout(w http.ResponseWriter, r *http.Request) hut.Writer {
 		MaxAge: -1,
 	}
 	http.SetCookie(w, &cookie)
-	return hut.Redirect("/")
+	w.Header().Add("HX-Redirect", "/pages/dashboard")
+	return
 }
 
 func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
@@ -260,17 +261,9 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-type DeletePageRequest struct {
-	PageId string `query:"page_id"`
-}
-
 func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
-	req := requestBind[DeletePageRequest](w, r)
-	if req == nil {
-		return
-	}
 	user := db.GetUser(r.Context())
-	page, err := router.DBClient.ReadPage(r.Context(), req.PageId)
+	page, err := router.DBClient.ReadPage(r.Context(), r.PathValue("page_id"))
 	if err != nil {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
@@ -285,30 +278,31 @@ func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
-	return hut.Component(render.AccountPage(user))
+	staticRender(render.AccountPage(user), w, r)
+	return
 }
 
-func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
 	form := new(AccountData)
 	user.Subscribed = form.Subscribed == "on"
 	err := router.DBClient.UpdateUser(r.Context(), user)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-
-	return nil
 }
 
-func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) hut.Writer {
+func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) {
 	user := db.GetUser(r.Context())
 	token := router.Authorizer.GenShortcutToken(user)
 	user.ShortcutToken = token
 	err := router.DBClient.UpdateUser(r.Context(), user)
 	if err != nil {
-		return hut.Error(err, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	return hut.String(token, http.StatusOK)
+	fmt.Fprintf(w, "%s", token)
 }

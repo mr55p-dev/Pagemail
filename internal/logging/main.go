@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/mr55p-dev/htmx-utils/pkg/trace"
 )
 
 var logger *Logger = &Logger{slog.Default()}
@@ -29,6 +32,10 @@ func Debug(ctx context.Context, msg string, keyvals ...interface{}) {
 
 func Error(ctx context.Context, msg string, keyvals ...interface{}) {
 	logger.out.ErrorContext(ctx, msg, keyvals...)
+}
+
+func WithRequest(r *http.Request) *Logger {
+	return logger.WithRequest(r)
 }
 
 func WithError(err error) *Logger {
@@ -70,6 +77,14 @@ func (l *Logger) ErrorCtx(ctx context.Context, msg string, keyvals ...interface{
 
 func (l *Logger) WarnCtx(ctx context.Context, msg string, keyvals ...interface{}) {
 	l.out.WarnContext(ctx, msg, keyvals...)
+}
+
+func (l *Logger) WithRequest(r *http.Request) *Logger {
+	return &Logger{
+		out: l.out.With(
+			"trace-id", trace.GetTrace(r.Context()),
+		),
+	}
 }
 
 func (l *Logger) WithError(err error) *Logger {

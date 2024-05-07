@@ -117,7 +117,7 @@ func Header(user *db.User) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var5 templ.SafeURL = templ.URL("/dashboard")
+			var templ_7745c5c3_Var5 templ.SafeURL = templ.URL("/pages/dashboard")
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var5)))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -126,12 +126,12 @@ func Header(user *db.User) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var6 templ.SafeURL = templ.URL("/account")
+			var templ_7745c5c3_Var6 templ.SafeURL = templ.URL("/user/account")
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var6)))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Account</a></li><li><a hx-get=\"/logout\">Logout</a></li>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Account</a></li><li><a hx-get=\"/user/logout\">Logout</a></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
