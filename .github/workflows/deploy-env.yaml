@@ -1,23 +1,28 @@
 ---
-name: Deploy code to production
+name: Deploy code
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+    inputs:
+      environment:
+        type: environment
+        description: Environment to deploy into
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        description: Environment to deploy into
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3

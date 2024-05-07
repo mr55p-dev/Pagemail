@@ -1,0 +1,12 @@
+---
+name: Deploy to dev
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-env.yaml
+    with:
+      environment: Development
