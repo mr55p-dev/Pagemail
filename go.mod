@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/mr55p-dev/gonk v0.0.0-20240312084028-4e975b14d668
 	github.com/mr55p-dev/htmx-utils v0.0.0-20240312083008-2d3534dd85bc
-	github.com/robfig/cron/v3 v3.0.1
+	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
 )
 
@@ -35,7 +35,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
