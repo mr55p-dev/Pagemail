@@ -30,8 +30,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ var.AWS_ROLE }}
-          aws-region: ${{ var.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -53,6 +53,6 @@ jobs:
 
       - name: Deploy to server
         env:
-          DOCKER_HOST: ${{ var.DOCKER_HOST }}
+          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
         run: |
           docker compose restart
