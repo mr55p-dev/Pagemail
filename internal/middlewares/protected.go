@@ -46,7 +46,7 @@ func (p *Protector) LoadUser(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		p.log.DebugContext(r.Context(), "Loaded user from session cookie", "user", user)
+		p.log.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
 		next(w, reqWithUser(r, user))
 	}
 }

@@ -15,37 +15,37 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
 
+var logger = logging.NewLogger("mail")
+
 func GenerateMailBody(ctx context.Context, user *User, pages []db.Page, since time.Time) ([]byte, error) {
 	dest := new(bytes.Buffer)
 	err := render.MailDigest(&since, user.Name, pages).Render(ctx, dest)
 	return dest.Bytes(), err
 }
 
-type MailClient interface {
-	SendMail(context.Context, *logging.Logger, *User, string) error
+type Sender interface {
+	Send(context.Context, *User, string) error
 }
 
 type SesMailClient struct {
 	FromAddr  string
 	SesClient *ses.Client
-	log       *logging.Logger
 }
 
-func NewSesMailClient(ctx context.Context, log *logging.Logger) *SesMailClient {
+func NewSesMailClient(ctx context.Context) *SesMailClient {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		panic(err.Error())
 	}
 	client := ses.NewFromConfig(cfg)
 	return &SesMailClient{
-		log:       log,
 		SesClient: client,
 		FromAddr:  "mail@pagemail.io",
 	}
 }
 
-func (c *SesMailClient) SendMail(ctx context.Context, log *logging.Logger, user *User, body string) error {
-	c.log.DebugContext(ctx, "Sending mail")
+func (c *SesMailClient) Send(ctx context.Context, user *User, body string) error {
+	logger.DebugCtx(ctx, "Sending mail")
 	_, err := c.SesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
 			ToAddresses: []string{user.Email},
@@ -72,9 +72,9 @@ func (c *SesMailClient) SendMail(ctx context.Context, log *logging.Logger, user 
 		},
 	})
 	if err != nil {
-		c.log.Errc(ctx, "Error sending mail", err)
+		logger.ErrorCtx(ctx, "Error sending mail", err)
 		return err
 	}
-	c.log.InfoContext(ctx, "Sent mail")
+	logging.Info(ctx, "Sent mail")
 	return nil
 }

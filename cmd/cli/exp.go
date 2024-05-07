@@ -38,8 +38,9 @@ func GetUser(ctx *cli.Context) (user *db.User, err error) {
 	return user, nil
 }
 
+var log = logging.NewLogger("pmtk")
+
 func main() {
-	log := logging.NewVoid()
 	app := cli.App{
 		Name:        "pmtk",
 		Description: "Toolkit for pagemail services and debugging",
@@ -125,16 +126,15 @@ func main() {
 							},
 						},
 						Action: func(ctx *cli.Context) error {
-							var mailClient mail.MailClient
+							var mailClient mail.Sender
 							if ctx.Bool("real-client") {
-								mailClient = mail.NewSesMailClient(context.TODO(), log)
+								mailClient = mail.NewSesMailClient(context.TODO())
 							} else {
 								mailClient = &mail.TestClient{}
 							}
 							slog.Info("Starting to send mail")
 							mail.DoDigestJob(
 								context.TODO(),
-								log,
 								dbClient,
 								mailClient,
 							)
@@ -160,7 +160,6 @@ func main() {
 							}
 							msg, err := mail.GetEmailForUser(
 								context.TODO(),
-								log,
 								dbClient,
 								mail.User{
 									Id:    id,

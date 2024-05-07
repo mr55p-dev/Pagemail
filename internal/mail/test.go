@@ -1,14 +1,10 @@
 package mail
 
-import (
-	"context"
-
-	"github.com/mr55p-dev/pagemail/internal/logging"
-)
+import  "context"
 
 type TestClient struct{}
 
-func (*TestClient) SendMail(ctx context.Context, log *logging.Logger, user *User, body string) error {
-	log.Info("Test sending mail", "user", user.Email)
+func (*TestClient) Send(ctx context.Context, user *User, body string) error {
+	logger.Info("Test sending mail", "user", user.Email)
 	return nil
 }

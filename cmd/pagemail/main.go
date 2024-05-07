@@ -19,8 +19,8 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
+	"github.com/mr55p-dev/pagemail/internal/timer"
 	"github.com/mr55p-dev/pagemail/internal/tools"
-	"github.com/robfig/cron/v3"
 )
 
 type Env string
@@ -40,8 +40,7 @@ const (
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
-	MailClient mail.MailClient
-	log        *logging.Logger
+	MailClient mail.Sender
 }
 
 type AccountData struct {
@@ -77,31 +76,28 @@ func main() {
 	}
 
 	// Setup logging
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     ParseLogLvl(cfg.LogLevel),
-		AddSource: true,
-	})
-	baseLog := logging.Logger{
-		Logger: slog.New(handler),
-	}
+	// handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	// 	Level:     ParseLogLvl(cfg.LogLevel),
+	// 	AddSource: true,
+	// })
+	baseLog := logging.NewLogger("main")
 
 	// Basic middleware
 	hut.UseGlobal(
 		hutMiddlewares.Recover,
-		hutMiddlewares.RequestLogger(baseLog.With("module", "request logger")),
 	)
 
 	// Start the clients
 	ctx := context.Background()
-	dbClient := db.NewClient(cfg.DBPath, &baseLog)
+	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
 	authClient := auth.NewAuthorizer(ctx)
 
-	var mailClient mail.MailClient
+	var mailClient mail.Sender
 	switch Env(cfg.Environment) {
 	case ENV_PRD, ENV_STG:
-		mailClient = mail.NewSesMailClient(ctx, logging.New(baseLog.With("package", "mail")))
+		mailClient = mail.NewSesMailClient(ctx)
 	default:
 		mailClient = &mail.TestClient{}
 	}
@@ -110,7 +106,6 @@ func main() {
 		DBClient:   dbClient,
 		Authorizer: authClient,
 		MailClient: mailClient,
-		log:        &baseLog,
 	}
 
 	hut.UseGlobal(
@@ -125,7 +120,7 @@ func main() {
 	protector := middlewares.NewProtector(
 		authClient,
 		dbClient,
-		logging.New(baseLog.With("package", "protection middleware")),
+		nil,
 	)
 	hut.UseGlobal(protector.LoadUser)
 	mux := http.NewServeMux()
@@ -168,16 +163,20 @@ func main() {
 		)
 	}
 
-	mailLog := logging.New(baseLog.With("package", "mail"))
-	cr := cron.New()
-	cr.AddFunc(
-		"0 7 * * *",
-		func() {
-			ctx, cancel := context.WithTimeout(ctx, 20*time.Minute)
-			defer cancel()
-			mail.DoDigestJob(ctx, mailLog, dbClient, mailClient)
-		},
-	)
+	now := time.Now()
+	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
+	timer := timer.NewCronTimer(time.Hour*24, start)
+	go func() {
+		for now := range timer.T {
+			slog.Info("Starting mail digest", "time", now.Format(time.Stamp))
+			ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
+			err := mail.DoDigestJob(ctx, dbClient, mailClient)
+			cancel()
+			if err != nil {
+				slog.ErrorContext(ctx, "Failed to send digest", "error", err.Error())
+			}
+		}
+	}()
 
 	baseLog.Info("Starting http server", "config", cfg)
 	if err := http.ListenAndServe(cfg.Host, mux); err != nil {

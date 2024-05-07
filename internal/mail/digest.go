@@ -2,11 +2,9 @@ package mail
 
 import (
 	"context"
+	"github.com/mr55p-dev/pagemail/internal/db"
 	"sync"
 	"time"
-
-	"github.com/mr55p-dev/pagemail/internal/db"
-	"github.com/mr55p-dev/pagemail/internal/logging"
 )
 
 type User struct {
@@ -36,19 +34,19 @@ func Yesterday() time.Time {
 	return since
 }
 
-func GetEmailForUser(ctx context.Context, log *logging.Logger, dbClient *db.Client, user User) (message string, err error) {
-	log.DebugContext(ctx, "Looking up pages")
+func GetEmailForUser(ctx context.Context, dbClient *db.Client, user User) (message string, err error) {
+	logger.DebugCtx(ctx, "Looking up pages")
 	since := Yesterday()
 
 	pages, err := dbClient.ReadPagesByUserId(ctx, user.Id, -1)
 	if err != nil {
-		log.Errc(ctx, "Failed looking up pages", err)
+		logger.ErrorCtx(ctx, "Failed looking up pages", err)
 	}
 	pages = FilterPages(ctx, pages, since)
-	log.DebugContext(ctx, "Found pages", "count", len(pages))
+	logger.DebugCtx(ctx, "Found pages", "count", len(pages))
 	messageBytes, err := GenerateMailBody(ctx, &user, pages, since)
 	if err != nil {
-		log.Errc(ctx, "Failed while generating mail body", err)
+		logger.ErrorCtx(ctx, "Failed while generating mail body", err)
 		return
 	}
 	message = string(messageBytes)
@@ -64,8 +62,7 @@ func FilterPages(ctx context.Context, pages []db.Page, since time.Time) (out []d
 	return
 }
 
-func DoDigestJob(ctx context.Context, log *logging.Logger, dbClient *db.Client, mailClient MailClient) (err error) {
-	log.InfoContext(ctx, "Starting mail send job")
+func DoDigestJob(ctx context.Context, dbClient *db.Client, mailClient Sender) (err error) {
 	userIds, err := GetUsers(ctx, dbClient)
 	if err != nil {
 		return
@@ -76,14 +73,14 @@ func DoDigestJob(ctx context.Context, log *logging.Logger, dbClient *db.Client, 
 		wg.Add(1)
 		go func(user User) {
 			defer wg.Done()
-			message, err := GetEmailForUser(ctx, log, dbClient, user)
-			err = mailClient.SendMail(ctx, log, &user, message)
+			message, err := GetEmailForUser(ctx, dbClient, user)
+			err = mailClient.Send(ctx, &user, message)
 			if err != nil {
-				log.Errc(ctx, "Failed sending mail", err)
+				logger.ErrorCtx(ctx, "Failed sending mail", err)
 			}
 		}(user)
 	}
 	wg.Wait()
-	log.InfoContext(ctx, "Mail send job done")
+	logger.InfoCtx(ctx, "Mail send job done")
 	return nil
 }

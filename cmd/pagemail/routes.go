@@ -10,9 +10,12 @@ import (
 	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 )
+
+var logger = logging.NewLogger("routes")
 
 func GetLoginCookie(val string) *http.Cookie {
 	return &http.Cookie{
@@ -45,7 +48,7 @@ type PostLoginRequest struct {
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request, req *PostLoginRequest) hut.Writer {
-	router.log.DebugContext(r.Context(), "Received bound data", "email", req.Email, "req", req)
+	logger.DebugCtx(r.Context(), "Received bound data", "email", req.Email, "req", req)
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		return hut.Error(err, http.StatusInternalServerError)
