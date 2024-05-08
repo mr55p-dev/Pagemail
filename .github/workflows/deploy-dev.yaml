@@ -1,0 +1,14 @@
+---
+name: Deploy to development
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy development
+    uses: ./.github/workflows/deploy-env.yaml
+    with:
+      environment: Development
+    secrets: inherit
