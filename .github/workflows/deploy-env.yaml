@@ -13,8 +13,7 @@ on:
         description: Environment to deploy into
         required: true
     secrets:
-      ssh-private-key:
-        type: string
+      ssh_private_key:
         description: Private key to auth with DOCKER_HOST
         required: true
 
