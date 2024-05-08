@@ -12,6 +12,12 @@ on:
       environment:
         type: string
         description: Environment to deploy into
+        required: true
+    secrets:
+      ssh-private-key:
+        type: string
+        description: Private key to auth with DOCKER_HOST
+        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.environment }}
@@ -30,7 +36,7 @@ jobs:
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-            ssh-private-key: ${{ vars.TEST }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
