@@ -12,10 +12,6 @@ on:
         type: string
         description: Environment to deploy into
         required: true
-    secrets:
-      ssh_private_key:
-        description: Private key to auth with DOCKER_HOST
-        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.environment }}
@@ -36,13 +32,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Get environment
-        id: get-env
-        run: |
-          export ENV_NAME=$(echo "${{ inputs.environment }}" | tr '[:upper:]' '[:lower:]')
-          echo "env=$ENV_NAME" >> $GITHUB_OUTPUT
-          echo "Environment label: $ENV_NAME"
-
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
 
@@ -60,7 +49,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: pagemail
-          IMAGE_TAG: steps.get-env.outputs.env
+          IMAGE_TAG: ${{ vars.CONTAINER_LABEL }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
@@ -68,6 +57,7 @@ jobs:
       - name: Deploy to server
         env:
           DOCKER_HOST: ${{ vars.DOCKER_HOST }}
-          COMPOSE_FILE: docker-compose.${{ steps.get-env.outputs.env }}.yml
+          COMPOSE_FILE: docker-compose.${{ vars.ENV_NAME }}.yml
         run: |
-          docker compose -f $COMPOSE_FILE restart
+          docker compose -f $COMPOSE_FILE down
+          docker compose -f $COMPOSE_FILE up -d
