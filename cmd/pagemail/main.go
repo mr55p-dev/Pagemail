@@ -144,6 +144,9 @@ func main() {
 		http.MethodGet:  http.HandlerFunc(s.GetSignup),
 		http.MethodPost: http.HandlerFunc(s.PostSignup),
 	}))
+	rootMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "OK")
+	})
 
 	// Serve pages
 	pagesMux := http.NewServeMux()
