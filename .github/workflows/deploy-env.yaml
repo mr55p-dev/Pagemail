@@ -36,6 +36,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Get environment
+        id: get-env
+        run:
+          export ENV_NAME=$(echo "${{ inputs.environment }}" | tr '[:upper:]' '[:lower:]')
+          echo "env=$ENV_NAME" >> $GITHUB_OUTPUT
+
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
 
@@ -53,7 +59,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: pagemail
-          IMAGE_TAG: prd
+          IMAGE_TAG: steps.get-env.outputs.env
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
@@ -61,7 +67,6 @@ jobs:
       - name: Deploy to server
         env:
           DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+          COMPOSE_FILE: docker-compose.${{ steps.get-env.outputs.env }}.yml
         run: |
-          export ENV_NAME=$(echo "${{ inputs.environment }}" | tr '[:upper:]' '[:lower:]')
-          echo "Starting compose for $ENV_NAME"
-          docker compose -f docker-compose.$ENV_NAME.yml restart
+          docker compose -f $COMPOSE_FILE restart
