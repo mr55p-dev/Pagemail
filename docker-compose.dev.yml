@@ -7,8 +7,8 @@ services:
     container_name: pagemail-dev
     restart: always
     environment:
-      PM_ENVIRONMENT: prd
-      PM_LOG_LEVEL: INFO
+      PM_ENVIRONMENT: dev
+      PM_LOG_LEVEL: DEBUG
       PM_HOST: 0.0.0.0:80
       PM_PATH: /app/db/pagemail.sqlite3
     expose:
@@ -22,9 +22,9 @@ services:
         awslogs-group: /splat/pagemail-dev
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pagemail.rule=Host(`dev.pagemail.io`)"
-      - "traefik.http.routers.pagemail.entrypoints=websecure"
-      - "traefik.http.routers.pagemail.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pagemail-dev.rule=Host(`dev.pagemail.io`)"
+      - "traefik.http.routers.pagemail-dev.entrypoints=websecure"
+      - "traefik.http.routers.pagemail-dev.tls.certresolver=letsencrypt"
     platform: linux/amd64
     networks:
       - traefik
