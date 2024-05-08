@@ -38,9 +38,10 @@ jobs:
 
       - name: Get environment
         id: get-env
-        run:
+        run: |
           export ENV_NAME=$(echo "${{ inputs.environment }}" | tr '[:upper:]' '[:lower:]')
           echo "env=$ENV_NAME" >> $GITHUB_OUTPUT
+          echo "Environment label: $ENV_NAME"
 
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
