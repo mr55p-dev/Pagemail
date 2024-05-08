@@ -1,8 +1,9 @@
+---
 version: v3
 name: pagemail-dev
 services:
   pagemail:
-    image: pagemail:dev
+    image: pagemail:latest
     container_name: pagemail-dev
     restart: always
     environment:
