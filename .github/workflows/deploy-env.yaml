@@ -36,6 +36,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Disable host verification
+        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
