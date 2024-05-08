@@ -47,10 +47,9 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Configure SSH id
-        run: |
-          echo "${{ secrets.SSH_KEY }}" | tr -d '\r' > key.pem
-          ssh-add key.pem
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+            ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to server
         env:
