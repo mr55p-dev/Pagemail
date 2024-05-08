@@ -11,4 +11,4 @@ jobs:
     uses: ./.github/workflows/deploy-env.yaml
     with:
       environment: Development
-      ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    secrets: inherit
