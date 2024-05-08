@@ -62,4 +62,6 @@ jobs:
         env:
           DOCKER_HOST: ${{ vars.DOCKER_HOST }}
         run: |
-          docker compose restart
+          export ENV_NAME=$(echo "${{ inputs.envirionment }}" | tr '[:upper:]' '[:lower:]')
+          echo "Starting compose for $ENV_NAME"
+          docker compose -f docker-compose.$ENV_NAME.yml restart
