@@ -58,7 +58,7 @@ func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now ti
 		go func() {
 			defer wg.Done()
 			for user := range jobs {
-				err := sendMailToUser(ctx, &user, sender, reader, now)
+				err := SendMailToUser(ctx, &user, reader, sender, now)
 				if err != nil {
 					errChan <- err
 				}
@@ -88,7 +88,7 @@ func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now ti
 	return nil
 }
 
-func sendMailToUser(ctx context.Context, user *db.User, sender MailSender, db MailDbReader, now time.Time) error {
+func SendMailToUser(ctx context.Context, user *db.User, db MailDbReader, sender MailSender, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 

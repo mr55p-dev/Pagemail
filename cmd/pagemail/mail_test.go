@@ -16,11 +16,11 @@ type message struct {
 	contents string
 }
 
-type MailNoOp struct {
+type mailSenderNoOp struct {
 	mail []message
 }
 
-func (m *MailNoOp) Send(ctx context.Context, addr string, contents io.Reader) error {
+func (m *mailSenderNoOp) Send(ctx context.Context, addr string, contents io.Reader) error {
 	dst := strings.Builder{}
 	io.Copy(&dst, contents)
 	cnts := dst.String()
@@ -32,41 +32,50 @@ func (m *MailNoOp) Send(ctx context.Context, addr string, contents io.Reader) er
 	return nil
 }
 
-type MailDbReaderMock struct {
-	created time.Time
+func (m *mailSenderNoOp) Reset() {
+	m.mail = make([]message, 0)
 }
 
-func (MailDbReaderMock) ReadUsersWithMail(context.Context) ([]db.User, error) {
-	return nil, nil
+type mailDbReaderNoOp struct {
+	created  time.Time
+	user     db.User
+	numPages int
+	numUsers int
 }
 
-func newString(val string) *string {
-	return &val
+func (m *mailDbReaderNoOp) ReadUsersWithMail(context.Context) ([]db.User, error) {
+	users := make([]db.User, 0)
+	for i := 0; i < m.numUsers; i++ {
+		users = append(users, testUser)
+	}
+	return users, nil
 }
 
-func (m *MailDbReaderMock) ReadPagesByUserBetween(context.Context, string, time.Time, time.Time) ([]db.Page, error) {
-
-	return []db.Page{
+func (m *mailDbReaderNoOp) ReadPagesByUserBetween(context.Context, string, time.Time, time.Time) ([]db.Page, error) {
+	testPages := []db.Page{
 		{
-			Id:          "123",
-			Url:         "https://pagemail.io",
-			Title:       newString("Title 1"),
-			Description: newString("Description 1"),
-			Created:     &m.created,
+			Id:      "123",
+			UserId:  m.user.Id,
+			Url:     "https://pagemail.io",
+			Created: &m.created,
 		},
 		{
-			Id:          "456",
-			Url:         "https://example.com",
-			Title:       newString("Title 2"),
-			Description: newString("Description 2"),
-			Created:     &m.created,
+			Id:      "123",
+			UserId:  m.user.Id,
+			Url:     "https://example.com",
+			Created: &m.created,
 		},
-	}, nil
+	}
+	if m.numPages == 0 {
+		return []db.Page{}, nil
+	}
+	return testPages[:m.numPages], nil
 }
 
-func TestSendMailToUser(t *testing.T) {
-	assert := assert.New(t)
-	testUser := db.User{
+var (
+	created  = time.Date(2024, time.January, 1, 12, 0, 0, 0, time.UTC)
+	now      = time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC)
+	testUser = db.User{
 		Id:         "123",
 		Username:   "user",
 		Email:      "user@mail.com",
@@ -74,13 +83,29 @@ func TestSendMailToUser(t *testing.T) {
 		Subscribed: true,
 	}
 
-	created := time.Date(2024, time.January, 1, 12, 0, 0, 0, time.UTC)
-	now := time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC)
-	sender := MailNoOp{}
-	dbReader := &MailDbReaderMock{
-		created: created,
+	mailSender = &mailSenderNoOp{}
+	dbReader   = &mailDbReaderNoOp{
+		created:  created,
+		numPages: 1,
+		numUsers: 1,
 	}
-	err := sendMailToUser(context.TODO(), &testUser, &sender, dbReader, now)
+)
+
+func TestSendMailToUser(t *testing.T) {
+	defer mailSender.Reset()
+	dbReader.numUsers = 1
+	assert := assert.New(t)
+	err := SendMailToUser(context.TODO(), &testUser, dbReader, mailSender, now)
 	assert.NoError(err)
-	assert.Len(sender.mail, 1)
+	assert.Len(mailSender.mail, 1)
+	assert.Equal(mailSender.mail[0].address, "user@mail.com")
+}
+
+func TestDoMailJob(t *testing.T) {
+	defer mailSender.Reset()
+	dbReader.numUsers = 2
+	assert := assert.New(t)
+	err := MailJob(context.TODO(), dbReader, mailSender, now)
+	assert.NoError(err)
+	assert.Len(mailSender.mail, 2)
 }
