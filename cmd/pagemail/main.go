@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
@@ -17,7 +17,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
-	"github.com/mr55p-dev/pagemail/internal/timer"
 )
 
 var logger = logging.NewLogger("routes")
@@ -39,7 +38,7 @@ const (
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
-	MailClient mail.Sender
+	MailClient MailSender
 }
 
 type AccountData struct {
@@ -83,8 +82,14 @@ func ParseLogLvl(level string) slog.Level {
 
 func main() {
 	// Load config
+	ctx := context.Background()
 	cfg := new(AppConfig)
-	err := gonk.LoadConfig(
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	err = gonk.LoadConfig(
 		cfg,
 		gonk.FileLoader("pagemail.yaml", true),
 		gonk.EnvironmentLoader("pm"),
@@ -103,7 +108,7 @@ func main() {
 
 	logger.Info("Setting up db client")
 	// Start the clients
-	ctx := context.Background()
+
 	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
@@ -111,14 +116,14 @@ func main() {
 	authClient := auth.NewAuthorizer(ctx)
 
 	logger.Info("Setting up mail client")
-	var mailClient mail.Sender
+	var mailClient MailSender
 	switch Env(cfg.Environment) {
 	case ENV_PRD, ENV_STG:
 		logger.Debug("Using SES mail client")
-		mailClient = mail.NewSesMailClient(ctx)
+		mailClient = mail.NewSesMailClient(ctx, awsCfg)
 	default:
 		logger.Debug("Using test mail client")
-		mailClient = &mail.TestClient{}
+		mailClient = &MailNoOp{}
 	}
 
 	s := &Router{
@@ -186,21 +191,7 @@ func main() {
 	}
 
 	// Start the background timer
-	now := time.Now()
-	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
-	timer := timer.NewCronTimer(time.Hour*24, start)
-	defer timer.Stop()
-	go func() {
-		for now := range timer.T {
-			logger.Info("Starting mail digest", "time", now.Format(time.Stamp))
-			ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
-			err := mail.DoDigestJob(ctx, dbClient, mailClient)
-			cancel()
-			if err != nil {
-				logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
-			}
-		}
-	}()
+	go MailGo(ctx, s)
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))
