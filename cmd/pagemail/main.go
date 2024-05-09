@@ -39,7 +39,6 @@ const (
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
-	MailClient MailSender
 }
 
 type AccountData struct {
@@ -141,7 +140,7 @@ func main() {
 	if Env(cfg.Environment) == ENV_PRD {
 		logger.InfoCtx(ctx, "Starting mail job")
 		mailClient := mail.NewSesMailClient(ctx, awsCfg)
-		go MailGo(ctx, dbClient, mailClient)
+		go mail.MailGo(ctx, dbClient, mailClient)
 	}
 
 	s := &Router{
@@ -206,9 +205,6 @@ func main() {
 	default:
 		fileHandler = http.FileServer(http.Dir("internal/assets/public/"))
 	}
-
-	// Start the background timer
-	go MailGo(ctx, s.DBClient, s.MailClient)
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))
