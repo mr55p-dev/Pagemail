@@ -123,7 +123,7 @@ func main() {
 		mailClient = mail.NewSesMailClient(ctx, awsCfg)
 	default:
 		logger.Debug("Using test mail client")
-		mailClient = &MailNoOp{}
+		mailClient = nil
 	}
 
 	s := &Router{
@@ -191,7 +191,7 @@ func main() {
 	}
 
 	// Start the background timer
-	go MailGo(ctx, s)
+	go MailGo(ctx, s.DBClient, s.MailClient)
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))

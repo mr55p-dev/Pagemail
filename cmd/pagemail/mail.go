@@ -20,16 +20,12 @@ type MailSender interface {
 	Send(context.Context, string, io.Reader) error
 }
 
-type MailNoOp struct{}
-
-var errNoPagesToSend = errors.New("user has no pages to send")
-
-func (MailNoOp) Send(context.Context, string, io.Reader) error {
-	logger.Debug("No-op mail send")
-	return nil
+type MailDbReader interface {
+	ReadUsersWithMail(context.Context) ([]db.User, error)
+	ReadPagesByUserBetween(context.Context, string, time.Time, time.Time) ([]db.Page, error)
 }
 
-func MailGo(ctx context.Context, router *Router) {
+func MailGo(ctx context.Context, reader MailDbReader, sender MailSender) {
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
 	timer := timer.NewCronTimer(time.Hour*24, start)
@@ -37,7 +33,7 @@ func MailGo(ctx context.Context, router *Router) {
 
 	for now := range timer.T {
 		ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
-		err := router.MailJob(ctx, now)
+		err := MailJob(ctx, reader, sender, now)
 		cancel()
 		if err != nil {
 			logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
@@ -45,9 +41,9 @@ func MailGo(ctx context.Context, router *Router) {
 	}
 }
 
-func (router *Router) MailJob(ctx context.Context, now time.Time) error {
+func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now time.Time) error {
 	// Get users with mail enabled
-	users, err := router.DBClient.ReadUsersWithMail(ctx)
+	users, err := reader.ReadUsersWithMail(ctx)
 	if err != nil {
 		return fmt.Errorf("Failed to get user list: %w", err)
 	}
@@ -59,7 +55,15 @@ func (router *Router) MailJob(ctx context.Context, now time.Time) error {
 	wg := &sync.WaitGroup{}
 	for i := 0; i < runtime.NumCPU(); i++ {
 		wg.Add(1)
-		go mailJobRunner(ctx, wg, jobs, router, now, errChan)
+		go func() {
+			defer wg.Done()
+			for user := range jobs {
+				err := sendMailToUser(ctx, &user, sender, reader, now)
+				if err != nil {
+					errChan <- err
+				}
+			}
+		}()
 	}
 
 	// Read out all the errors
@@ -84,21 +88,7 @@ func (router *Router) MailJob(ctx context.Context, now time.Time) error {
 	return nil
 }
 
-func mailJobRunner(ctx context.Context, wg *sync.WaitGroup, jobs chan db.User, router *Router, now time.Time, errChan chan error) {
-	defer wg.Done()
-	for user := range jobs {
-		err := sendMailToUser(ctx, &user, router.MailClient, router.DBClient, now)
-		if err != nil {
-			if errors.Is(err, errNoPagesToSend) {
-				logger.With("user", user).DebugCtx(ctx, "No pages for user")
-			} else {
-				errChan <- err
-			}
-		}
-	}
-}
-
-func sendMailToUser(ctx context.Context, user *db.User, sender MailSender, db *db.Client, now time.Time) error {
+func sendMailToUser(ctx context.Context, user *db.User, sender MailSender, db MailDbReader, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 
@@ -112,8 +102,8 @@ func sendMailToUser(ctx context.Context, user *db.User, sender MailSender, db *d
 
 	// Brea
 	if len(pages) == 0 {
-		logger.DebugCtx(ctx, "No pages for user")
-		return errNoPagesToSend
+		logger.DebugCtx(ctx, "No pages found")
+		return nil
 	}
 
 	// Generate the mail and send it
