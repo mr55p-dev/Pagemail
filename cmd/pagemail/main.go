@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/internal/assets"
@@ -80,56 +81,72 @@ func ParseLogLvl(level string) slog.Level {
 	}
 }
 
-func main() {
-	// Load config
-	ctx := context.Background()
+func getConfig() *AppConfig {
 	cfg := new(AppConfig)
-	awsCfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	err = gonk.LoadConfig(
+	err := gonk.LoadConfig(
 		cfg,
 		gonk.FileLoader("pagemail.yaml", true),
 		gonk.EnvironmentLoader("pm"),
 	)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		panic(err)
 	}
+	return cfg
+}
 
-	// Setup logging
+func getAwsConfig(ctx context.Context) aws.Config {
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return awsCfg
+}
+
+func getLogger(cfg *AppConfig) *logging.Logger {
+	var lvl = slog.LevelInfo
+	switch strings.ToUpper(cfg.LogLevel) {
+	case "DEBUG":
+		lvl = slog.LevelDebug
+	case "ERROR":
+		lvl = slog.LevelError
+	case "WARN":
+		lvl = slog.LevelWarn
+	case "INFO":
+		lvl = slog.LevelInfo
+	}
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: ParseLogLvl(cfg.LogLevel),
+		Level: lvl,
 	})
 	logger := logging.NewLogger("main")
 	logging.SetHandler(handler)
+	return logger
+}
 
-	logger.Info("Setting up db client")
+func main() {
+	// Load config
+	ctx := context.Background()
+	cfg := getConfig()
+	awsCfg := getAwsConfig(ctx)
+	logger := getLogger(cfg)
+
 	// Start the clients
-
+	logger.DebugCtx(ctx, "Setting up db client")
 	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
-	logger.Info("Setting up auth client")
+	logger.DebugCtx(ctx, "Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)
 
-	logger.Info("Setting up mail client")
-	var mailClient MailSender
-	switch Env(cfg.Environment) {
-	case ENV_PRD, ENV_STG:
-		logger.Debug("Using SES mail client")
-		mailClient = mail.NewSesMailClient(ctx, awsCfg)
-	default:
-		logger.Debug("Using test mail client")
-		mailClient = nil
+	// Handle mail
+	if Env(cfg.Environment) == ENV_PRD {
+		logger.InfoCtx(ctx, "Starting mail job")
+		mailClient := mail.NewSesMailClient(ctx, awsCfg)
+		go MailGo(ctx, dbClient, mailClient)
 	}
 
 	s := &Router{
 		DBClient:   dbClient,
 		Authorizer: authClient,
-		MailClient: mailClient,
 	}
 
 	protector := middlewares.NewProtector(
