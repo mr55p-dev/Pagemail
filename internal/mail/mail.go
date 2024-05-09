@@ -4,4 +4,4 @@ import "github.com/mr55p-dev/pagemail/internal/logging"
 
 var logger = logging.NewLogger("mail")
 
-const from_addr = "mail@pagemail.io"
+const FROM_ADDR = "mail@pagemail.io"

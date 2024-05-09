@@ -36,7 +36,7 @@ func (c *SesMailClient) Send(ctx context.Context, recipient string, body io.Read
 		Destination: &types.Destination{
 			ToAddresses: []string{recipient},
 		},
-		Source: aws.String(from_addr),
+		Source: aws.String(FROM_ADDR),
 		Message: &types.Message{
 			Body: &types.Body{
 				Html: &types.Content{
@@ -49,7 +49,7 @@ func (c *SesMailClient) Send(ctx context.Context, recipient string, body io.Read
 				Charset: aws.String("UTF-8"),
 			},
 		},
-		ReplyToAddresses: []string{from_addr},
+		ReplyToAddresses: []string{FROM_ADDR},
 		Tags: []types.MessageTag{
 			{
 				Name:  aws.String("purpose"),
