@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
@@ -17,7 +18,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
-	"github.com/mr55p-dev/pagemail/internal/timer"
 )
 
 var logger = logging.NewLogger("routes")
@@ -39,7 +39,6 @@ const (
 type Router struct {
 	DBClient   *db.Client
 	Authorizer *auth.Authorizer
-	MailClient mail.Sender
 }
 
 type AccountData struct {
@@ -81,8 +80,7 @@ func ParseLogLvl(level string) slog.Level {
 	}
 }
 
-func main() {
-	// Load config
+func getConfig() *AppConfig {
 	cfg := new(AppConfig)
 	err := gonk.LoadConfig(
 		cfg,
@@ -90,41 +88,64 @@ func main() {
 		gonk.EnvironmentLoader("pm"),
 	)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to load config", err.Error())
 		panic(err)
 	}
+	return cfg
+}
 
-	// Setup logging
+func getAwsConfig(ctx context.Context) aws.Config {
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return awsCfg
+}
+
+func getLogger(cfg *AppConfig) *logging.Logger {
+	var lvl = slog.LevelInfo
+	switch strings.ToUpper(cfg.LogLevel) {
+	case "DEBUG":
+		lvl = slog.LevelDebug
+	case "ERROR":
+		lvl = slog.LevelError
+	case "WARN":
+		lvl = slog.LevelWarn
+	case "INFO":
+		lvl = slog.LevelInfo
+	}
 	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: ParseLogLvl(cfg.LogLevel),
+		Level: lvl,
 	})
 	logger := logging.NewLogger("main")
 	logging.SetHandler(handler)
+	return logger
+}
 
-	logger.Info("Setting up db client")
-	// Start the clients
+func main() {
+	// Load config
 	ctx := context.Background()
+	cfg := getConfig()
+	awsCfg := getAwsConfig(ctx)
+	logger := getLogger(cfg)
+
+	// Start the clients
+	logger.DebugCtx(ctx, "Setting up db client")
 	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
-	logger.Info("Setting up auth client")
+	logger.DebugCtx(ctx, "Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)
 
-	logger.Info("Setting up mail client")
-	var mailClient mail.Sender
-	switch Env(cfg.Environment) {
-	case ENV_PRD, ENV_STG:
-		logger.Debug("Using SES mail client")
-		mailClient = mail.NewSesMailClient(ctx)
-	default:
-		logger.Debug("Using test mail client")
-		mailClient = &mail.TestClient{}
+	// Handle mail
+	if Env(cfg.Environment) == ENV_PRD {
+		logger.InfoCtx(ctx, "Starting mail job")
+		mailClient := mail.NewSesMailClient(ctx, awsCfg)
+		go mail.MailGo(ctx, dbClient, mailClient)
 	}
 
 	s := &Router{
 		DBClient:   dbClient,
 		Authorizer: authClient,
-		MailClient: mailClient,
 	}
 
 	protector := middlewares.NewProtector(
@@ -184,23 +205,6 @@ func main() {
 	default:
 		fileHandler = http.FileServer(http.Dir("internal/assets/public/"))
 	}
-
-	// Start the background timer
-	now := time.Now()
-	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
-	timer := timer.NewCronTimer(time.Hour*24, start)
-	defer timer.Stop()
-	go func() {
-		for now := range timer.T {
-			slog.Info("Starting mail digest", "time", now.Format(time.Stamp))
-			ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
-			err := mail.DoDigestJob(ctx, dbClient, mailClient)
-			cancel()
-			if err != nil {
-				slog.ErrorContext(ctx, "Failed to send digest", "error", err.Error())
-			}
-		}
-	}()
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const PAGE_SIZE int = 10
@@ -47,6 +48,15 @@ func (client *Client) ReadPagesByUserId(c context.Context, id string, page int) 
 		return nil, err
 	}
 	return pages, err
+}
+
+func (client *Client) ReadPagesByUserBetween(c context.Context, id string, start, end time.Time) ([]Page, error) {
+	pages := make([]Page, 0)
+	err := client.db.SelectContext(c, &pages, `SELECT * FROM pages WHERE user_id = ? AND created BETWEEN ? AND ? ORDER BY created DESC`, id, start, end)
+	if err != nil {
+		return nil, err
+	}
+	return pages, nil
 }
 
 func (client *Client) UpsertPage(c context.Context, p *Page) error {
