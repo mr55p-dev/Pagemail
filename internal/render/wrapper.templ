@@ -8,10 +8,10 @@ templ Wrapper(user *db.User, title string) {
 	<!DOCTYPE html>
 	<html>
 		<head>
-			if title != "pagemail" {
-				<title>pagemail - { title }</title>
+			if title != "" {
+				<title>Pagemail - { title }</title>
 			} else {
-				<title>pagemail</title>
+				<title>Pagemail</title>
 			}
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
