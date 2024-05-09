@@ -2,6 +2,9 @@ package mail
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
@@ -19,10 +22,17 @@ func NewSesMailClient(ctx context.Context, awsConfig aws.Config) *SesMailClient 
 	}
 }
 
-func (c *SesMailClient) Send(ctx context.Context, recipient, body string) error {
+func (c *SesMailClient) Send(ctx context.Context, recipient string, body io.Reader) error {
 	logger := logger.With("recipient", body)
 	logger.DebugCtx(ctx, "Sending mail", "recipient")
-	_, err := c.sesClient.SendEmail(ctx, &ses.SendEmailInput{
+	bodyTextBuilder := strings.Builder{}
+	_, err := io.Copy(&bodyTextBuilder, body)
+	if err != nil {
+		return fmt.Errorf("Failed to copy mail body: %w", err)
+	}
+
+	bodyText := bodyTextBuilder.String()
+	_, err = c.sesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
 			ToAddresses: []string{recipient},
 		},
@@ -30,7 +40,7 @@ func (c *SesMailClient) Send(ctx context.Context, recipient, body string) error 
 		Message: &types.Message{
 			Body: &types.Body{
 				Html: &types.Content{
-					Data:    &body,
+					Data:    &bodyText,
 					Charset: aws.String("UTF-8"),
 				},
 			},
