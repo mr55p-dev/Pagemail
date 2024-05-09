@@ -63,22 +63,6 @@ func NewLogger(name string) *Logger {
 	}
 }
 
-func (l *Logger) InfoCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.out.InfoContext(ctx, msg, keyvals...)
-}
-
-func (l *Logger) DebugCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.out.DebugContext(ctx, msg, keyvals...)
-}
-
-func (l *Logger) ErrorCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.out.ErrorContext(ctx, msg, keyvals...)
-}
-
-func (l *Logger) WarnCtx(ctx context.Context, msg string, keyvals ...interface{}) {
-	l.out.WarnContext(ctx, msg, keyvals...)
-}
-
 func (l *Logger) WithRequest(r *http.Request) *Logger {
 	return &Logger{
 		out: l.out.With(
@@ -99,6 +83,28 @@ func (l *Logger) WithRecover(r any) *Logger {
 	return &Logger{
 		out: l.out.With("recover", fmt.Sprintf("%v", r)),
 	}
+}
+
+func (l *Logger) With(keyvals ...any) *Logger {
+	return &Logger{
+		out: l.out.With(keyvals...),
+	}
+}
+
+func (l *Logger) InfoCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	l.out.InfoContext(ctx, msg, keyvals...)
+}
+
+func (l *Logger) DebugCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	l.out.DebugContext(ctx, msg, keyvals...)
+}
+
+func (l *Logger) ErrorCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	l.out.ErrorContext(ctx, msg, keyvals...)
+}
+
+func (l *Logger) WarnCtx(ctx context.Context, msg string, keyvals ...interface{}) {
+	l.out.WarnContext(ctx, msg, keyvals...)
 }
 
 func (l *Logger) Info(msg string, keyvals ...interface{}) {

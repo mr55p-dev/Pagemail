@@ -192,12 +192,12 @@ func main() {
 	defer timer.Stop()
 	go func() {
 		for now := range timer.T {
-			slog.Info("Starting mail digest", "time", now.Format(time.Stamp))
+			logger.Info("Starting mail digest", "time", now.Format(time.Stamp))
 			ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
 			err := mail.DoDigestJob(ctx, dbClient, mailClient)
 			cancel()
 			if err != nil {
-				slog.ErrorContext(ctx, "Failed to send digest", "error", err.Error())
+				logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
 			}
 		}
 	}()
