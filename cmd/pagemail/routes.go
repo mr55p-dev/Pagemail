@@ -33,8 +33,8 @@ func requestBind[T any](w http.ResponseWriter, r *http.Request) *T {
 	return out
 }
 
-func serverError(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+func genericResponse(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
 }
 
 func GetLoginCookie(val string) *http.Cookie {
@@ -81,7 +81,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user) {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	user.Username = req.Username
 	err := router.DBClient.CreateUser(r.Context(), user)
 	if err != nil {
-		serverError(w, r)
+		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -187,7 +187,7 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 
 	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.Id)
 	if err != nil {
-		serverError(w, r)
+		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
 	staticRender(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
@@ -216,7 +216,7 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	}
 	err = router.DBClient.DeletePage(r.Context(), req.PageId)
 	if err != nil {
-		serverError(w, r)
+		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
 	staticRender(render.PageCard(page), w, r)
