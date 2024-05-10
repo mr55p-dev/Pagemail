@@ -1,0 +1,26 @@
+---
+version: v3
+services:
+  pagemail:
+    restart: always
+    expose:
+      - 80
+    environment:
+      PM_HOST: 0.0.0.0:80
+      PM_PATH: /app/db/pagemail.sqlite3
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-2
+    platform: linux/amd64
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pagemail-prd.entrypoints=websecure"
+      - "traefik.http.routers.pagemail-prd.tls.certresolver=letsencrypt"
+
+networks:
+  traefik:
+    name: traefik_proxy
+    external: true
