@@ -13,8 +13,8 @@ services:
       PM_LOG_LEVEL: INFO
     volumes:
       - type: bind
-        source: /home/ubuntu/pagemail/prd/db/
-        target: /app/db/
+        source: /home/ubuntu/pagemail/prd/
+        target: /data/
     logging:
       options:
         awslogs-group: /splat/pagemail

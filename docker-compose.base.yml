@@ -7,7 +7,7 @@ services:
       - 80
     environment:
       PM_HOST: 0.0.0.0:80
-      PM_PATH: /app/db/pagemail.sqlite3
+      PM_PATH: /data/db/pagemail.sqlite3
     logging:
       driver: awslogs
       options:
