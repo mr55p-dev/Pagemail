@@ -58,10 +58,10 @@ SELECT * FROM pages
 WHERE user_id = ?
 ORDER BY created DESC;
 
--- name: ReadPagesByUserBetween :many
+-- name: ReadPagesByUserBetween :exec
 SELECT * FROM pages 
-WHERE user_id = ?
-AND created BETWEEN ? AND ? 
+WHERE user_id = sqlc.arg(id)
+AND created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
 ORDER BY created DESC;
 
 -- name: UpsertPage :exec

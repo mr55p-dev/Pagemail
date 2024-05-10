@@ -123,46 +123,16 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 	return i, err
 }
 
-const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
+const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :exec
 SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
-WHERE user_id = ?
-AND created BETWEEN ? AND ? 
+WHERE user_id = ?1
+AND created BETWEEN ?2 AND ?3
 ORDER BY created DESC
 `
 
-func (q *Queries) ReadPagesByUserBetween(ctx context.Context, userID string) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Page
-	for rows.Next() {
-		var i Page
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Url,
-			&i.Title,
-			&i.Description,
-			&i.ImageUrl,
-			&i.ReadabilityStatus,
-			&i.ReadabilityTaskData,
-			&i.IsReadable,
-			&i.Created,
-			&i.Updated,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) ReadPagesByUserBetween(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, readPagesByUserBetween, id)
+	return err
 }
 
 const readPagesByUserId = `-- name: ReadPagesByUserId :many

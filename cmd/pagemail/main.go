@@ -138,6 +138,9 @@ func main() {
 	logger.DebugCtx(ctx, "Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)
 
+	user, err := dbClient.ReadUserByEmail(ctx, "")
+	user.ID
+
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {
 		logger.InfoCtx(ctx, "Starting mail job")
