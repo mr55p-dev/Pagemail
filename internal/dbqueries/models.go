@@ -10,33 +10,32 @@ import (
 )
 
 type Page struct {
-	ID                  interface{}
-	UserID              interface{}
-	Url                 interface{}
-	Title               interface{}
-	Description         interface{}
-	ImageUrl            interface{}
-	ReadabilityStatus   interface{}
-	ReadabilityTaskData interface{}
+	ID                  string
+	UserID              string
+	Url                 string
+	Title               sql.NullString
+	Description         sql.NullString
+	ImageUrl            sql.NullString
+	ReadabilityStatus   sql.NullString
+	ReadabilityTaskData sql.NullString
 	IsReadable          sql.NullBool
 	Created             time.Time
 	Updated             time.Time
 }
 
-type SchemaMigrations struct {
+type SchemaMigration struct {
 	Version string
 }
 
 type User struct {
-	ID             interface{}
-	Username       interface{}
-	Email          interface{}
+	ID             string
+	Username       string
+	Email          string
 	Password       interface{}
-	Name           interface{}
-	Avatar         interface{}
-	Subscribed     sql.NullBool
-	ShortcutToken  interface{}
-	HasReadability sql.NullBool
+	Avatar         sql.NullString
+	Subscribed     bool
+	ShortcutToken  string
+	HasReadability bool
 	Created        time.Time
 	Updated        time.Time
 }

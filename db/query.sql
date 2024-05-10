@@ -1,9 +1,9 @@
 -- name: CreateUser :exec
 INSERT INTO users (
-	id, username, email, password, name,
+	id, username, email, password,
 	avatar, subscribed, shortcut_token,
 	has_readability, created, updated
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 
 -- name: ReadUserById :one
@@ -33,10 +33,45 @@ WHERE shortcut_token IS NOT NULL;
 UPDATE users SET
 	username = ?,
 	password = ?,
-	name = ?,
 	avatar = ?,
 	subscribed = ?,
 	shortcut_token = ?,
 	has_readability = ?,
 	updated = ?
-WHERE id = :id
+WHERE id = :id;
+
+-- name: CreatePage :exec
+INSERT INTO pages (id, user_id, url, created, updated)
+VALUES (?, ?, ?, ?, ?);
+
+-- name: ReadPageById :one
+SELECT * FROM pages
+WHERE id = ?
+LIMIT 1;
+
+-- name: DeletePageById :execrows
+DELETE FROM pages 
+WHERE id = ?;
+
+-- name: ReadPagesByUserId :many
+SELECT * FROM pages
+WHERE user_id = ?
+ORDER BY created DESC;
+
+-- name: ReadPagesByUserBetween :many
+SELECT * FROM pages 
+WHERE user_id = ?
+AND created BETWEEN ? AND ? 
+ORDER BY created DESC;
+
+-- name: UpsertPage :exec
+INSERT OR REPLACE INTO pages (
+	id, user_id, url, title, description,
+	image_url, readability_status, readability_task_data,
+	is_readable, created, updated
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: DeletePagesByUserId :execrows
+DELETE FROM pages 
+WHERE user_id = ?;

@@ -11,24 +11,47 @@ import (
 	"time"
 )
 
+const createPage = `-- name: CreatePage :exec
+INSERT INTO pages (id, user_id, url, created, updated)
+VALUES (?, ?, ?, ?, ?)
+`
+
+type CreatePageParams struct {
+	ID      string
+	UserID  string
+	Url     string
+	Created time.Time
+	Updated time.Time
+}
+
+func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) error {
+	_, err := q.db.ExecContext(ctx, createPage,
+		arg.ID,
+		arg.UserID,
+		arg.Url,
+		arg.Created,
+		arg.Updated,
+	)
+	return err
+}
+
 const createUser = `-- name: CreateUser :exec
 INSERT INTO users (
-	id, username, email, password, name,
+	id, username, email, password,
 	avatar, subscribed, shortcut_token,
 	has_readability, created, updated
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
-	ID             interface{}
-	Username       interface{}
-	Email          interface{}
+	ID             string
+	Username       string
+	Email          string
 	Password       interface{}
-	Name           interface{}
-	Avatar         interface{}
-	Subscribed     sql.NullBool
-	ShortcutToken  interface{}
-	HasReadability sql.NullBool
+	Avatar         sql.NullString
+	Subscribed     bool
+	ShortcutToken  string
+	HasReadability bool
 	Created        time.Time
 	Updated        time.Time
 }
@@ -39,7 +62,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 		arg.Username,
 		arg.Email,
 		arg.Password,
-		arg.Name,
 		arg.Avatar,
 		arg.Subscribed,
 		arg.ShortcutToken,
@@ -50,13 +72,147 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
+const deletePageById = `-- name: DeletePageById :execrows
+DELETE FROM pages 
+WHERE id = ?
+`
+
+func (q *Queries) DeletePageById(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deletePageById, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const deletePagesByUserId = `-- name: DeletePagesByUserId :execrows
+DELETE FROM pages 
+WHERE user_id = ?
+`
+
+func (q *Queries) DeletePagesByUserId(ctx context.Context, userID string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deletePagesByUserId, userID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const readPageById = `-- name: ReadPageById :one
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages
+WHERE id = ?
+LIMIT 1
+`
+
+func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
+	row := q.db.QueryRowContext(ctx, readPageById, id)
+	var i Page
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Title,
+		&i.Description,
+		&i.ImageUrl,
+		&i.ReadabilityStatus,
+		&i.ReadabilityTaskData,
+		&i.IsReadable,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
+WHERE user_id = ?
+AND created BETWEEN ? AND ? 
+ORDER BY created DESC
+`
+
+func (q *Queries) ReadPagesByUserBetween(ctx context.Context, userID string) ([]Page, error) {
+	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Page
+	for rows.Next() {
+		var i Page
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.Title,
+			&i.Description,
+			&i.ImageUrl,
+			&i.ReadabilityStatus,
+			&i.ReadabilityTaskData,
+			&i.IsReadable,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const readPagesByUserId = `-- name: ReadPagesByUserId :many
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages
+WHERE user_id = ?
+ORDER BY created DESC
+`
+
+func (q *Queries) ReadPagesByUserId(ctx context.Context, userID string) ([]Page, error) {
+	rows, err := q.db.QueryContext(ctx, readPagesByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Page
+	for rows.Next() {
+		var i Page
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.Title,
+			&i.Description,
+			&i.ImageUrl,
+			&i.ReadabilityStatus,
+			&i.ReadabilityTaskData,
+			&i.IsReadable,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const readUserByEmail = `-- name: ReadUserByEmail :one
-SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE email = ?
 LIMIT 1
 `
 
-func (q *Queries) ReadUserByEmail(ctx context.Context, email interface{}) (User, error) {
+func (q *Queries) ReadUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRowContext(ctx, readUserByEmail, email)
 	var i User
 	err := row.Scan(
@@ -64,7 +220,6 @@ func (q *Queries) ReadUserByEmail(ctx context.Context, email interface{}) (User,
 		&i.Username,
 		&i.Email,
 		&i.Password,
-		&i.Name,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
@@ -76,12 +231,12 @@ func (q *Queries) ReadUserByEmail(ctx context.Context, email interface{}) (User,
 }
 
 const readUserById = `-- name: ReadUserById :one
-SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE id = ? 
 LIMIT 1
 `
 
-func (q *Queries) ReadUserById(ctx context.Context, id interface{}) (User, error) {
+func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
 	row := q.db.QueryRowContext(ctx, readUserById, id)
 	var i User
 	err := row.Scan(
@@ -89,7 +244,6 @@ func (q *Queries) ReadUserById(ctx context.Context, id interface{}) (User, error
 		&i.Username,
 		&i.Email,
 		&i.Password,
-		&i.Name,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
@@ -101,12 +255,12 @@ func (q *Queries) ReadUserById(ctx context.Context, id interface{}) (User, error
 }
 
 const readUserByShortcutToken = `-- name: ReadUserByShortcutToken :one
-SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE shortcut_token = ?
 LIMIT 1
 `
 
-func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken interface{}) (User, error) {
+func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken string) (User, error) {
 	row := q.db.QueryRowContext(ctx, readUserByShortcutToken, shortcutToken)
 	var i User
 	err := row.Scan(
@@ -114,7 +268,6 @@ func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken int
 		&i.Username,
 		&i.Email,
 		&i.Password,
-		&i.Name,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
@@ -131,8 +284,8 @@ WHERE shortcut_token IS NOT NULL
 `
 
 type ReadUserShortcutTokensRow struct {
-	ID            interface{}
-	ShortcutToken interface{}
+	ID            string
+	ShortcutToken string
 }
 
 func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcutTokensRow, error) {
@@ -159,7 +312,7 @@ func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcu
 }
 
 const readUsersWithMail = `-- name: ReadUsersWithMail :many
-SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE subscribed = true
 `
 
@@ -177,7 +330,6 @@ func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Email,
 			&i.Password,
-			&i.Name,
 			&i.Avatar,
 			&i.Subscribed,
 			&i.ShortcutToken,
@@ -202,7 +354,6 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users SET
 	username = ?,
 	password = ?,
-	name = ?,
 	avatar = ?,
 	subscribed = ?,
 	shortcut_token = ?,
@@ -212,28 +363,66 @@ WHERE id = ?
 `
 
 type UpdateUserParams struct {
-	Username       interface{}
+	Username       string
 	Password       interface{}
-	Name           interface{}
-	Avatar         interface{}
-	Subscribed     sql.NullBool
-	ShortcutToken  interface{}
-	HasReadability sql.NullBool
+	Avatar         sql.NullString
+	Subscribed     bool
+	ShortcutToken  string
+	HasReadability bool
 	Updated        time.Time
-	ID             interface{}
+	ID             string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.Username,
 		arg.Password,
-		arg.Name,
 		arg.Avatar,
 		arg.Subscribed,
 		arg.ShortcutToken,
 		arg.HasReadability,
 		arg.Updated,
 		arg.ID,
+	)
+	return err
+}
+
+const upsertPage = `-- name: UpsertPage :exec
+INSERT OR REPLACE INTO pages (
+	id, user_id, url, title, description,
+	image_url, readability_status, readability_task_data,
+	is_readable, created, updated
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type UpsertPageParams struct {
+	ID                  string
+	UserID              string
+	Url                 string
+	Title               sql.NullString
+	Description         sql.NullString
+	ImageUrl            sql.NullString
+	ReadabilityStatus   sql.NullString
+	ReadabilityTaskData sql.NullString
+	IsReadable          sql.NullBool
+	Created             time.Time
+	Updated             time.Time
+}
+
+func (q *Queries) UpsertPage(ctx context.Context, arg UpsertPageParams) error {
+	_, err := q.db.ExecContext(ctx, upsertPage,
+		arg.ID,
+		arg.UserID,
+		arg.Url,
+		arg.Title,
+		arg.Description,
+		arg.ImageUrl,
+		arg.ReadabilityStatus,
+		arg.ReadabilityTaskData,
+		arg.IsReadable,
+		arg.Created,
+		arg.Updated,
 	)
 	return err
 }
