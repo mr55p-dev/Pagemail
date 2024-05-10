@@ -1,8 +1,8 @@
 ---
 name: Deploy to development
 on:
-  push:
-    branches-ignore:
+  pull_request:
+    branches:
       - main
 
 jobs:
