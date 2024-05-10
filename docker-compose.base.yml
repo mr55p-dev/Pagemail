@@ -19,8 +19,3 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.pagemail-prd.entrypoints=websecure"
       - "traefik.http.routers.pagemail-prd.tls.certresolver=letsencrypt"
-
-networks:
-  traefik:
-    name: traefik_proxy
-    external: true
