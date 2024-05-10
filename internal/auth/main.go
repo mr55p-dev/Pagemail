@@ -20,10 +20,10 @@ func NewAuthorizer(ctx context.Context) *Authorizer {
 	}
 }
 
-func LoadShortcutTokens(users []db.UserTokenPair) map[string]string {
+func LoadShortcutTokens(users []db.User) map[string]string {
 	out := make(map[string]string, len(users))
 	for _, v := range users {
-		out[v.ShortcutToken] = v.UserId
+		out[v.ShortcutToken] = v.Id
 	}
 	return out
 }

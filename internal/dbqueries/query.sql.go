@@ -7,16 +7,57 @@ package dbqueries
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
-const getUser = `-- name: GetUser :one
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (
+	id, username, email, password, name,
+	avatar, subscribed, shortcut_token,
+	has_readability, created, updated
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type CreateUserParams struct {
+	ID             interface{}
+	Username       interface{}
+	Email          interface{}
+	Password       interface{}
+	Name           interface{}
+	Avatar         interface{}
+	Subscribed     sql.NullBool
+	ShortcutToken  interface{}
+	HasReadability sql.NullBool
+	Created        time.Time
+	Updated        time.Time
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser,
+		arg.ID,
+		arg.Username,
+		arg.Email,
+		arg.Password,
+		arg.Name,
+		arg.Avatar,
+		arg.Subscribed,
+		arg.ShortcutToken,
+		arg.HasReadability,
+		arg.Created,
+		arg.Updated,
+	)
+	return err
+}
+
+const readUserByEmail = `-- name: ReadUserByEmail :one
 SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
-WHERE id = ? 
+WHERE email = ?
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id interface{}) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+func (q *Queries) ReadUserByEmail(ctx context.Context, email interface{}) (User, error) {
+	row := q.db.QueryRowContext(ctx, readUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -34,14 +75,14 @@ func (q *Queries) GetUser(ctx context.Context, id interface{}) (User, error) {
 	return i, err
 }
 
-const getUserByShortcutToken = `-- name: GetUserByShortcutToken :one
-SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users
-WHERE shortcut_token = ?
+const readUserById = `-- name: ReadUserById :one
+SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+WHERE id = ? 
 LIMIT 1
 `
 
-func (q *Queries) GetUserByShortcutToken(ctx context.Context, shortcutToken interface{}) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByShortcutToken, shortcutToken)
+func (q *Queries) ReadUserById(ctx context.Context, id interface{}) (User, error) {
+	row := q.db.QueryRowContext(ctx, readUserById, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -57,4 +98,142 @@ func (q *Queries) GetUserByShortcutToken(ctx context.Context, shortcutToken inte
 		&i.Updated,
 	)
 	return i, err
+}
+
+const readUserByShortcutToken = `-- name: ReadUserByShortcutToken :one
+SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+WHERE shortcut_token = ?
+LIMIT 1
+`
+
+func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken interface{}) (User, error) {
+	row := q.db.QueryRowContext(ctx, readUserByShortcutToken, shortcutToken)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.Name,
+		&i.Avatar,
+		&i.Subscribed,
+		&i.ShortcutToken,
+		&i.HasReadability,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const readUserShortcutTokens = `-- name: ReadUserShortcutTokens :many
+SELECT id, shortcut_token FROM users 
+WHERE shortcut_token IS NOT NULL
+`
+
+type ReadUserShortcutTokensRow struct {
+	ID            interface{}
+	ShortcutToken interface{}
+}
+
+func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcutTokensRow, error) {
+	rows, err := q.db.QueryContext(ctx, readUserShortcutTokens)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ReadUserShortcutTokensRow
+	for rows.Next() {
+		var i ReadUserShortcutTokensRow
+		if err := rows.Scan(&i.ID, &i.ShortcutToken); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const readUsersWithMail = `-- name: ReadUsersWithMail :many
+SELECT id, username, email, password, name, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+WHERE subscribed = true
+`
+
+func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, readUsersWithMail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
+			&i.Password,
+			&i.Name,
+			&i.Avatar,
+			&i.Subscribed,
+			&i.ShortcutToken,
+			&i.HasReadability,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users SET
+	username = ?,
+	password = ?,
+	name = ?,
+	avatar = ?,
+	subscribed = ?,
+	shortcut_token = ?,
+	has_readability = ?,
+	updated = ?
+WHERE id = ?
+`
+
+type UpdateUserParams struct {
+	Username       interface{}
+	Password       interface{}
+	Name           interface{}
+	Avatar         interface{}
+	Subscribed     sql.NullBool
+	ShortcutToken  interface{}
+	HasReadability sql.NullBool
+	Updated        time.Time
+	ID             interface{}
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
+		arg.Username,
+		arg.Password,
+		arg.Name,
+		arg.Avatar,
+		arg.Subscribed,
+		arg.ShortcutToken,
+		arg.HasReadability,
+		arg.Updated,
+		arg.ID,
+	)
+	return err
 }

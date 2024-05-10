@@ -8,10 +8,14 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
-func getDb(ctx context.Context) *dbqueries.Queries {
-	conn, err := sql.Open("sqlite3", ":memory:")
+func mustGetDb(ctx context.Context, path string) (*dbqueries.Queries, func() error) {
+	conn, err := sql.Open("sqlite3", path)
 	if err != nil {
 		panic(err)
 	}
-	return dbqueries.New(conn)
+	err = conn.PingContext(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return dbqueries.New(conn), conn.Close
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
@@ -37,7 +37,7 @@ const (
 )
 
 type Router struct {
-	DBClient   *db.Client
+	DBClient   *dbqueries.Queries
 	Authorizer *auth.Authorizer
 }
 
@@ -130,10 +130,10 @@ func main() {
 
 	// Start the clients
 	logger.DebugCtx(ctx, "Setting up db client")
-	dbClient := db.NewClient(cfg.DBPath, nil)
-	defer dbClient.Close()
-
-	dbQueries := getDb(ctx)
+	dbClient, dbClose := mustGetDb(ctx, cfg.DBPath)
+	defer func() {
+		_ = dbClose()
+	}()
 
 	logger.DebugCtx(ctx, "Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)

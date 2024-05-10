@@ -72,12 +72,7 @@ func (client *Client) ReadUsersWithMail(c context.Context) (users []User, err er
 	return
 }
 
-type UserTokenPair struct {
-	UserId        string `db:"id"`
-	ShortcutToken string `db:"shortcut_token"`
-}
-
-func (client *Client) ReadUserShortcutTokens(c context.Context) (out []UserTokenPair, err error) {
+func (client *Client) ReadUserShortcutTokens(c context.Context) (out []User, err error) {
 	err = client.db.Select(&out, `SELECT id, shortcut_token FROM users WHERE shortcut_token IS NOT NULL`)
 	if err != nil {
 		logger.ErrorCtx(c, "Failed looking up users by token", err)
