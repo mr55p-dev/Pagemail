@@ -7,18 +7,18 @@ import (
 )
 
 type Client struct {
-	log *logging.Logger
-	db  *sqlx.DB
+	db *sqlx.DB
 }
 
 func (c *Client) Close() {
 	c.db.Close()
 }
 
+var logger = logging.NewLogger("db")
+
 func NewClient(path string, log *logging.Logger) *Client {
 	conn := sqlx.MustOpen("sqlite3", path)
 	return &Client{
-		log: logging.NewLogger("db-client"),
-		db:  conn,
+		db: conn,
 	}
 }
