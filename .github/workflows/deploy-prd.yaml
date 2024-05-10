@@ -1,10 +1,9 @@
 ---
 name: Deploy to production
 on:
-  push:
-    branches:
-      - main
-
+  release:
+    types:
+      - released
 jobs:
   deploy:
     name: Deploy production
