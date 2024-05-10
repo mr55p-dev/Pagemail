@@ -31,8 +31,8 @@ func Wrapper(user *db.User, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if title != "pagemail" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<title>pagemail - ")
+		if title != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<title>Pagemail - ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -50,7 +50,7 @@ func Wrapper(user *db.User, title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<title>pagemail</title>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<title>Pagemail</title>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
