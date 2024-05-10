@@ -1,12 +1,13 @@
 ---
-name: Deploy code
+name: Run tests
 on:
   push:
     branches-ignore:
       - main
 
 jobs:
-  deploy:
+  test:
+    name: Build and test
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
