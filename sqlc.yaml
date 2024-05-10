@@ -5,5 +5,5 @@ sql:
     schema: "db/schema.sql"
     gen:
       go:
-        package: "dbuser"
-        out: "dbuser"
+        package: "dbqueries"
+        out: "internal/dbqueries"

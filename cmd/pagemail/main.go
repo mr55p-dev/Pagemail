@@ -133,6 +133,8 @@ func main() {
 	dbClient := db.NewClient(cfg.DBPath, nil)
 	defer dbClient.Close()
 
+	dbQueries := getDb(ctx)
+
 	logger.DebugCtx(ctx, "Setting up auth client")
 	authClient := auth.NewAuthorizer(ctx)
 
