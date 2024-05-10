@@ -148,12 +148,6 @@ func main() {
 		Authorizer: authClient,
 	}
 
-	protector := middlewares.NewProtector(
-		authClient,
-		dbClient,
-		logging.NewLogger("protector"),
-	)
-
 	// Serve root
 	rootMux := http.NewServeMux()
 	rootMux.HandleFunc("/", s.GetRoot)
@@ -174,12 +168,18 @@ func main() {
 	pagesMux.HandleFunc("GET /{page_id}", s.GetPage)
 	pagesMux.HandleFunc("GET /dashboard", s.GetDashboard)
 	pagesMux.HandleFunc("POST /", s.PostPage)
-	pagesMux.HandleFunc("POST /shortcut", s.PostPage)
 	pagesMux.HandleFunc("DELETE /", s.DeletePages)
 	pagesMux.HandleFunc("DELETE /{page_id}", s.DeletePage)
 	rootMux.Handle("/pages/", middlewares.WithMiddleware(
 		http.StripPrefix("/pages", pagesMux),
-		protector.ProtectRoute(),
+		middlewares.ProtectRoute,
+	))
+
+	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
+		middlewares.WithMiddleware(
+			http.HandlerFunc(s.PostPage),
+			middlewares.GetShortcutLoader(authClient, dbClient),
+		),
 	))
 
 	// Serve users
@@ -190,7 +190,7 @@ func main() {
 	userMux.HandleFunc("GET /token/shortcut", s.GetShortcutToken)
 	rootMux.Handle("/user/", middlewares.WithMiddleware(
 		http.StripPrefix("/user", userMux),
-		protector.ProtectRoute(),
+		middlewares.ProtectRoute,
 	))
 
 	// Serve static assets
@@ -212,7 +212,7 @@ func main() {
 		middlewares.Recover,
 		middlewares.Tracer,
 		middlewares.RequestLogger,
-		protector.LoadUser,
+		middlewares.GetUserLoader(authClient, dbClient),
 	))
 
 	logger.Info("Starting http server", "config", cfg)

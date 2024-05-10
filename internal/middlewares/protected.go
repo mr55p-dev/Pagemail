@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mr55p-dev/htmx-utils"
 	"github.com/mr55p-dev/pagemail/internal/db"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 )
@@ -54,9 +53,9 @@ func GetUserLoader(auth Auth, db DB) MiddlewareFunc {
 	}
 }
 
-func GetShortcutLoader(auth Auth, db DB) hut.MiddlewareFunc {
-	return func(next http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
+func GetShortcutLoader(auth Auth, db DB) MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tkn := r.Header.Get("Authorization")
 			if tkn == "" {
 				http.Error(w, "missing shortcut token", http.StatusBadRequest)
@@ -69,9 +68,9 @@ func GetShortcutLoader(auth Auth, db DB) hut.MiddlewareFunc {
 				return
 			}
 
-			next(w, reqWithUser(r, user))
+			next.ServeHTTP(w, reqWithUser(r, user))
 			return
-		}
+		})
 	}
 }
 
