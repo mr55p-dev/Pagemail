@@ -1,0 +1,4 @@
+<h1>pagemail</h1><p>pagemail is a simple read-it-later client for the web</p>
+<a href=\"
+\">View dashboard</a>
+<a href=\"/signup\">Sign up</a> <a href=\"/login\">Log in</a>

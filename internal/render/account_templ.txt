@@ -1,0 +1,8 @@
+<div class=\"box center\"><form class=\"table rows\" hx-put=\"/user/account\" hx-target=\"#account-status\"><p><label for=\"shortcut\">Shortcut token</label> <input disabled name=\"shortcut\" type=\"text\" value=\"
+\"></p><p><label for=\"email-list\">Email list</label> <input name=\"email-list\" type=\"checkbox\"
+ checked
+></p><div class=\"tool-bar\"><button type=\"submit\">Save</button> 
+<button onClick=\"
+\">Copy token</button></div></form><p>Install the iOS shortcut <a href=\"https://www.icloud.com/shortcuts/93fa19df16734968bf0c03c245611c3d\">here</a></p></div><div id=\"account-status\"></div>
+<div class=\"box bad\"><strong class=\"sub-title\">Error</strong><p>Error: 
+</p></div>

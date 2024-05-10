@@ -5,7 +5,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/db"
 )
 
-templ MailDigest(date *time.Time, name string, pages []db.Page) {
+templ MailDigest(date time.Time, name string, pages []db.Page) {
 	<!DOCTYPE html>
 	<html>
 		<head>

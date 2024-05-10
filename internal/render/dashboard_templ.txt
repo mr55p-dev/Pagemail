@@ -1,0 +1,14 @@
+<h4>Save a page</h4>
+ <h4>Your saved pages</h4><div id=\"pageview\" class=\"f-col\" hx-ext=\"response-targets\">
+</div>
+<div class=\"tool-bar\"><form hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/pages/\" hx-target=\"#pageview\" hx-target-error=\"#save-response\" hx-swap=\"afterbegin\"><input type=\"url\" name=\"url\" placeholder=\"url\" id=\"save-page-input\"></form><button type=\"submit\" id=\"save-page-submit\">Save</button> 
+<button id=\"save-page-paste\" onClick=\"
+\">Paste</button><hr aria-orientation=\"vertical\"><button class=\"warn\" hx-delete=\"/pages\" hx-confirm=\"Are you sure you want to delete all saved pages?\" hx-target=\"#save-response\" hx-swap=\"innerHTML\">Delete all</button></div><div id=\"save-response\"></div>
+<div class=\"box ok\" id=\"save-page-success-msg\"><strong class=\"block titlebar\">Success</strong><p>
+</p>
+<button onClick=\"
+\">Close</button></div>
+<div class=\"box bad\" id=\"save-page-err-msg\"><strong class=\"block titlebar\">Error</strong><p>
+</p>
+<button onClick=\"
+\">Close</button></div>

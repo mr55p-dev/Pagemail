@@ -29,7 +29,7 @@ func Login() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login\" hx-swap=\"outerHTML\" hx-target=\"#errors\" hx-target-error=\"#errors\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" value=\"\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" value=\"\"></p><button type=\"submit\">Login</button></form><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div><div id=\"errors\"></div>")
+			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 1)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -68,7 +68,7 @@ func Signup() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/signup\"><p><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" value=\"\"></p><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" value=\"\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" value=\"\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" value=\"\"></p><button type=\"submit\">Create account</button></form><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
+			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 2)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
