@@ -18,8 +18,8 @@ services:
         awslogs-group: /splat/pagemail-dev
     labels:
       - "traefik.http.routers.pagemail-dev.rule=Host(`dev.pagemail.io`)"
-      - "traefik.http.routers.pagemail-prd.entrypoints=websecure"
-      - "traefik.http.routers.pagemail-prd.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.pagemail-dev.entrypoints=websecure"
+      - "traefik.http.routers.pagemail-dev.tls.certresolver=letsencrypt"
 
 networks:
   traefik:
