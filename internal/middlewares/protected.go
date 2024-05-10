@@ -12,24 +12,23 @@ import (
 type Protector struct {
 	auth *auth.Authorizer
 	db   *db.Client
-	log  *logging.Logger
 }
 
-func NewProtector(authorizer *auth.Authorizer, dbclient *db.Client, logger *logging.Logger) *Protector {
+func NewProtector(authorizer *auth.Authorizer, dbclient *db.Client, loggerger *logging.Logger) *Protector {
 	return &Protector{
 		auth: authorizer,
 		db:   dbclient,
-		log:  logger,
 	}
 }
 
 func (p *Protector) LoadUser(next http.Handler) http.Handler {
+	logger := logging.NewLogger("middleware-load-user")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := p.log.WithRequest(r)
+		logger := logger.WithRequest(r)
 		tkn, err := r.Cookie("pm-auth-tkn")
 		if err != nil {
-			log.DebugCtx(r.Context(), "No session cookie found")
-			next.ServeHTTP(w, reqWithError(r, "could not decode session cookie", http.StatusBadRequest))
+			logger.DebugCtx(r.Context(), "No session cookie found")
+			next.ServeHTTP(w, r)
 			return
 		}
 
@@ -40,7 +39,7 @@ func (p *Protector) LoadUser(next http.Handler) http.Handler {
 
 		uid := p.auth.ValSessionToken(tkn.Value)
 		if uid == "" {
-			log.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
+			logger.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -51,7 +50,7 @@ func (p *Protector) LoadUser(next http.Handler) http.Handler {
 			return
 		}
 
-		log.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
+		logger.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
 		next.ServeHTTP(w, reqWithUser(r, user))
 	})
 }
@@ -82,8 +81,6 @@ func (p *Protector) ProtectRoute() MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			user := reqGetUser(r)
 			if user == nil {
-				err := reqGetError(r)
-				p.log.WithRequest(r).WithError(err).ErrorCtx(r.Context(), "User access forbidden")
 				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 				return
 			}
