@@ -9,6 +9,7 @@ import (
 )
 
 func (client *Client) CreateUser(c context.Context, u *User) error {
+	logger := logger.With("user", u)
 	_, err := client.db.NamedExec(`
 		INSERT INTO users 
 		VALUES (:id, :username, :email, :password, :name, :avatar, :subscribed, :shortcut_token, :has_readability, :created, :updated)`,
@@ -86,6 +87,7 @@ func (client *Client) ReadUserShortcutTokens(c context.Context) (out []UserToken
 }
 
 func (client *Client) UpdateUser(c context.Context, user *User) error {
+	logger := logger.With("user", user)
 	now := time.Now()
 	user.Updated = &now
 	_, err := client.db.NamedExecContext(c, `
