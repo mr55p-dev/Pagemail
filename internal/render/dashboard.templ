@@ -1,10 +1,10 @@
 package render
 
-import (
-	"github.com/mr55p-dev/pagemail/internal/db"
-)
+import "github.com/mr55p-dev/pagemail/internal/dbqueries"
 
-templ Dashboard(user *db.User, pages []db.Page) {
+import ()
+
+templ Dashboard(user *dbqueries.User, pages []dbqueries.Page) {
 	@Wrapper(user, "Pages") {
 		<h4>Save a page</h4>
 		@SavePageWidget()

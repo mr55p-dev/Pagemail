@@ -1,10 +1,8 @@
 package render
 
-import (
-	"github.com/mr55p-dev/pagemail/internal/db"
-)
+import "github.com/mr55p-dev/pagemail/internal/dbqueries"
 
-templ AccountPage(user *db.User) {
+templ AccountPage(user *dbqueries.User) {
 	@Wrapper(user, "Account") {
 		<div class="box center">
 			<form class="table rows" hx-put="/user/account" hx-target="#account-status">

@@ -40,6 +40,17 @@ UPDATE users SET
 	updated = ?
 WHERE id = :id;
 
+-- name: UpdateUserSubscription :exec
+UPDATE users SET 
+subscribed = ? 
+WHERE id = ?;
+
+
+-- name: UpdateUserShortcutToken :exec
+UPDATE users SET 
+shortcut_token = ? 
+WHERE id = ?;
+
 -- name: CreatePage :exec
 INSERT INTO pages (id, user_id, url, created, updated)
 VALUES (?, ?, ?, ?, ?);
@@ -58,11 +69,11 @@ SELECT * FROM pages
 WHERE user_id = ?
 ORDER BY created DESC;
 
--- name: ReadPagesByUserBetween :exec
+-- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
-WHERE user_id = sqlc.arg(id)
-AND created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
-ORDER BY created DESC;
+WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
+AND user_id = ?;
+-- ORDER BY created DESC;
 
 -- name: UpsertPage :exec
 INSERT OR REPLACE INTO pages (

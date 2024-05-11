@@ -4,13 +4,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 )
 
 type DB interface {
-	ReadUserById(context.Context, string) (*db.User, error)
-	ReadUserByShortcutToken(context.Context, string) (*db.User, error)
+	ReadUserById(context.Context, string) (dbqueries.User, error)
+	ReadUserByShortcutToken(context.Context, string) (dbqueries.User, error)
 }
 
 type Auth interface {

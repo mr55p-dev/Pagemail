@@ -123,16 +123,51 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 	return i, err
 }
 
-const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :exec
+const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
 SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
-WHERE user_id = ?1
-AND created BETWEEN ?2 AND ?3
-ORDER BY created DESC
+WHERE created BETWEEN ?2 AND ?3
+AND user_id = ?
 `
 
-func (q *Queries) ReadPagesByUserBetween(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, readPagesByUserBetween, id)
-	return err
+type ReadPagesByUserBetweenParams struct {
+	Start  time.Time
+	End    time.Time
+	UserID string
+}
+
+func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUserBetweenParams) ([]Page, error) {
+	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, arg.Start, arg.End, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Page
+	for rows.Next() {
+		var i Page
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.Title,
+			&i.Description,
+			&i.ImageUrl,
+			&i.ReadabilityStatus,
+			&i.ReadabilityTaskData,
+			&i.IsReadable,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const readPagesByUserId = `-- name: ReadPagesByUserId :many
@@ -357,7 +392,40 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	return err
 }
 
+const updateUserShortcutToken = `-- name: UpdateUserShortcutToken :exec
+UPDATE users SET 
+shortcut_token = ? 
+WHERE id = ?
+`
+
+type UpdateUserShortcutTokenParams struct {
+	ShortcutToken string
+	ID            string
+}
+
+func (q *Queries) UpdateUserShortcutToken(ctx context.Context, arg UpdateUserShortcutTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserShortcutToken, arg.ShortcutToken, arg.ID)
+	return err
+}
+
+const updateUserSubscription = `-- name: UpdateUserSubscription :exec
+UPDATE users SET 
+subscribed = ? 
+WHERE id = ?
+`
+
+type UpdateUserSubscriptionParams struct {
+	Subscribed bool
+	ID         string
+}
+
+func (q *Queries) UpdateUserSubscription(ctx context.Context, arg UpdateUserSubscriptionParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserSubscription, arg.Subscribed, arg.ID)
+	return err
+}
+
 const upsertPage = `-- name: UpsertPage :exec
+
 INSERT OR REPLACE INTO pages (
 	id, user_id, url, title, description,
 	image_url, readability_status, readability_task_data,
@@ -380,6 +448,7 @@ type UpsertPageParams struct {
 	Updated             time.Time
 }
 
+// ORDER BY created DESC;
 func (q *Queries) UpsertPage(ctx context.Context, arg UpsertPageParams) error {
 	_, err := q.db.ExecContext(ctx, upsertPage,
 		arg.ID,

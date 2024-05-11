@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
 type loadKey string
@@ -21,9 +21,10 @@ func (r *RequestError) Error() string {
 	return fmt.Sprintf("Request error (%d): %s", r.Status, r.Message)
 }
 
-func reqWithUser(r *http.Request, user *db.User) *http.Request {
-	userBoundCtx := db.SetUser(r.Context(), user)
-	return r.WithContext(userBoundCtx)
+func reqWithUser(r *http.Request, user dbqueries.User) *http.Request {
+	panic("not implemented")
+	// userBoundCtx := db.SetUser(r.Context(), user)
+	// return r.WithContext(userBoundCtx)
 }
 
 func reqWithError(r *http.Request, msg string, code int) *http.Request {
@@ -39,8 +40,8 @@ func reqWithError(r *http.Request, msg string, code int) *http.Request {
 	)
 }
 
-func reqGetUser(r *http.Request) *db.User {
-	return db.GetUser(r.Context())
+func reqGetUser(r *http.Request) *dbqueries.User {
+	panic("not implemented")
 }
 
 func reqGetError(r *http.Request) error {

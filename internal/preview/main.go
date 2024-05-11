@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 
 	"io"
 	"net/http"
@@ -61,10 +61,11 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 	return page_data, nil
 }
 
-func FetchPreview(ctx context.Context, page *db.Page) error {
+func FetchPreview(ctx context.Context, page *dbqueries.Page) error {
 	now := time.Now()
-	page.Updated = &now
-	page.ReadabilityStatus = &READSTAT_UNKNOWN
+	page.Updated = now
+	page.ReadabilityStatus.String = READSTAT_UNKNOWN
+	page.ReadabilityStatus.Valid = true
 
 	// fetch the document
 	content, err := FetchUrlContents(page.Url)
@@ -87,21 +88,27 @@ func FetchPreview(ctx context.Context, page *db.Page) error {
 		isReadableChan <- CheckIsReadable(ctx, page.Url, content)
 	}()
 
-	isReadable := <-isReadableChan
-	page.IsReadable = &isReadable
+	isReadable, ok := <-isReadableChan
+	if ok {
+		page.IsReadable.Valid = true
+		page.IsReadable.Bool = isReadable
+	}
 
 	select {
 	case err := <-errorChan:
 		return err
 	case previewData := <-previewChan:
 		if previewData.Title != "" {
-			page.Title = &previewData.Title
+			page.Title.String = previewData.Title
+			page.Title.Valid = true
 		}
 		if previewData.Description != "" {
-			page.Description = &previewData.Description
+			page.Description.String = previewData.Description
+			page.Description.Valid = true
 		}
 		if previewData.ImageUrl != "" {
-			page.ImageUrl = &previewData.ImageUrl
+			page.ImageUrl.String = previewData.ImageUrl
+			page.ImageUrl.Valid = true
 		}
 	}
 

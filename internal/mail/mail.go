@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/timer"
@@ -30,8 +30,8 @@ type MailSender interface {
 // MailDbReader wraps the methods from database which are required for pulling users and their saved
 // pages inside of an interval
 type MailDbReader interface {
-	ReadUsersWithMail(context.Context) ([]db.User, error)
-	ReadPagesByUserBetween(context.Context, string, time.Time, time.Time) ([]db.Page, error)
+	ReadUsersWithMail(context.Context) ([]dbqueries.User, error)
+	ReadPagesByUserBetween(context.Context, dbqueries.ReadPagesByUserBetweenParams) ([]dbqueries.Page, error)
 }
 
 // MailGo starts a goroutine on a timer to send emails to all subscribed users every 24 hours at
@@ -63,7 +63,7 @@ func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now ti
 
 	// Dispatch jobs to the other goroutines
 	var errCount int32
-	jobs := make(chan db.User)
+	jobs := make(chan dbqueries.User)
 	errChan := make(chan error)
 	wg := &sync.WaitGroup{}
 	for i := 0; i < runtime.NumCPU(); i++ {
@@ -102,14 +102,18 @@ func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now ti
 }
 
 // SendMailToUser fetches the users pages, constructs an email and sends it via the sender interface
-func SendMailToUser(ctx context.Context, user *db.User, db MailDbReader, sender MailSender, now time.Time) error {
+func SendMailToUser(ctx context.Context, user *dbqueries.User, db MailDbReader, sender MailSender, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 
 	// Read the users pages
 	start := now.Add(-time.Hour * 24)
 	end := now
-	pages, err := db.ReadPagesByUserBetween(ctx, user.Id, start, end)
+	pages, err := db.ReadPagesByUserBetween(ctx, dbqueries.ReadPagesByUserBetweenParams{
+		Start:  start,
+		End:    end,
+		UserID: user.ID,
+	})
 	if err != nil {
 		return err
 	}
@@ -122,7 +126,7 @@ func SendMailToUser(ctx context.Context, user *db.User, db MailDbReader, sender 
 
 	// Generate the mail and send it
 	buf := bytes.Buffer{}
-	err = render.MailDigest(now, user.Name, pages).Render(ctx, &buf)
+	err = render.MailDigest(now, user.Username, pages).Render(ctx, &buf)
 	if err != nil {
 		return err
 	}

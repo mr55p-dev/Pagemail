@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
 // Message holds basic properties about generated emails
@@ -41,14 +41,14 @@ func (m *MailSenderNoOp) Reset() {
 // MailDbReaderNoOp implements the MailDbReader interface with mock data
 type MailDbReaderNoOp struct {
 	created  time.Time
-	user     db.User
+	user     dbqueries.User
 	numPages int
 	numUsers int
 }
 
 // ReadUsersWithMail passes mock data to the SES mailer function
-func (m *MailDbReaderNoOp) ReadUsersWithMail(context.Context) ([]db.User, error) {
-	users := make([]db.User, 0)
+func (m *MailDbReaderNoOp) ReadUsersWithMail(context.Context) ([]dbqueries.User, error) {
+	users := make([]dbqueries.User, 0)
 	for i := 0; i < m.numUsers; i++ {
 		users = append(users, testUser)
 	}
@@ -56,23 +56,23 @@ func (m *MailDbReaderNoOp) ReadUsersWithMail(context.Context) ([]db.User, error)
 }
 
 // ReadPagesByUserBetween passes mock data for a user
-func (m *MailDbReaderNoOp) ReadPagesByUserBetween(context.Context, string, time.Time, time.Time) ([]db.Page, error) {
-	testPages := []db.Page{
+func (m *MailDbReaderNoOp) ReadPagesByUserBetween(context.Context, dbqueries.ReadPagesByUserBetweenParams) ([]dbqueries.Page, error) {
+	testPages := []dbqueries.Page{
 		{
-			Id:      "123",
-			UserId:  m.user.Id,
+			ID:      "123",
+			UserID:  m.user.ID,
 			Url:     "https://pagemail.io",
-			Created: &m.created,
+			Created: m.created,
 		},
 		{
-			Id:      "123",
-			UserId:  m.user.Id,
+			ID:      "123",
+			UserID:  m.user.ID,
 			Url:     "https://example.com",
-			Created: &m.created,
+			Created: m.created,
 		},
 	}
 	if m.numPages == 0 {
-		return []db.Page{}, nil
+		return []dbqueries.Page{}, nil
 	}
 	return testPages[:m.numPages], nil
 }

@@ -2,10 +2,10 @@ package render
 
 import (
 	"time"
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
-templ MailDigest(date time.Time, name string, pages []db.Page) {
+templ MailDigest(date time.Time, name string, pages []dbqueries.Page) {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -401,10 +401,10 @@ templ MailDigest(date time.Time, name string, pages []db.Page) {
 														for _, page := range pages {
 															<li class="main-list-item">
 																<a href={ templ.URL(page.Url) }>
-																	if page.Title != nil {
-																		<b>{ *page.Title }</b>
-																		if page.Description != nil {
-																			- { *page.Description }
+																	if page.Title.Valid {
+																		<b>{ page.Title.String }</b>
+																		if page.Description.Valid {
+																			- { page.Description.String }
 																		}
 																	} else {
 																		<b>{ page.Url }</b>
