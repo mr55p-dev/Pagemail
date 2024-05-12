@@ -48,7 +48,7 @@ func GetUserLoader(auth Auth, db DB) MiddlewareFunc {
 			}
 
 			logger.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
-			next.ServeHTTP(w, reqWithUser(r, user))
+			next.ServeHTTP(w, reqWithUser(r, &user))
 		})
 	}
 }
@@ -68,7 +68,7 @@ func GetShortcutLoader(auth Auth, db DB) MiddlewareFunc {
 				return
 			}
 
-			next.ServeHTTP(w, reqWithUser(r, user))
+			next.ServeHTTP(w, reqWithUser(r, &user))
 			return
 		})
 	}
@@ -76,7 +76,7 @@ func GetShortcutLoader(auth Auth, db DB) MiddlewareFunc {
 
 func ProtectRoute(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := reqGetUser(r)
+		user := dbqueries.GetUser(r.Context())
 		if user == nil {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return

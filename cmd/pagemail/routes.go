@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -82,7 +83,17 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user.Email, user.Password.([]byte)) {
+	typeOf := reflect.TypeOf(user.Password)
+	fmt.Printf("typeOf.Name(): %v\n", typeOf.Name())
+
+	pass, ok := user.Password.(string)
+	if !ok {
+		logger.WithRequest(r).ErrorCtx(r.Context(), "Failed to assert password as string")
+		genericResponse(w, http.StatusInternalServerError)
+		return
+	}
+
+	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user.Email, pass) {
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}

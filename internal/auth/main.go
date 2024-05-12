@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
 // maps tokens to user ids
@@ -20,10 +20,10 @@ func NewAuthorizer(ctx context.Context) *Authorizer {
 	}
 }
 
-func LoadShortcutTokens(users []db.User) map[string]string {
+func LoadShortcutTokens(users []dbqueries.User) map[string]string {
 	out := make(map[string]string, len(users))
 	for _, v := range users {
-		out[v.ShortcutToken] = v.Id
+		out[v.ShortcutToken] = v.ID
 	}
 	return out
 }

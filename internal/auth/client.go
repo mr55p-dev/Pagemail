@@ -11,7 +11,7 @@ func (*Authorizer) ValUserAgainstPage(userID, pageUserID string) bool {
 	return userID == pageUserID
 }
 
-func (a *Authorizer) ValCredentialsAgainstUser(email, password, dbEmail string, dbPassword []byte) (isValid bool) {
+func (a *Authorizer) ValCredentialsAgainstUser(email, password, dbEmail, dbPassword string) (isValid bool) {
 	emailValid := email == dbEmail
 	passwordValid := string(dbPassword) == a.GenPasswordHash(password)
 
