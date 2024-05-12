@@ -54,6 +54,15 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+      - name: Log into docker via server
+        env:
+          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+        run: |
+          docker login \
+          --username ${{ steps.login-ecr.outputs.docker_username_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          --password ${{ steps.login-ecr.outputs.docker_password_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          ${{ steps.login-ecr.outputs.registry }}
+
       - name: Deploy to server
         env:
           DOCKER_HOST: ${{ vars.DOCKER_HOST }}
