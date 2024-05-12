@@ -12,7 +12,9 @@ services:
       PM_ENVIRONMENT: dev
       PM_LOG_LEVEL: DEBUG
     volumes:
-      - ./pagemail/dev/db:/app/db
+      - type: bind
+        source: /home/ubuntu/pagemail/dev/
+        target: /data/
     logging:
       options:
         awslogs-group: /splat/pagemail-dev
