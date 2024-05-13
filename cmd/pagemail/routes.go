@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -71,6 +71,7 @@ type PostLoginRequest struct {
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	req := requestBind[PostLoginRequest](w, r)
 	if req == nil {
 		return
@@ -79,21 +80,19 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger.DebugCtx(r.Context(), "Received bound data", "email", req.Email, "req", req)
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, sql.ErrNoRows) {
+			genericResponse(w, http.StatusUnauthorized)
+		} else {
+			genericResponse(w, http.StatusInternalServerError)
+		}
 		return
 	}
 
-	typeOf := reflect.TypeOf(user.Password)
-	fmt.Printf("typeOf.Name(): %v\n", typeOf.Name())
-
-	pass, ok := user.Password.(string)
-	if !ok {
-		logger.WithRequest(r).ErrorCtx(r.Context(), "Failed to assert password as string")
-		genericResponse(w, http.StatusInternalServerError)
-		return
-	}
-
-	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user.Email, pass) {
+	// Validate user
+	err = auth.ValidateUser([]byte(req.Email), []byte(user.Email), []byte(req.Password), user.Password)
+	if err != nil {
+		// TODO: handle the different auth errors
+		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
@@ -127,11 +126,12 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a new user
 	now := time.Now()
+	passwordHash := auth.HashPassword([]byte(req.Password))
 	user := dbqueries.CreateUserParams{
 		ID:             tools.GenerateNewId(10),
 		Username:       req.Username,
 		Email:          req.Email,
-		Password:       router.Authorizer.GenPasswordHash(req.Password),
+		Password:       passwordHash,
 		Avatar:         sql.NullString{},
 		Subscribed:     false,
 		ShortcutToken:  tools.GenerateNewShortcutToken(),

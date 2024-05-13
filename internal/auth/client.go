@@ -1,9 +1,11 @@
 package auth
 
 import (
-	"crypto/sha256"
+	"crypto/subtle"
+	"errors"
 
 	"github.com/mr55p-dev/pagemail/internal/tools"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Validation logic
@@ -11,17 +13,31 @@ func (*Authorizer) ValUserAgainstPage(userID, pageUserID string) bool {
 	return userID == pageUserID
 }
 
-func (a *Authorizer) ValCredentialsAgainstUser(email, password, dbEmail, dbPassword string) (isValid bool) {
-	emailValid := email == dbEmail
-	passwordValid := string(dbPassword) == a.GenPasswordHash(password)
+var (
+	ErrInvlaidUsername = errors.New("Incorrect username")
+	ErrInvalidPassword = errors.New("Incorrect password")
+)
 
-	return emailValid && passwordValid
+func ValidateUser(userEmail, dbEmail, userPassword, dbPasswordHash []byte) error {
+	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
+	if isValid != 1 {
+		return ErrInvlaidUsername
+	}
+
+	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, userPassword); err != nil {
+		return ErrInvalidPassword
+	}
+
+	return nil
 }
 
-func (*Authorizer) GenPasswordHash(pass string) string {
-	h := sha256.New()
-	h.Write([]byte(pass))
-	return string(h.Sum(nil))
+func HashPassword(pass []byte) []byte {
+	pass, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
+	if err != nil {
+		logger.WithError(err).Error("Could not generate password hash")
+		panic(err)
+	}
+	return pass
 }
 
 // Session tokens

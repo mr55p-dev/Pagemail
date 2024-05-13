@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 )
 
 // maps tokens to user ids
 var SESS_COOKIE string = "pm-auth-tkn"
-var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+var logger = logging.NewLogger("auth")
 
 type Authorizer struct {
 	store map[string]string

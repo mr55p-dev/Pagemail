@@ -31,7 +31,7 @@ type User struct {
 	ID             string
 	Username       string
 	Email          string
-	Password       interface{}
+	Password       []byte
 	Avatar         sql.NullString
 	Subscribed     bool
 	ShortcutToken  string

@@ -55,7 +55,6 @@ func Bind(v any, r *http.Request) (err error) {
 		fieldType := typeOf.Field(i)
 		fieldValue := valueOf.Field(i)
 		fieldTag := fieldType.Tag
-		log.Debug("Binding field", "field", fieldType.Name, "tag", fieldTag)
 		var rawVal string
 		if tag := fieldTag.Get("form"); tag != "" {
 			rawVal = handeForm(tag, r)
