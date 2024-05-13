@@ -12,6 +12,7 @@ $(server):
 
 install:
 	go install github.com/a-h/templ/cmd/templ@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 build: $(server)
 clean: $(server)
@@ -19,4 +20,3 @@ clean: $(server)
 
 run: $(server)
 	./tmp/main
-

@@ -1,15 +1,17 @@
 package render
 
 import (
-	"github.com/mr55p-dev/pagemail/internal/db"
 	"fmt"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
-templ PageList(pages []db.Page, p int) {
+const PAGE_SIZE = 10
+
+templ PageList(pages []dbqueries.Page, p int) {
 	for _, v := range pages {
 		@PageCard(&v)
 	}
-	if len(pages) >= db.PAGE_SIZE {
+	if len(pages) >= PAGE_SIZE {
 		<button
 			hx-get={ fmt.Sprintf("/pages?p=%d", p+1) }
 			hx-swap="outerHTML"
@@ -18,29 +20,29 @@ templ PageList(pages []db.Page, p int) {
 	}
 }
 
-templ PageCard(page *db.Page) {
-	<article class="box" sse-swap={ page.Id } id={ fmt.Sprintf("page-%s", page.Id) }>
+templ PageCard(page *dbqueries.Page) {
+	<article class="box" sse-swap={ page.ID } id={ fmt.Sprintf("page-%s", page.ID) }>
 		<header>
-			if page.Title != nil {
-				<h3><a href={ templ.URL(page.Url) } target="_blank">{ *page.Title }</a></h3>
+			if page.Title.Valid {
+				<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Title.String }</a></h3>
 				<sub-title>{ page.Url }</sub-title>
 			} else {
 				<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Url }</a></h3>
 			}
 		</header>
-		if page.Description == nil {
-			<p>No description</p>
+		if page.Description.Valid {
+			<p>{ page.Description.String }</p>
 		} else {
-			<p>{ *page.Description }</p>
+			<p>No description</p>
 		}
 		<footer style="padding-top: 4px;">
 			<button onClick={ OpenInNewTab(page.Url) }>Open</button>
 			<button onClick={ CopyToClipboard(page.Url) }>Copy</button>
 			<button
-				hx-delete={ fmt.Sprintf("/pages/%s", page.Id) }
+				hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
 				hx-swap="outerHTML"
-				hx-target={ fmt.Sprintf("#page-%s", page.Id) }
-				hx-target-error={ fmt.Sprintf("#page-%s", page.Id) }
+				hx-target={ fmt.Sprintf("#page-%s", page.ID) }
+				hx-target-error={ fmt.Sprintf("#page-%s", page.ID) }
 			>Delete</button>
 			<small>Added { page.Created.Format("02-01-2006") }</small>
 		</footer>

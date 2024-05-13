@@ -8,3 +8,4 @@ pkg/render/*.go
 *.pub
 *.pem
 /pagemail
+.env

@@ -11,11 +11,11 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"time"
 )
 
-func MailDigest(date time.Time, name string, pages []db.Page) templ.Component {
+func MailDigest(date time.Time, name string, pages []dbqueries.Page) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -98,15 +98,15 @@ func MailDigest(date time.Time, name string, pages []db.Page) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if page.Title != nil {
+			if page.Title.Valid {
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<b>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(*page.Title)
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(page.Title.String)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/mail.templ`, Line: 404, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/mail.templ`, Line: 404, Col: 40}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -116,15 +116,15 @@ func MailDigest(date time.Time, name string, pages []db.Page) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				if page.Description != nil {
+				if page.Description.Valid {
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("- ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
-					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(*page.Description)
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(page.Description.String)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/mail.templ`, Line: 406, Col: 40}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/mail.templ`, Line: 406, Col: 46}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {

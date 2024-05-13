@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mr55p-dev/pagemail/internal/db"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,11 +13,10 @@ import (
 var (
 	created  = time.Date(2024, time.January, 1, 12, 0, 0, 0, time.UTC)
 	now      = time.Date(2024, time.January, 2, 0, 0, 0, 0, time.UTC)
-	testUser = db.User{
-		Id:         "123",
+	testUser = dbqueries.User{
+		ID:         "123",
 		Username:   "user",
 		Email:      "user@mail.com",
-		Name:       "User",
 		Subscribed: true,
 	}
 
