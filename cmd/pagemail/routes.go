@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -70,6 +71,7 @@ type PostLoginRequest struct {
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	req := requestBind[PostLoginRequest](w, r)
 	if req == nil {
 		return
@@ -78,7 +80,11 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger.DebugCtx(r.Context(), "Received bound data", "email", req.Email, "req", req)
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, sql.ErrNoRows) {
+			genericResponse(w, http.StatusUnauthorized)
+		} else {
+			genericResponse(w, http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -86,6 +92,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	err = auth.ValidateUser([]byte(req.Email), []byte(user.Email), []byte(req.Password), user.Password)
 	if err != nil {
 		// TODO: handle the different auth errors
+		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}

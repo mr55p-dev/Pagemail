@@ -19,7 +19,8 @@ var (
 )
 
 func ValidateUser(userEmail, dbEmail, userPassword, dbPasswordHash []byte) error {
-	if isValid := subtle.ConstantTimeCompare(userEmail, userPassword); isValid != 1 {
+	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
+	if isValid != 1 {
 		return ErrInvlaidUsername
 	}
 
