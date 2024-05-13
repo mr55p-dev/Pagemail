@@ -1,4 +1,4 @@
-package main
+package request
 
 import (
 	"errors"
@@ -9,6 +9,8 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/logging"
 )
+
+var logger = logging.NewLogger("bind")
 
 var ErrUnsupportedType = errors.New("unsupported type")
 var ErrNonPointerArg = errors.New("non-pointer argument")
