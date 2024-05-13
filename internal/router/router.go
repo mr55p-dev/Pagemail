@@ -2,7 +2,7 @@ package router
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"io/fs"
 	"net/http"
 
@@ -20,6 +20,7 @@ var logger = logging.NewLogger("router")
 type Router struct {
 	DBClient   *dbqueries.Queries
 	Authorizer *auth.Authorizer
+	Conn       *sql.DB
 	Mux        http.Handler
 }
 
@@ -66,25 +67,23 @@ func getAssestMux(env Env) http.Handler {
 
 func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error) {
 	// Start the clients
+	router := &Router{}
 	logger.DebugCtx(ctx, "Setting up db client")
-	dbClient, dbClose := dbqueries.MustGetQueries(ctx, cfg.DBPath)
-	defer func() {
-		_ = dbClose()
+	router.Conn = dbqueries.MustGetDB(ctx, cfg.DBPath)
+	router.DBClient = dbqueries.New(router.Conn)
+	go func() {
+		<-ctx.Done()
+		_ = router.Conn.Close()
 	}()
 
 	logger.DebugCtx(ctx, "Setting up auth client")
-	authClient := auth.NewAuthorizer(ctx)
+	router.Authorizer = auth.NewAuthorizer(ctx)
 
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {
 		logger.InfoCtx(ctx, "Starting mail job")
 		mailClient := mail.NewSesMailClient(ctx, awsCfg)
-		go mail.MailGo(ctx, dbClient, mailClient)
-	}
-
-	router := &Router{
-		DBClient:   dbClient,
-		Authorizer: authClient,
+		go mail.MailGo(ctx, router.DBClient, mailClient)
 	}
 
 	// Serve root
@@ -102,7 +101,7 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
-			middlewares.GetShortcutLoader(authClient, dbClient),
+			middlewares.GetShortcutLoader(router.Authorizer, router.DBClient),
 		),
 	))
 
@@ -117,7 +116,7 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 		middlewares.Recover,
 		middlewares.Tracer,
 		middlewares.RequestLogger,
-		middlewares.GetUserLoader(authClient, dbClient),
+		middlewares.GetUserLoader(router.Authorizer, router.DBClient),
 	))
 	router.Mux = mux
 	return router, nil

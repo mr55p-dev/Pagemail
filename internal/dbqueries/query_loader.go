@@ -5,9 +5,10 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mr55p-dev/pagemail/db"
 )
 
-func MustGetQueries(ctx context.Context, path string) (*Queries, func() error) {
+func MustGetDB(ctx context.Context, path string) *sql.DB {
 	conn, err := sql.Open("sqlite3", path)
 	if err != nil {
 		panic(err)
@@ -16,5 +17,13 @@ func MustGetQueries(ctx context.Context, path string) (*Queries, func() error) {
 	if err != nil {
 		panic(err)
 	}
-	return New(conn), conn.Close
+	return conn
+}
+
+func LoadTables(ctx context.Context, conn *sql.DB) error {
+	_, err := conn.ExecContext(ctx, db.Schema)
+	if err != nil {
+		return err
+	}
+	return nil
 }
