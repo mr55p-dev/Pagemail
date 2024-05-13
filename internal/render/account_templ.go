@@ -66,7 +66,7 @@ func AccountPage(user *dbqueries.User) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Copy token</button></div></form><p>Install the iOS shortcut <a href=\"https://www.icloud.com/shortcuts/93fa19df16734968bf0c03c245611c3d\">here</a></p></div><div id=\"account-status\"></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Copy token</button></div></form><p>Install the iOS shortcut <a href=\"https://www.icloud.com/shortcuts/a581bc41fcde4d73863fb96f47f3a532\">here</a></p></div><div id=\"account-status\"></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
