@@ -47,7 +47,7 @@ type CreateUserParams struct {
 	ID             string
 	Username       string
 	Email          string
-	Password       interface{}
+	Password       []byte
 	Avatar         sql.NullString
 	Subscribed     bool
 	ShortcutToken  string
@@ -369,7 +369,7 @@ WHERE id = ?
 
 type UpdateUserParams struct {
 	Username       string
-	Password       interface{}
+	Password       []byte
 	Avatar         sql.NullString
 	Subscribed     bool
 	ShortcutToken  string
