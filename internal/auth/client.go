@@ -23,8 +23,7 @@ func ValidateUser(userEmail, dbEmail, userPassword, dbPasswordHash []byte) error
 		return ErrInvlaidUsername
 	}
 
-	userPasswordHash := HashPassword(userPassword)
-	if isValid := subtle.ConstantTimeCompare(userPasswordHash, dbPasswordHash); isValid != 1 {
+	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, userPassword); err != nil {
 		return ErrInvalidPassword
 	}
 
