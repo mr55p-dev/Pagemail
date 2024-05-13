@@ -23,6 +23,47 @@ type Router struct {
 	Mux        http.Handler
 }
 
+func getUserMux(router *Router) http.Handler {
+	userMux := http.NewServeMux()
+	userMux.HandleFunc("GET /logout", router.GetLogout)
+	userMux.HandleFunc("GET /account", router.GetAccountPage)
+	userMux.HandleFunc("PUT /account", router.PutAccount)
+	userMux.HandleFunc("GET /token/shortcut", router.GetShortcutToken)
+	return middlewares.WithMiddleware(
+		http.StripPrefix("/user", userMux),
+		middlewares.ProtectRoute,
+	)
+
+}
+
+func getPagesMux(router *Router) http.Handler {
+	pagesMux := http.NewServeMux()
+	pagesMux.HandleFunc("GET /{page_id}", router.GetPage)
+	pagesMux.HandleFunc("GET /dashboard", router.GetDashboard)
+	pagesMux.HandleFunc("POST /", router.PostPage)
+	pagesMux.HandleFunc("DELETE /", router.DeletePages)
+	pagesMux.HandleFunc("DELETE /{page_id}", router.DeletePage)
+	return middlewares.WithMiddleware(
+		http.StripPrefix("/pages", pagesMux),
+		middlewares.ProtectRoute,
+	)
+}
+
+func getAssestMux(env Env) http.Handler {
+	var fileHandler http.Handler
+	switch env {
+	case ENV_STG, ENV_PRD:
+		subdir, err := fs.Sub(assets.FS, "public")
+		if err != nil {
+			panic(err)
+		}
+		fileHandler = http.FileServerFS(subdir)
+	default:
+		fileHandler = http.FileServer(http.Dir("internal/assets/public/"))
+	}
+	return fileHandler
+}
+
 func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error) {
 	// Start the clients
 	logger.DebugCtx(ctx, "Setting up db client")
@@ -41,68 +82,34 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 		go mail.MailGo(ctx, dbClient, mailClient)
 	}
 
-	s := &Router{
+	router := &Router{
 		DBClient:   dbClient,
 		Authorizer: authClient,
 	}
 
 	// Serve root
 	rootMux := http.NewServeMux()
-	rootMux.HandleFunc("/", s.GetRoot)
+	rootMux.HandleFunc("/", router.GetRoot)
 	rootMux.Handle("/login", HandleMethods(map[string]http.Handler{
-		http.MethodGet:  http.HandlerFunc(s.GetLogin),
-		http.MethodPost: http.HandlerFunc(s.PostLogin),
+		http.MethodGet:  http.HandlerFunc(router.GetLogin),
+		http.MethodPost: http.HandlerFunc(router.PostLogin),
 	}))
 	rootMux.Handle("/signup", HandleMethods(map[string]http.Handler{
-		http.MethodGet:  http.HandlerFunc(s.GetSignup),
-		http.MethodPost: http.HandlerFunc(s.PostSignup),
+		http.MethodGet:  http.HandlerFunc(router.GetSignup),
+		http.MethodPost: http.HandlerFunc(router.PostSignup),
 	}))
-	rootMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "OK")
-	})
-
-	// Serve pages
-	pagesMux := http.NewServeMux()
-	pagesMux.HandleFunc("GET /{page_id}", s.GetPage)
-	pagesMux.HandleFunc("GET /dashboard", s.GetDashboard)
-	pagesMux.HandleFunc("POST /", s.PostPage)
-	pagesMux.HandleFunc("DELETE /", s.DeletePages)
-	pagesMux.HandleFunc("DELETE /{page_id}", s.DeletePage)
-	rootMux.Handle("/pages/", middlewares.WithMiddleware(
-		http.StripPrefix("/pages", pagesMux),
-		middlewares.ProtectRoute,
-	))
 
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
-			http.HandlerFunc(s.PostPage),
+			http.HandlerFunc(router.PostPage),
 			middlewares.GetShortcutLoader(authClient, dbClient),
 		),
 	))
 
-	// Serve users
-	userMux := http.NewServeMux()
-	userMux.HandleFunc("GET /logout", s.GetLogout)
-	userMux.HandleFunc("GET /account", s.GetAccountPage)
-	userMux.HandleFunc("PUT /account", s.PutAccount)
-	userMux.HandleFunc("GET /token/shortcut", s.GetShortcutToken)
-	rootMux.Handle("/user/", middlewares.WithMiddleware(
-		http.StripPrefix("/user", userMux),
-		middlewares.ProtectRoute,
-	))
+	rootMux.Handle("/user/", getUserMux(router))
+	rootMux.Handle("/pages/", getPagesMux(router))
 
-	// Serve static assets
-	var fileHandler http.Handler
-	switch Env(cfg.Environment) {
-	case ENV_STG, ENV_PRD:
-		subdir, err := fs.Sub(assets.FS, "public")
-		if err != nil {
-			panic(err)
-		}
-		fileHandler = http.FileServerFS(subdir)
-	default:
-		fileHandler = http.FileServer(http.Dir("internal/assets/public/"))
-	}
+	fileHandler := getAssestMux(Env(cfg.Environment))
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))
@@ -112,6 +119,6 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 		middlewares.RequestLogger,
 		middlewares.GetUserLoader(authClient, dbClient),
 	))
-	s.Mux = mux
-	return s, nil
+	router.Mux = mux
+	return router, nil
 }
