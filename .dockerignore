@@ -5,4 +5,5 @@ pagemail-jwt-signature.key.pub
 **/dist
 deploy/
 db/
+!db/schema.*
 pagemail.yaml
