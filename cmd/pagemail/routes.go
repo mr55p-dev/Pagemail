@@ -93,7 +93,10 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !router.Authorizer.ValCredentialsAgainstUser(req.Email, req.Password, user.Email, pass) {
+	// Validate user
+	err = auth.ValidateUser([]byte(req.Email), []byte(req.Password), []byte(user.Email), []byte(pass))
+	if err != nil {
+		// TODO: handle the different auth errors
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
@@ -127,11 +130,12 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a new user
 	now := time.Now()
+	passwordHash := auth.HashPassword([]byte(req.Password))
 	user := dbqueries.CreateUserParams{
 		ID:             tools.GenerateNewId(10),
 		Username:       req.Username,
 		Email:          req.Email,
-		Password:       router.Authorizer.GenPasswordHash(req.Password),
+		Password:       passwordHash,
 		Avatar:         sql.NullString{},
 		Subscribed:     false,
 		ShortcutToken:  tools.GenerateNewShortcutToken(),
