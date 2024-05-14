@@ -9,4 +9,3 @@ pkg/render/*.go
 *.pem
 /pagemail
 .env
-cookie-key.txt
