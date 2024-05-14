@@ -10,10 +10,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-type AccountData struct {
-	Subscribed string `form:"email-list"`
-}
-
 func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	componentRender(render.Index(user), w, r)
@@ -35,11 +31,18 @@ func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+type PutAccountRequest struct {
+	Subscribed string `form:"email-list"`
+}
+
 func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
+	req := requestBind[PutAccountRequest](w, r)
+	if req == nil {
+		return
+	}
 	user := auth.GetUser(r.Context())
-	form := new(AccountData)
 	err := router.DBClient.UpdateUserSubscription(r.Context(), dbqueries.UpdateUserSubscriptionParams{
-		Subscribed: form.Subscribed == "on",
+		Subscribed: req.Subscribed == "on",
 		ID:         user.ID,
 	})
 	if err != nil {

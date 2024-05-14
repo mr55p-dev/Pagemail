@@ -18,14 +18,6 @@ type GetPagesRequest struct {
 	Page string `query:"p"`
 }
 
-type GetPageRequest struct {
-	PageID string `param:"page_id"`
-}
-
-type PostPageRequest struct {
-	Url string `form:"url"`
-}
-
 func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	req := requestBind[GetPagesRequest](w, r)
 	if req == nil {
@@ -61,6 +53,10 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 
 }
 
+type GetPageRequest struct {
+	PageID string `param:"page_id"`
+}
+
 func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	req := requestBind[GetPageRequest](w, r)
 	if req == nil {
@@ -83,6 +79,10 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	componentRender(render.PageCard(&page), w, r)
+}
+
+type PostPageRequest struct {
+	Url string `form:"url"`
 }
 
 func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
