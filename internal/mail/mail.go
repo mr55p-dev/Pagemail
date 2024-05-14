@@ -111,9 +111,9 @@ func SendMailToUser(ctx context.Context, user *dbqueries.User, db MailDbReader, 
 	start := now.Add(-time.Hour * 24)
 	end := now
 	pages, err := db.ReadPagesByUserBetween(ctx, dbqueries.ReadPagesByUserBetweenParams{
-		Start:  start,
-		End:    end,
-		UserID: user.ID,
+		Created:   start,
+		Created_2: end,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		return err

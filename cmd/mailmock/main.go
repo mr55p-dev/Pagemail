@@ -5,18 +5,44 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/mail"
+	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-var (
-	recipient = flag.String("to", "mail@mail.com", "Address to send the test email to")
-	subject   = flag.String("sub", "Test mail", "Subject of the test email")
+var recipient = flag.String("to", "", "Address to send the test email to")
 
-	dry_run = flag.Bool("dry-run", false, "Weather to actually commit to sending the mail")
-)
+func loadUserWithPages(ctx context.Context, queries *dbqueries.Queries, address string, now time.Time) error {
+	uid := tools.GenerateNewId(5)
+	err := queries.CreateUser(ctx, dbqueries.CreateUserParams{
+		ID:         uid,
+		Username:   "test",
+		Password:   []byte("password"),
+		Email:      address,
+		Subscribed: true,
+		Created:    now,
+		Updated:    now,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = queries.CreatePage(ctx, dbqueries.CreatePageParams{
+		ID:      tools.GenerateNewId(5),
+		UserID:  uid,
+		Url:     "https://www.google.com",
+		Created: now.Add(-time.Hour),
+		Updated: now.Add(-time.Hour),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func main() {
 	flag.CommandLine.Usage = func() {
@@ -25,7 +51,6 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
-	body := flag.Arg(0)
 
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx)
@@ -33,18 +58,25 @@ func main() {
 		panic(err)
 	}
 
-	client := mail.NewSesMailClient(ctx, cfg)
-	bodyReader := strings.NewReader(body)
-	if *dry_run {
-		fmt.Println(body)
-		fmt.Println("Dry-run enabled. Done.")
-		return
-	}
-	err = client.Send(ctx, *recipient, bodyReader)
+	// Setup the database
+	conn := dbqueries.MustGetDB(ctx, ":memory:")
+	err = dbqueries.LoadTables(ctx, conn)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to send message: \n%v", err)
-		os.Exit(1)
+		panic(err)
 	}
-	fmt.Println("Sent message")
+	queries := dbqueries.New(conn)
+	client := mail.NewSesMailClient(ctx, cfg)
 
+	//
+	now := time.Now()
+	err = loadUserWithPages(ctx, queries, *recipient, now)
+	if err != nil {
+		panic(err)
+	}
+
+	err = mail.MailJob(ctx, queries, client, now)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Job complete")
 }

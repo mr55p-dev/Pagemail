@@ -74,7 +74,7 @@ ORDER BY created DESC;
 
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
-WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
+WHERE created BETWEEN ? AND ?
 AND user_id = ?;
 -- ORDER BY created DESC;
 
