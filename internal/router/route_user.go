@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/render"
@@ -25,14 +26,19 @@ type PostLoginRequest struct {
 	Password string `form:"password"`
 }
 
-func (Router) GetLogin(w http.ResponseWriter, r *http.Request) {
+func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
 	componentRender(render.Login(), w, r)
+}
+
+func (router *Router) saveSession(w http.ResponseWriter, r *http.Request, sess *sessions.Session) {
+
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	req := requestBind[PostLoginRequest](w, r)
 	if req == nil {
+		genericResponse(w, http.StatusBadRequest)
 		return
 	}
 
@@ -49,30 +55,19 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 
 	// Validate user
 	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
-		logger.DebugCtx(r.Context(), "Error validating user")
+		logger.DebugCtx(r.Context(), "Invalid username")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
 	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
-		logger.DebugCtx(r.Context(), "Error validating user")
+		logger.DebugCtx(r.Context(), "Invalid password")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
 
-	sess, err := router.Authorizer.New(r, auth.SessionKey)
-	if err != nil {
-		logger.WithError(err).ErrorCtx(r.Context(), "Failed to create session")
-		genericResponse(w, http.StatusInternalServerError)
-		return
-	}
+	sess, _ := router.Authorizer.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
-
-	err = router.Authorizer.Save(r, w, sess)
-	if err != nil {
-		logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
-		genericResponse(w, http.StatusInternalServerError)
-		return
-	}
+	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
@@ -112,8 +107,9 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Generate a token for the user from the session manager
-	token, _ := router.Authorizer.New(r, user.ID)
-	_ = router.Authorizer.Save(r, w, token)
+	sess, _ := router.Authorizer.Get(r, auth.SessionKey)
+	auth.SetId(sess, user.ID)
+	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
@@ -123,14 +119,11 @@ func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (Router) GetLogout(w http.ResponseWriter, r *http.Request) {
-	cookie := http.Cookie{
+func (router *Router) GetLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
 		Name:   auth.SessionKey,
-		Value:  "",
-		Path:   "/",
 		MaxAge: -1,
-	}
-	http.SetCookie(w, &cookie)
+	})
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
