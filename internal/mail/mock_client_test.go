@@ -9,35 +9,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
 
-// Message holds basic properties about generated emails
-type Message struct {
-	address  string
-	contents string
-}
-
-// MailSenderNoOp implements MailSender for tests
-type MailSenderNoOp struct {
-	mail []Message
-}
-
-// Send implements MailSender and stores messages in the instance
-func (m *MailSenderNoOp) Send(ctx context.Context, addr string, contents io.Reader) error {
-	dst := strings.Builder{}
-	io.Copy(&dst, contents)
-	cnts := dst.String()
-	logger.DebugCtx(ctx, "No-op mail send", "address", addr, "contents", cnts)
-	m.mail = append(m.mail, Message{
-		address:  addr,
-		contents: cnts,
-	})
-	return nil
-}
-
-// Reset clears the mail log for the mock instance
-func (m *MailSenderNoOp) Reset() {
-	m.mail = make([]Message, 0)
-}
-
 // MailDbReaderNoOp implements the MailDbReader interface with mock data
 type MailDbReaderNoOp struct {
 	created  time.Time

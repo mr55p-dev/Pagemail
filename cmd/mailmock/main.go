@@ -63,7 +63,7 @@ func main() {
 	conn := db.MustConnect(ctx, ":memory:")
 	db.MustLoadSchema(ctx, conn)
 	queries := dbqueries.New(conn)
-	client := mail.NewSesMailClient(ctx, cfg)
+	client := mail.NewSesSender(ctx, cfg)
 
 	//
 	now := time.Now()
