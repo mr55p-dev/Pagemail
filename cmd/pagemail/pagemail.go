@@ -106,16 +106,14 @@ func getAssets(env string) fs.FS {
 }
 
 func getCookieKey(path string) (io.Reader, error) {
-	var rdr io.Reader
 	if path == "-" {
-		rdr = rand.Reader
+		return rand.Reader, nil
 	} else {
 		cookieDataFile, err := os.Open(path)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to open cookie key file: %w", err)
+			return nil, fmt.Errorf("Failed to open cookie key file at %s: %w", path, err)
 		}
 		defer cookieDataFile.Close()
-		rdr = cookieDataFile
+		return cookieDataFile, nil
 	}
-	return rdr, nil
 }

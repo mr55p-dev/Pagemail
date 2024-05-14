@@ -11,7 +11,7 @@ type AppConfig struct {
 	LogLevel      string `config:"app.log-level" log:"logLevel"`
 	Host          string `config:"app.host" log:"host"`
 	DBPath        string `config:"db.path" log:"db-path"`
-	CookieKeyFile string `config:"app.cookie-key-path"`
+	CookieKeyFile string `config:"app.cookie-key-file" log:"cookie-key-file"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {
