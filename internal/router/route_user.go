@@ -48,13 +48,13 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate user
-	if err := auth.ValidateUser([]byte(req.Email), []byte(user.Email)); err != nil {
-		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
+	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
+		logger.DebugCtx(r.Context(), "Error validating user")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
-	if err := auth.ValidatePassword([]byte(req.Password), user.Password); err != nil {
-		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
+	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
+		logger.DebugCtx(r.Context(), "Error validating user")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}

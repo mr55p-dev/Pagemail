@@ -42,23 +42,19 @@ func SetId(sess *sessions.Session, id string) {
 	sess.Values[uid] = id
 }
 
-func ValUserAgainstPage(userID, pageUserID string) bool {
-	return userID == pageUserID
-}
-
-func ValidateUser(userEmail, dbEmail []byte) error {
+func ValidateEmail(userEmail, dbEmail []byte) bool {
 	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
 	if isValid != 1 {
-		return ErrInvlaidUsername
+		return false
 	}
-	return nil
+	return true
 }
 
-func ValidatePassword(userPassword, dbPasswordHash []byte) error {
+func ValidatePassword(userPassword, dbPasswordHash []byte) bool {
 	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, userPassword); err != nil {
-		return ErrInvalidPassword
+		return false
 	}
-	return nil
+	return true
 }
 
 func HashPassword(pass []byte) []byte {

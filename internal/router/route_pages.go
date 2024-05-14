@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
@@ -161,7 +160,7 @@ func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.ValUserAgainstPage(user.ID, page.UserID) {
+	if !(user.ID == page.UserID) {
 		http.Error(w, "Permission denied", http.StatusForbidden)
 		return
 	}
