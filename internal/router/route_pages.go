@@ -45,7 +45,7 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	}
 	// pageinate for fun
 	pages = pages[(page-1)*render.PAGE_SIZE : page*render.PAGE_SIZE]
-	staticRender(render.PageList(pages, page), w, r)
+	componentRender(render.PageList(pages, page), w, r)
 }
 
 func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
-	staticRender(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
+	componentRender(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
 
 }
 
@@ -81,10 +81,11 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
-	staticRender(render.PageCard(&page), w, r)
+	componentRender(render.PageCard(&page), w, r)
 }
 
 func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	req := requestBind[PostPageRequest](w, r)
 	if req == nil {
 		return
@@ -93,7 +94,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	user := dbqueries.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
-		staticRender(render.SavePageError("URL field must be present"), w, r)
+		mixedRender("Missing URL in request", render.SavePageError, w, r)
 		return
 	}
 
@@ -113,7 +114,9 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		Updated: page.Updated,
 	})
 	if err != nil {
-		staticRender(render.SavePageError(err.Error()), w, r)
+		logger.WithError(err).ErrorCtx(r.Context(), "Error ")
+		mixedRender("Failed to save page", render.SavePageError, w, r)
+		return
 	}
 
 	go func(cli *dbqueries.Queries) {
@@ -141,7 +144,11 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}(router.DBClient)
 
-	staticRender(render.PageCard(&page), w, r)
+	if isHtmx(r) {
+		componentRender(render.PageCard(&page), w, r)
+	} else {
+		textRender("Added page successfully", w, r)
+	}
 	return
 }
 

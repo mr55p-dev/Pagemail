@@ -14,7 +14,7 @@ type AccountData struct {
 
 func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := dbqueries.GetUser(r.Context())
-	staticRender(render.Index(user), w, r)
+	componentRender(render.Index(user), w, r)
 }
 
 func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
@@ -24,12 +24,12 @@ func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	staticRender(render.Dashboard(user, pages), w, r)
+	componentRender(render.Dashboard(user, pages), w, r)
 }
 
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 	user := dbqueries.GetUser(r.Context())
-	staticRender(render.AccountPage(user), w, r)
+	componentRender(render.AccountPage(user), w, r)
 	return
 }
 
