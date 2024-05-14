@@ -41,9 +41,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	password := new(bytes.Buffer)
-	io.Copy(os.Stdin, password)
-	passwordHash := auth.HashPassword(password.Bytes())
+	password, err := parsePassword(os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading password: %v", err)
+		os.Exit(1)
+	}
+	passwordHash := auth.HashPassword(password)
 
 	conn := dbqueries.MustGetDB(ctx, cfg.Url)
 	queries := dbqueries.New(conn)
@@ -57,4 +60,15 @@ func main() {
 	}
 	fmt.Println("Password updated sucessfully")
 	return
+}
+
+func parsePassword(rdr io.Reader) ([]byte, error) {
+	password := new(bytes.Buffer)
+	n, err := io.Copy(password, rdr)
+	_ = n
+	if err != nil {
+		return nil, fmt.Errorf("Error reading password: %w", err)
+	}
+	passBytes := bytes.TrimSpace(password.Bytes())
+	return passBytes, nil
 }
