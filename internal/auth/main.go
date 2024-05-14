@@ -1,30 +1,59 @@
 package auth
 
 import (
-	"context"
+	"crypto/subtle"
+	"errors"
 
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/logging"
+	"golang.org/x/crypto/bcrypt"
 )
 
-// maps tokens to user ids
-var SESS_COOKIE string = "pm-auth-tkn"
-var logger = logging.NewLogger("auth")
+type uidKeyType string
 
-type Authorizer struct {
-	store map[string]string
+var (
+	logger = logging.NewLogger("auth")
+
+	uid        uidKeyType = "uid"
+	SessionKey string     = "pm-auth-tkn"
+
+	ErrNoUserInSession = errors.New("No user found in session")
+	ErrInvlaidUsername = errors.New("Incorrect username")
+	ErrInvalidPassword = errors.New("Incorrect password")
+)
+
+func GetId(sess *sessions.Session) string {
+	return sess.Values[uid].(string)
 }
 
-func NewAuthorizer(ctx context.Context) *Authorizer {
-	return &Authorizer{
-		store: make(map[string]string),
-	}
+func SetId(sess *sessions.Session, id string) {
+	sess.Values[uid] = id
 }
 
-func LoadShortcutTokens(users []dbqueries.User) map[string]string {
-	out := make(map[string]string, len(users))
-	for _, v := range users {
-		out[v.ShortcutToken] = v.ID
+func ValUserAgainstPage(userID, pageUserID string) bool {
+	return userID == pageUserID
+}
+
+func ValidateUser(userEmail, dbEmail []byte) error {
+	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
+	if isValid != 1 {
+		return ErrInvlaidUsername
 	}
-	return out
+	return nil
+}
+
+func ValidatePassword(userPassword, dbPasswordHash []byte) error {
+	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, userPassword); err != nil {
+		return ErrInvalidPassword
+	}
+	return nil
+}
+
+func HashPassword(pass []byte) []byte {
+	pass, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
+	if err != nil {
+		logger.WithError(err).Error("Could not generate password hash")
+		panic(err)
+	}
+	return pass
 }

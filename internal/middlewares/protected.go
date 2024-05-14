@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gorilla/sessions"
+	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 )
@@ -13,11 +15,7 @@ type DB interface {
 	ReadUserByShortcutToken(context.Context, string) (dbqueries.User, error)
 }
 
-type Auth interface {
-	ValSessionToken(string) string
-}
-
-func GetUserLoader(auth Auth, db DB) MiddlewareFunc {
+func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 	logger := logging.NewLogger("middleware-load-user")
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -34,26 +32,21 @@ func GetUserLoader(auth Auth, db DB) MiddlewareFunc {
 				return
 			}
 
-			uid := auth.ValSessionToken(tkn.Value)
-			if uid == "" {
-				logger.DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
+			sess, _ := store.Get(r, auth.SessionKey)
+			user, err := auth.GetUser(sess)
+			if err != nil {
+				logger.WithError(err).DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
 				next.ServeHTTP(w, r)
 				return
 			}
 
-			user, err := db.ReadUserById(r.Context(), uid)
-			if err != nil {
-				http.Error(w, "error reading user", http.StatusInternalServerError)
-				return
-			}
-
 			logger.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
-			next.ServeHTTP(w, reqWithUser(r, &user))
+			next.ServeHTTP(w, reqWithUser(r, user))
 		})
 	}
 }
 
-func GetShortcutLoader(auth Auth, db DB) MiddlewareFunc {
+func GetShortcutLoader(auth sessions.Store, db DB) MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tkn := r.Header.Get("Authorization")

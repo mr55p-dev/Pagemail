@@ -19,7 +19,7 @@ var logger = logging.NewLogger("router")
 
 type Router struct {
 	DBClient   *dbqueries.Queries
-	Authorizer *auth.Authorizer
+	Authorizer *auth.MemoryStore
 	Conn       *sql.DB
 	Mux        http.Handler
 }
@@ -77,7 +77,7 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 	}()
 
 	logger.DebugCtx(ctx, "Setting up auth client")
-	router.Authorizer = auth.NewAuthorizer(ctx)
+	router.Authorizer = auth.NewMemoryStore(ctx)
 
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {

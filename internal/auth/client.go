@@ -1,65 +1,39 @@
 package auth
 
 import (
-	"crypto/subtle"
-	"errors"
+	"context"
+	"net/http"
 
+	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/tools"
-	"golang.org/x/crypto/bcrypt"
 )
 
-// Validation logic
-func (*Authorizer) ValUserAgainstPage(userID, pageUserID string) bool {
-	return userID == pageUserID
+type MemoryStore struct {
+	store map[string]*sessions.Session
 }
 
-var (
-	ErrInvlaidUsername = errors.New("Incorrect username")
-	ErrInvalidPassword = errors.New("Incorrect password")
-)
-
-func ValidateUser(userEmail, dbEmail, userPassword, dbPasswordHash []byte) error {
-	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
-	if isValid != 1 {
-		return ErrInvlaidUsername
+func NewMemoryStore(ctx context.Context) *MemoryStore {
+	return &MemoryStore{
+		store: make(map[string]*sessions.Session),
 	}
-
-	if err := bcrypt.CompareHashAndPassword(dbPasswordHash, userPassword); err != nil {
-		return ErrInvalidPassword
-	}
-
-	return nil
 }
 
-func HashPassword(pass []byte) []byte {
-	pass, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
-	if err != nil {
-		logger.WithError(err).Error("Could not generate password hash")
-		panic(err)
-	}
-	return pass
+func (a *MemoryStore) Get(r *http.Request, name string) (*sessions.Session, error) {
+	return nil, nil
 }
 
-// Session tokens
-func (a *Authorizer) GenSessionToken(userID string) string {
+func (a *MemoryStore) New(r *http.Request, name string) (*sessions.Session, error) {
 	tkn := tools.GenerateNewId(50)
-	a.store[tkn] = userID
-	return tkn
+	sess := &sessions.Session{
+		ID:      tkn,
+		Values:  make(map[interface{}]interface{}),
+		Options: &sessions.Options{},
+		IsNew:   true,
+	}
+	a.store[name] = sess
+	return sess, nil
 }
 
-func (a *Authorizer) ValSessionToken(token string) string {
-	uid := a.store[token]
-	return uid
-}
-
-func (a *Authorizer) RevokeSessionToken(token string) bool {
-	_, ok := a.store[token]
-	delete(a.store, token)
-	return ok
-}
-
-func (a *Authorizer) GenShortcutToken(userID string) string {
-	tkn := tools.GenerateNewShortcutToken()
-	a.store[tkn] = userID
-	return tkn
+func (a *MemoryStore) Save(r *http.Request, w http.ResponseWriter, s *sessions.Session) error {
+	return nil
 }

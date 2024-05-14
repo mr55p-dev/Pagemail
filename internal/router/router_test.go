@@ -93,7 +93,7 @@ func TestSignup(t *testing.T) {
 	cookies := res.Cookies()
 	assert.Len(cookies, 1)
 	cookie := cookies[0]
-	assert.Equal(cookie.Name, auth.SESS_COOKIE)
+	assert.Equal(cookie.Name, auth.SessionKey)
 	assert.NotZero(cookie.Value)
 	assert.Greater(cookie.MaxAge, 0)
 	assert.Equal(res.Header.Get("HX-Redirect"), "/pages/dashboard")
@@ -116,7 +116,7 @@ func TestLogin(t *testing.T) {
 	cookies := res.Cookies()
 	assert.Len(cookies, 1)
 	cookie := cookies[0]
-	assert.Equal(cookie.Name, auth.SESS_COOKIE)
+	assert.Equal(cookie.Name, auth.SessionKey)
 	assert.NotZero(cookie.Value)
 	assert.Greater(cookie.MaxAge, 0)
 	assert.Equal(res.Header.Get("HX-Redirect"), "/pages/dashboard")

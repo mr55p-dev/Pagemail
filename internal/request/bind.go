@@ -73,6 +73,8 @@ func Bind(v any, r *http.Request) (err error) {
 				return fmt.Errorf("Bind failed to parse int for field %s: %w", fieldTag, err)
 			}
 			fieldValue.SetInt(int64(parsed))
+		case reflect.Bool:
+			fieldValue.SetBool(rawVal == "true")
 		default:
 			return fmt.Errorf("Bind failed to bind field %s (%s): %w", fieldTag, fieldType.Type.Kind(), ErrUnsupportedType)
 		}

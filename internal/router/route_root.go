@@ -6,6 +6,7 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
 type AccountData struct {
@@ -48,7 +49,7 @@ func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 
 func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) {
 	user := dbqueries.GetUser(r.Context())
-	token := router.Authorizer.GenShortcutToken(user.ID)
+	token := tools.GenerateNewShortcutToken()
 	err := router.DBClient.UpdateUserShortcutToken(r.Context(), dbqueries.UpdateUserShortcutTokenParams{
 		ShortcutToken: token,
 		ID:            user.ID,

@@ -17,6 +17,7 @@ type PostSignupRequest struct {
 	Email          string `form:"email"`
 	Password       string `form:"password"`
 	PasswordRepeat string `form:"password-repeat"`
+	Subscribed     bool   `form:"subscribed"`
 }
 
 type PostLoginRequest struct {
@@ -26,7 +27,7 @@ type PostLoginRequest struct {
 
 func GetLoginCookie(val string) *http.Cookie {
 	return &http.Cookie{
-		Name:     auth.SESS_COOKIE,
+		Name:     auth.SessionKey,
 		Value:    val,
 		Path:     "/",
 		MaxAge:   864000,
@@ -59,23 +60,25 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate user
-	err = auth.ValidateUser([]byte(req.Email), []byte(user.Email), []byte(req.Password), user.Password)
-	if err != nil {
-		// TODO: handle the different auth errors
+	if err := auth.ValidateUser([]byte(req.Email), []byte(user.Email)); err != nil {
+		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
+		genericResponse(w, http.StatusUnauthorized)
+		return
+	}
+	if err := auth.ValidatePassword([]byte(req.Password), user.Password); err != nil {
 		logger.WithError(err).DebugCtx(r.Context(), "Error validating user")
 		genericResponse(w, http.StatusUnauthorized)
 		return
 	}
 
-	sess := router.Authorizer.GenSessionToken(user.ID)
-	cookie := GetLoginCookie(sess)
-
-	http.SetCookie(w, cookie)
+	sess, _ := router.Authorizer.New(r, user.ID)
+	_ = router.Authorizer.Save(r, w, sess)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
 
 func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	req := requestBind[PostSignupRequest](w, r)
 	if req == nil {
 		return
@@ -96,7 +99,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 		Email:          req.Email,
 		Password:       passwordHash,
 		Avatar:         sql.NullString{},
-		Subscribed:     false,
+		Subscribed:     req.Subscribed,
 		ShortcutToken:  tools.GenerateNewShortcutToken(),
 		HasReadability: false,
 		Created:        now,
@@ -104,15 +107,13 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	}
 	err := router.DBClient.CreateUser(r.Context(), user)
 	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
 		genericResponse(w, http.StatusInternalServerError)
 		return
 	}
-
 	// Generate a token for the user from the session manager
-	token := router.Authorizer.GenSessionToken(user.ID)
-	cookie := GetLoginCookie(token)
-
-	http.SetCookie(w, cookie)
+	token, _ := router.Authorizer.New(r, user.ID)
+	_ = router.Authorizer.Save(r, w, token)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }
@@ -124,7 +125,7 @@ func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 
 func (Router) GetLogout(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
-		Name:   auth.SESS_COOKIE,
+		Name:   auth.SessionKey,
 		Value:  "",
 		Path:   "/",
 		MaxAge: -1,
