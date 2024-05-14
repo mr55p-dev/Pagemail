@@ -42,7 +42,7 @@ func init() {
 		panic(err)
 	}
 
-	fn := middlewares.GetUserLoader(router.Authorizer, router.DBClient)
+	fn := middlewares.GetUserLoader(router.Sessions, router.DBClient)
 	mux = fn(router.Mux)
 }
 

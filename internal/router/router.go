@@ -25,10 +25,10 @@ var logger = logging.NewLogger("router")
 const NumKeyBytes = 16
 
 type Router struct {
-	DBClient   *dbqueries.Queries
-	Authorizer sessions.Store
-	Conn       *sql.DB
-	Mux        http.Handler
+	DBClient *dbqueries.Queries
+	Sessions sessions.Store
+	Conn     *sql.DB
+	Mux      http.Handler
 }
 
 func getUserMux(router *Router) http.Handler {
@@ -93,7 +93,7 @@ func loadCookieKey(router *Router, cfg *AppConfig) error {
 	if n < NumKeyBytes {
 		return errors.New("Cookie key source has insufficient bytes")
 	}
-	router.Authorizer = sessions.NewCookieStore(key)
+	router.Sessions = sessions.NewCookieStore(key)
 	return nil
 }
 
@@ -156,7 +156,7 @@ func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
-			middlewares.GetShortcutLoader(router.Authorizer, router.DBClient),
+			middlewares.GetShortcutLoader(router.Sessions, router.DBClient),
 		),
 	))
 	rootMux.Handle("/user/", getUserMux(router))
@@ -170,7 +170,7 @@ func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
 		middlewares.Recover,
 		middlewares.Tracer,
 		middlewares.RequestLogger,
-		middlewares.GetUserLoader(router.Authorizer, router.DBClient),
+		middlewares.GetUserLoader(router.Sessions, router.DBClient),
 	))
 	router.Mux = mux
 	return router, nil

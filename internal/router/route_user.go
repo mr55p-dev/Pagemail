@@ -65,7 +65,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, _ := router.Authorizer.Get(r, auth.SessionKey)
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
@@ -107,7 +107,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Generate a token for the user from the session manager
-	sess, _ := router.Authorizer.Get(r, auth.SessionKey)
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
