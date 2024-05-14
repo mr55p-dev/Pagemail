@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
@@ -79,9 +80,15 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 
 	// Load the cookie store
 	logger.DebugCtx(ctx, "Setting up auth client")
-	cookieKey, err := os.ReadFile(cfg.CookieKeyFile)
-	if err != nil {
-		panic(err)
+	var cookieKey []byte
+	if cfg.CookieKeyFile == "-" {
+		cookieKey = securecookie.GenerateRandomKey(16)
+	} else {
+		var err error
+		cookieKey, err = os.ReadFile(cfg.CookieKeyFile)
+		if err != nil {
+			panic(err)
+		}
 	}
 	router.Authorizer = sessions.NewCookieStore(cookieKey)
 
