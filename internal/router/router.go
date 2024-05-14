@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/gorilla/sessions"
@@ -76,8 +77,13 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 		_ = router.Conn.Close()
 	}()
 
+	// Load the cookie store
 	logger.DebugCtx(ctx, "Setting up auth client")
-	router.Authorizer = sessions.NewCookieStore([]byte(cfg.CookieKey))
+	cookieKey, err := os.ReadFile(cfg.CookieKeyFile)
+	if err != nil {
+		panic(err)
+	}
+	router.Authorizer = sessions.NewCookieStore(cookieKey)
 
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {
