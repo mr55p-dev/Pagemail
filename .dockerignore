@@ -4,6 +4,7 @@ pagemail-jwt-signature.key
 pagemail-jwt-signature.key.pub
 **/dist
 deploy/
-db/
-!db/schema.*
+**/*.sqlite3
+db/query.sql
+db/migrations
 pagemail.yaml
