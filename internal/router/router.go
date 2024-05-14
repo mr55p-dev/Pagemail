@@ -2,14 +2,16 @@ package router
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/gorilla/securecookie"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
@@ -19,6 +21,8 @@ import (
 )
 
 var logger = logging.NewLogger("router")
+
+const NumKeyBytes = 16
 
 type Router struct {
 	DBClient   *dbqueries.Queries
@@ -68,17 +72,32 @@ func getAssestMux(env Env) http.Handler {
 	return fileHandler
 }
 
-type ConfigFunc func(*Router)
-
-func WithCookieKey(input io.Reader) ConfigFunc {
-	return func(r *Router) {
-		io.ReadFull()
+func loadCookieKey(router *Router, cfg *AppConfig) error {
+	var input io.Reader
+	if cfg.CookieKeyFile == "-" {
+		input = rand.Reader
+	} else {
+		cookieDataFile, err := os.Open(cfg.CookieKeyFile)
+		if err != nil {
+			return fmt.Errorf("Failed to open cookie key file: %w", err)
+		}
+		defer cookieDataFile.Close()
+		input = cookieDataFile
 	}
+
+	key := make([]byte, NumKeyBytes)
+	n, err := input.Read(key)
+	if err != nil {
+		return err
+	}
+	if n < NumKeyBytes {
+		return errors.New("Cookie key source has insufficient bytes")
+	}
+	router.Authorizer = sessions.NewCookieStore(key)
+	return nil
 }
 
-func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config, fns ...ConfigFunc) (*Router, error) {
-	// Start the clients
-	router := &Router{}
+func loadQueries(ctx context.Context, router *Router, cfg *AppConfig) error {
 	logger.DebugCtx(ctx, "Setting up db client")
 	router.Conn = dbqueries.MustGetDB(ctx, cfg.DBPath)
 	router.DBClient = dbqueries.New(router.Conn)
@@ -86,26 +105,41 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config, fns ...ConfigFu
 		<-ctx.Done()
 		_ = router.Conn.Close()
 	}()
+	return nil
+}
 
-	// Load the cookie store
-	logger.DebugCtx(ctx, "Setting up auth client")
-	var cookieKey []byte
-	if cfg.CookieKeyFile == "-" {
-		cookieKey = securecookie.GenerateRandomKey(16)
-	} else {
-		var err error
-		cookieKey, err = os.ReadFile(cfg.CookieKeyFile)
+func loadMailer(ctx context.Context, router *Router, cfg *AppConfig) error {
+	if Env(cfg.Environment) == ENV_PRD {
+		awsCfg, err := config.LoadDefaultConfig(ctx)
 		if err != nil {
 			panic(err)
 		}
-	}
-	router.Authorizer = sessions.NewCookieStore(cookieKey)
-
-	// Handle mail
-	if Env(cfg.Environment) == ENV_PRD {
 		logger.InfoCtx(ctx, "Starting mail job")
 		mailClient := mail.NewSesMailClient(ctx, awsCfg)
 		go mail.MailGo(ctx, router.DBClient, mailClient)
+	}
+	return nil
+}
+
+func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
+	router := &Router{}
+
+	// Load the cookie encryption key
+	err := loadCookieKey(router, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load the db queries
+	err = loadQueries(ctx, router, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load the mail client
+	err = loadMailer(ctx, router, cfg)
+	if err != nil {
+		return nil, err
 	}
 
 	// Serve root
@@ -119,14 +153,12 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config, fns ...ConfigFu
 		http.MethodGet:  http.HandlerFunc(router.GetSignup),
 		http.MethodPost: http.HandlerFunc(router.PostSignup),
 	}))
-
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
 			middlewares.GetShortcutLoader(router.Authorizer, router.DBClient),
 		),
 	))
-
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
 

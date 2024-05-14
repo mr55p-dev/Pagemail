@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
@@ -32,12 +31,8 @@ func init() {
 		DBPath:      ":memory:",
 	}
 
-	awsCfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		panic(err)
-	}
+	router, err := New(ctx, cfg)
 
-	router, err := New(ctx, cfg, awsCfg)
 	if err != nil {
 		panic(err)
 	}
