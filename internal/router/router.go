@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"database/sql"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -67,7 +68,15 @@ func getAssestMux(env Env) http.Handler {
 	return fileHandler
 }
 
-func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error) {
+type ConfigFunc func(*Router)
+
+func WithCookieKey(input io.Reader) ConfigFunc {
+	return func(r *Router) {
+		io.ReadFull()
+	}
+}
+
+func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config, fns ...ConfigFunc) (*Router, error) {
 	// Start the clients
 	router := &Router{}
 	logger.DebugCtx(ctx, "Setting up db client")
