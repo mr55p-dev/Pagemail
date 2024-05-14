@@ -6,32 +6,19 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-type PostSignupRequest struct {
-	Username       string `form:"username"`
-	Email          string `form:"email"`
-	Password       string `form:"password"`
-	PasswordRepeat string `form:"password-repeat"`
-	Subscribed     bool   `form:"subscribed"`
+func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
+	componentRender(render.Login(), w, r)
 }
 
 type PostLoginRequest struct {
 	Email    string `form:"email"`
 	Password string `form:"password"`
-}
-
-func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
-	componentRender(render.Login(), w, r)
-}
-
-func (router *Router) saveSession(w http.ResponseWriter, r *http.Request, sess *sessions.Session) {
-
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +57,14 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
+}
+
+type PostSignupRequest struct {
+	Username       string `form:"username"`
+	Email          string `form:"email"`
+	Password       string `form:"password"`
+	PasswordRepeat string `form:"password-repeat"`
+	Subscribed     bool   `form:"subscribed"`
 }
 
 func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
