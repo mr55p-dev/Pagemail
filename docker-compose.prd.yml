@@ -27,3 +27,7 @@ networks:
   traefik:
     name: traefik_proxy
     external: true
+
+secrets:
+  cookie-key:
+    file: /home/ubuntu/pagemail/prd/cookie-key.txt

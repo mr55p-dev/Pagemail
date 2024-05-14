@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
@@ -78,7 +77,7 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 	}()
 
 	logger.DebugCtx(ctx, "Setting up auth client")
-	router.Authorizer = sessions.NewCookieStore(securecookie.GenerateRandomKey(10))
+	router.Authorizer = sessions.NewCookieStore([]byte(cfg.CookieKey))
 
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {

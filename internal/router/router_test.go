@@ -47,19 +47,6 @@ func init() {
 		panic(err)
 	}
 
-	// password := auth.HashPassword([]byte("password"))
-	// err = router.DBClient.CreateUser(ctx, dbqueries.CreateUserParams{
-	// 	ID:       "000",
-	// 	Username: "test",
-	// 	Email:    "test@mail.com",
-	// 	Password: password,
-	// 	Created:  time.Now(),
-	// 	Updated:  time.Now(),
-	// })
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	fn := middlewares.GetUserLoader(router.Authorizer, router.DBClient)
 	mux = fn(router.Mux)
 }
