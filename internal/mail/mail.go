@@ -44,6 +44,7 @@ func MailGo(ctx context.Context, reader MailDbReader, sender MailSender) {
 
 	for now := range timer.T {
 		ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
+		logger.InfoCtx(ctx, "Starting mail job", "time", now.Format(time.Stamp))
 		err := MailJob(ctx, reader, sender, now)
 		cancel()
 		if err != nil {

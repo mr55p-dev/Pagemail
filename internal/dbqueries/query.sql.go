@@ -125,8 +125,8 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
 SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
-WHERE created BETWEEN ?2 AND ?3
-AND user_id = ?
+WHERE created BETWEEN ?1 AND ?2
+AND user_id = ?3
 `
 
 type ReadPagesByUserBetweenParams struct {
