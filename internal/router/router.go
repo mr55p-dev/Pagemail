@@ -7,8 +7,9 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/assets"
-	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
@@ -19,7 +20,7 @@ var logger = logging.NewLogger("router")
 
 type Router struct {
 	DBClient   *dbqueries.Queries
-	Authorizer *auth.MemoryStore
+	Authorizer sessions.Store
 	Conn       *sql.DB
 	Mux        http.Handler
 }
@@ -77,7 +78,7 @@ func New(ctx context.Context, cfg *AppConfig, awsCfg aws.Config) (*Router, error
 	}()
 
 	logger.DebugCtx(ctx, "Setting up auth client")
-	router.Authorizer = auth.NewMemoryStore(ctx)
+	router.Authorizer = sessions.NewCookieStore(securecookie.GenerateRandomKey(10))
 
 	// Handle mail
 	if Env(cfg.Environment) == ENV_PRD {

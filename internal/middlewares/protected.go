@@ -19,29 +19,26 @@ func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 	logger := logging.NewLogger("middleware-load-user")
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logger := logger.WithRequest(r)
-			tkn, err := r.Cookie("pm-auth-tkn")
+			sess, err := store.Get(r, auth.SessionKey)
 			if err != nil {
-				logger.DebugCtx(r.Context(), "No session cookie found")
-				next.ServeHTTP(w, r)
+				logger.WithError(err).Error("Failed to load session")
+				http.SetCookie(w, &http.Cookie{
+					Name:   auth.SessionKey,
+					Value:  "",
+					MaxAge: -1,
+				})
 				return
 			}
-
-			if tkn.Value == "" {
-				http.Error(w, "missing session cookie", http.StatusBadRequest)
-				return
-			}
-
-			sess, _ := store.Get(r, auth.SessionKey)
 			uid := auth.GetId(sess)
+			logger.DebugCtx(r.Context(), "Found user id", "uid", uid)
 			user, err := db.ReadUserById(r.Context(), uid)
 			if err != nil {
-				logger.WithError(err).DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
+				logger.WithError(err).DebugCtx(r.Context(), "Failed to match session cookie with user")
 				next.ServeHTTP(w, r)
 				return
 			}
 
-			logger.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
+			logger.DebugCtx(r.Context(), "Loaded user from session cookie")
 			next.ServeHTTP(w, reqWithUser(r, &user))
 		})
 	}

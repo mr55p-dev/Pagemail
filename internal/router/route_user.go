@@ -25,18 +25,6 @@ type PostLoginRequest struct {
 	Password string `form:"password"`
 }
 
-func GetLoginCookie(val string) *http.Cookie {
-	return &http.Cookie{
-		Name:     auth.SessionKey,
-		Value:    val,
-		Path:     "/",
-		MaxAge:   864000,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-	}
-}
-
 func (Router) GetLogin(w http.ResponseWriter, r *http.Request) {
 	componentRender(render.Login(), w, r)
 }
@@ -71,8 +59,20 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, _ := router.Authorizer.New(r, user.ID)
-	_ = router.Authorizer.Save(r, w, sess)
+	sess, err := router.Authorizer.New(r, auth.SessionKey)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to create session")
+		genericResponse(w, http.StatusInternalServerError)
+		return
+	}
+	auth.SetId(sess, user.ID)
+
+	err = router.Authorizer.Save(r, w, sess)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
+		genericResponse(w, http.StatusInternalServerError)
+		return
+	}
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
 }

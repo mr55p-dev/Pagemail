@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/subtle"
+	"encoding/gob"
 	"errors"
 
 	"github.com/gorilla/sessions"
@@ -22,8 +23,19 @@ var (
 	ErrInvalidPassword = errors.New("Incorrect password")
 )
 
+func init() {
+	gob.Register(uid)
+}
+
 func GetId(sess *sessions.Session) string {
-	return sess.Values[uid].(string)
+	if sess == nil {
+		return ""
+	}
+	val, ok := sess.Values[uid].(string)
+	if !ok {
+		return ""
+	}
+	return val
 }
 
 func SetId(sess *sessions.Session, id string) {
