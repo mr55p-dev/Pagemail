@@ -1,10 +1,8 @@
 package router
 
 import (
-	"io/fs"
 	"net/http"
 
-	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 )
 
@@ -31,19 +29,4 @@ func getPagesMux(router *Router) http.Handler {
 		http.StripPrefix("/pages", pagesMux),
 		middlewares.ProtectRoute,
 	)
-}
-
-func getAssestMux(env Env) http.Handler {
-	var fileHandler http.Handler
-	switch env {
-	case ENV_STG, ENV_PRD:
-		subdir, err := fs.Sub(assets.FS, "public")
-		if err != nil {
-			panic(err)
-		}
-		fileHandler = http.FileServerFS(subdir)
-	default:
-		fileHandler = http.FileServer(http.Dir("internal/assets/public/"))
-	}
-	return fileHandler
 }

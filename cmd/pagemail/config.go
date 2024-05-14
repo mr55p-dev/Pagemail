@@ -1,4 +1,4 @@
-package router
+package main
 
 import (
 	"log/slog"
@@ -7,7 +7,7 @@ import (
 )
 
 type AppConfig struct {
-	Environment   string `config:"app.environment,required" log:"environment"`
+	Environment   string `config:"app.environment"`
 	LogLevel      string `config:"app.log-level" log:"logLevel"`
 	Host          string `config:"app.host" log:"host"`
 	DBPath        string `config:"db.path" log:"db-path"`

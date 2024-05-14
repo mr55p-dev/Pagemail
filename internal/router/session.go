@@ -1,30 +1,15 @@
 package router
 
 import (
-	"crypto/rand"
 	"errors"
-	"fmt"
 	"io"
-	"os"
 
 	"github.com/gorilla/sessions"
 )
 
 const NumKeyBytes = 16
 
-func loadCookieKey(router *Router, cfg *AppConfig) error {
-	var input io.Reader
-	if cfg.CookieKeyFile == "-" {
-		input = rand.Reader
-	} else {
-		cookieDataFile, err := os.Open(cfg.CookieKeyFile)
-		if err != nil {
-			return fmt.Errorf("Failed to open cookie key file: %w", err)
-		}
-		defer cookieDataFile.Close()
-		input = cookieDataFile
-	}
-
+func loadCookieKey(router *Router, input io.Reader) error {
 	key := make([]byte, NumKeyBytes)
 	n, err := input.Read(key)
 	if err != nil {

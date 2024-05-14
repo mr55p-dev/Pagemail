@@ -22,21 +22,21 @@ const FROM_ADDR = "mail@pagemail.io"
 
 var logger = logging.NewLogger("mail")
 
-// MailSender allows for different implementations of email clients using a send method
-type MailSender interface {
+// Sender allows for different implementations of email clients using a send method
+type Sender interface {
 	Send(context.Context, string, io.Reader) error
 }
 
-// MailDbReader wraps the methods from database which are required for pulling users and their saved
+// DB wraps the methods from database which are required for pulling users and their saved
 // pages inside of an interval
-type MailDbReader interface {
+type DB interface {
 	ReadUsersWithMail(context.Context) ([]dbqueries.User, error)
 	ReadPagesByUserBetween(context.Context, dbqueries.ReadPagesByUserBetweenParams) ([]dbqueries.Page, error)
 }
 
 // MailGo starts a goroutine on a timer to send emails to all subscribed users every 24 hours at
 // 7 am
-func MailGo(ctx context.Context, reader MailDbReader, sender MailSender) {
+func MailGo(ctx context.Context, reader DB, sender Sender) {
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
 	timer := timer.NewCronTimer(time.Hour*24, start)
@@ -55,7 +55,7 @@ func MailGo(ctx context.Context, reader MailDbReader, sender MailSender) {
 
 // MailJob collects all subscribed users, their pages between 24 hours ago and now, and then sends
 // them
-func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now time.Time) error {
+func MailJob(ctx context.Context, reader DB, sender Sender, now time.Time) error {
 	// Get users with mail enabled
 	users, err := reader.ReadUsersWithMail(ctx)
 	if err != nil {
@@ -103,7 +103,7 @@ func MailJob(ctx context.Context, reader MailDbReader, sender MailSender, now ti
 }
 
 // SendMailToUser fetches the users pages, constructs an email and sends it via the sender interface
-func SendMailToUser(ctx context.Context, user *dbqueries.User, db MailDbReader, sender MailSender, now time.Time) error {
+func SendMailToUser(ctx context.Context, user *dbqueries.User, db DB, sender Sender, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 

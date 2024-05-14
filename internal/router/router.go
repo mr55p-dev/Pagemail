@@ -3,11 +3,11 @@ package router
 import (
 	"context"
 	"database/sql"
+	"io"
+	"io/fs"
 	"net/http"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gorilla/sessions"
-	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
@@ -19,30 +19,21 @@ var logger = logging.NewLogger("router")
 type Router struct {
 	DBClient *dbqueries.Queries
 	Sessions sessions.Store
-	Conn     *sql.DB
 	Mux      http.Handler
 }
 
-func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
+func New(ctx context.Context, conn *sql.DB, assets fs.FS, mailClient mail.Sender, cookieKey io.Reader) (*Router, error) {
 	router := &Router{}
+	router.DBClient = dbqueries.New(conn)
 
 	// Load the cookie encryption key
-	err := loadCookieKey(router, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	// Load the db queries
-	err = loadQueries(ctx, router, cfg)
+	err := loadCookieKey(router, cookieKey)
 	if err != nil {
 		return nil, err
 	}
 
 	// Load the mail client
-	err = loadMailer(ctx, router, cfg)
-	if err != nil {
-		return nil, err
-	}
+	go mail.MailGo(ctx, router.DBClient, mailClient)
 
 	// Serve root
 	rootMux := http.NewServeMux()
@@ -64,10 +55,8 @@ func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
 
-	fileHandler := getAssestMux(Env(cfg.Environment))
-
 	mux := http.NewServeMux()
-	mux.Handle("/assets/", http.StripPrefix("/assets", fileHandler))
+	mux.Handle("/assets/", http.StripPrefix("/assets", http.FileServerFS(assets)))
 	mux.Handle("/", middlewares.WithMiddleware(rootMux,
 		middlewares.Recover,
 		middlewares.Tracer,
@@ -76,28 +65,4 @@ func New(ctx context.Context, cfg *AppConfig) (*Router, error) {
 	))
 	router.Mux = mux
 	return router, nil
-}
-
-func loadQueries(ctx context.Context, router *Router, cfg *AppConfig) error {
-	logger.DebugCtx(ctx, "Setting up db client")
-	router.Conn = db.MustConnect(ctx, cfg.DBPath)
-	router.DBClient = dbqueries.New(router.Conn)
-	go func() {
-		<-ctx.Done()
-		_ = router.Conn.Close()
-	}()
-	return nil
-}
-
-func loadMailer(ctx context.Context, router *Router, cfg *AppConfig) error {
-	if Env(cfg.Environment) == ENV_PRD {
-		awsCfg, err := config.LoadDefaultConfig(ctx)
-		if err != nil {
-			panic(err)
-		}
-		logger.InfoCtx(ctx, "Starting mail job")
-		mailClient := mail.NewSesMailClient(ctx, awsCfg)
-		go mail.MailGo(ctx, router.DBClient, mailClient)
-	}
-	return nil
 }

@@ -25,18 +25,16 @@ var session_cookie *http.Cookie
 func init() {
 	logging.SetHandler(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{}))
 	ctx := context.TODO()
-	cfg := &AppConfig{
-		Environment: string(ENV_DEV),
-		LogLevel:    "DEBUG",
-		DBPath:      ":memory:",
-	}
 
-	router, err := New(ctx, cfg)
+	// setup the database
+	conn := db.MustConnect(ctx, ":memory:")
+	defer conn.Close()
+	db.MustLoadSchema(ctx, conn)
 
+	router, err := New(ctx, conn, nil, nil, strings.NewReader("passwordpassword"))
 	if err != nil {
 		panic(err)
 	}
-	db.MustLoadSchema(ctx, router.Conn)
 
 	fn := middlewares.GetUserLoader(router.Sessions, router.DBClient)
 	mux = fn(router.Mux)
