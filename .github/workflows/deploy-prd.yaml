@@ -1,9 +1,9 @@
 ---
 name: Deploy to production
 on:
-  release:
-    types:
-      - released
+  push:
+    tags:
+      - "v*"
 jobs:
   deploy:
     name: Deploy production
