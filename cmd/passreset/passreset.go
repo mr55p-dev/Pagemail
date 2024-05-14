@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/mr55p-dev/gonk"
+	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 )
@@ -48,7 +49,7 @@ func main() {
 	}
 	passwordHash := auth.HashPassword(password)
 
-	conn := dbqueries.MustGetDB(ctx, cfg.Url)
+	conn := db.MustConnect(ctx, cfg.Url)
 	queries := dbqueries.New(conn)
 	err = queries.UpdateUserPassword(ctx, dbqueries.UpdateUserPasswordParams{
 		Password: passwordHash,

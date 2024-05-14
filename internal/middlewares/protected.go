@@ -61,7 +61,7 @@ func GetShortcutLoader(auth sessions.Store, db DB) MiddlewareFunc {
 
 func ProtectRoute(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := dbqueries.GetUser(r.Context())
+		user := auth.GetUser(r.Context())
 		if user == nil {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return

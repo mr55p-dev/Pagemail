@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 	"github.com/stretchr/testify/assert"
@@ -36,11 +36,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-
-	err = dbqueries.LoadTables(ctx, router.Conn)
-	if err != nil {
-		panic(err)
-	}
+	db.MustLoadSchema(ctx, router.Conn)
 
 	fn := middlewares.GetUserLoader(router.Sessions, router.DBClient)
 	mux = fn(router.Mux)

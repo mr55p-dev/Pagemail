@@ -13,6 +13,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gorilla/sessions"
+	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/assets"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
@@ -99,7 +100,7 @@ func loadCookieKey(router *Router, cfg *AppConfig) error {
 
 func loadQueries(ctx context.Context, router *Router, cfg *AppConfig) error {
 	logger.DebugCtx(ctx, "Setting up db client")
-	router.Conn = dbqueries.MustGetDB(ctx, cfg.DBPath)
+	router.Conn = db.MustConnect(ctx, cfg.DBPath)
 	router.DBClient = dbqueries.New(router.Conn)
 	go func() {
 		<-ctx.Done()
