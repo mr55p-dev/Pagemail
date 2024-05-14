@@ -55,9 +55,9 @@ func init() {
 func TestReadPagesByUserBetween(t *testing.T) {
 	assert := assert.New(t)
 	pages, err := queries.ReadPagesByUserBetween(context.TODO(), dbqueries.ReadPagesByUserBetweenParams{
-		Created:   now.Add(-time.Hour * 2),
-		Created_2: now,
-		UserID:    uid,
+		Start:  now.Add(-time.Hour * 2),
+		End:    now,
+		UserID: uid,
 	})
 	assert.NoError(err)
 	assert.Len(pages, 1)

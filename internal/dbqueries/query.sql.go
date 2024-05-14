@@ -125,18 +125,18 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
 SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
-WHERE created BETWEEN ? AND ?
-AND user_id = ?
+WHERE created BETWEEN ?1 AND ?2
+AND user_id = ?3
 `
 
 type ReadPagesByUserBetweenParams struct {
-	Created   time.Time
-	Created_2 time.Time
-	UserID    string
+	Start  time.Time
+	End    time.Time
+	UserID string
 }
 
 func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUserBetweenParams) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, arg.Created, arg.Created_2, arg.UserID)
+	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, arg.Start, arg.End, arg.UserID)
 	if err != nil {
 		return nil, err
 	}

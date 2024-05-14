@@ -74,8 +74,8 @@ ORDER BY created DESC;
 
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
-WHERE created BETWEEN ? AND ?
-AND user_id = ?;
+WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
+AND user_id = sqlc.arg(user_id);
 -- ORDER BY created DESC;
 
 -- name: UpsertPage :exec
