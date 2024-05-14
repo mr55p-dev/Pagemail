@@ -33,7 +33,8 @@ func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 			}
 
 			sess, _ := store.Get(r, auth.SessionKey)
-			user, err := auth.GetUser(sess)
+			uid := auth.GetId(sess)
+			user, err := db.ReadUserById(r.Context(), uid)
 			if err != nil {
 				logger.WithError(err).DebugCtx(r.Context(), "Failed to match session cookie with user", "cookie", tkn.Value)
 				next.ServeHTTP(w, r)
@@ -41,7 +42,7 @@ func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 			}
 
 			logger.DebugCtx(r.Context(), "Loaded user from session cookie", "user", user)
-			next.ServeHTTP(w, reqWithUser(r, user))
+			next.ServeHTTP(w, reqWithUser(r, &user))
 		})
 	}
 }
