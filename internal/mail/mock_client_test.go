@@ -2,8 +2,6 @@ package mail
 
 import (
 	"context"
-	"io"
-	"strings"
 	"time"
 
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"

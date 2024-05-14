@@ -28,7 +28,6 @@ func init() {
 
 	// setup the database
 	conn := db.MustConnect(ctx, ":memory:")
-	defer conn.Close()
 	db.MustLoadSchema(ctx, conn)
 
 	router, err := New(ctx, conn, nil, nil, strings.NewReader("passwordpassword"))

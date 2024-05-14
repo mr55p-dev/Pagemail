@@ -25,7 +25,7 @@ var logger = logging.NewLogger("routes")
 func main() {
 	ctx := context.Background()
 	cfg := getConfig()
-	logger := getLogger(cfg)
+	logger := getLogger(cfg.LogLevel)
 
 	conn := db.MustConnect(ctx, cfg.DBPath)
 	defer conn.Close()
@@ -37,9 +37,9 @@ func main() {
 			panic(err)
 		}
 		logger.InfoCtx(ctx, "Starting mail job")
-		client = mail.NewSesMailClient(ctx, awsCfg)
+		client = mail.NewSesSender(ctx, awsCfg)
 	} else {
-		panic("not implemented")
+		client = mail.NewNoOpSender(ctx)
 	}
 
 	assets := getAssets(cfg.Environment)
@@ -72,9 +72,9 @@ func getConfig() *AppConfig {
 	return cfg
 }
 
-func getLogger(cfg *AppConfig) *logging.Logger {
+func getLogger(level string) *logging.Logger {
 	var lvl = slog.LevelInfo
-	switch strings.ToUpper(cfg.LogLevel) {
+	switch strings.ToUpper(level) {
 	case "DEBUG":
 		lvl = slog.LevelDebug
 	case "ERROR":
