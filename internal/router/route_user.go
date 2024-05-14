@@ -37,7 +37,7 @@ func GetLoginCookie(val string) *http.Cookie {
 }
 
 func (Router) GetLogin(w http.ResponseWriter, r *http.Request) {
-	staticRender(render.Login(), w, r)
+	componentRender(render.Login(), w, r)
 }
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
-	staticRender(render.Signup(), w, r)
+	componentRender(render.Signup(), w, r)
 	return
 }
 
