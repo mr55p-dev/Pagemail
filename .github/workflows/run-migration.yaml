@@ -39,9 +39,9 @@ jobs:
           -t pagemail-migrations:latest \
           -f Dockerfile.migrations .
 
-      - name: Backup database
-        run: |
-          echo "cp ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3 ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3.bak" | ssh -c '/bin/bash -s'
+      # - name: Backup database
+      #   run: |
+      #     echo "cp ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3 ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3.bak" | ssh $DOCKER_HOST '/bin/bash -s'
 
       - name: Run migration on the server
         run: |
