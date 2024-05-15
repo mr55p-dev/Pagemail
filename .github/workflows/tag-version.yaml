@@ -1,4 +1,4 @@
-# example 1: on push to master
+---
 name: Bump version
 on:
   push:
@@ -10,14 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      new_tag: ${{ steps.bump.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: "0"
 
       - name: Bump version and push tag
+        id: bump
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           DEFAULT_BUMP: none
+
+  deploy-prd:
+    needs: build
+    if: jobs.build.outputs.new_tag != ''
+    uses: ./.github/workflows/deploy-env.yaml
+    with:
+      environment: prd
