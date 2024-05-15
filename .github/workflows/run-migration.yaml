@@ -40,9 +40,8 @@ jobs:
           -f Dockerfile.migrations .
 
       - name: Backup database
-        run: cp \
-          ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3 \
-          ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3.bak
+        run: |
+          echo "cp ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3 ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3.bak" | ssh -c '/bin/bash -s'
 
       - name: Run migration on the server
         run: |
