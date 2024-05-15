@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/fs"
@@ -107,8 +109,11 @@ func getAssets(env string) fs.FS {
 
 func getCookieKey(path string) (io.Reader, error) {
 	if path == "-" {
-		return rand.Reader, nil
+		logger.Debug("Using cookie key from crpyto/rand")
+		wrapper := NewBase64EncodedReader(rand.Reader)
+		return wrapper, nil
 	} else {
+		logger.Debug("Using cookie key from file", "file", path)
 		cookieDataFile, err := os.Open(path)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to open cookie key file at %s: %w", path, err)
