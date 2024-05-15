@@ -55,8 +55,8 @@ shortcut_token = ?
 WHERE id = ?;
 
 -- name: CreatePage :exec
-INSERT INTO pages (id, user_id, url, created, updated)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO pages (id, user_id, url, preview_state, created, updated)
+VALUES (?, ?, ?, 'unknown', ?, ?);
 
 -- name: ReadPageById :one
 SELECT * FROM pages
@@ -75,8 +75,17 @@ ORDER BY created DESC;
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
 WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
-AND user_id = sqlc.arg(user_id);
--- ORDER BY created DESC;
+AND user_id = sqlc.arg(user_id)
+ORDER BY created DESC;
+
+-- name: UpdatePagePreview :exec
+UPDATE pages SET
+	title = ?,
+	description = ?,
+	image_url = ?,
+	preview_state = ?,
+	updated = ?
+WHERE id = ?;
 
 -- name: UpsertPage :exec
 INSERT OR REPLACE INTO pages (
