@@ -8,11 +8,13 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
+	"github.com/mr55p-dev/pagemail/pkg/request"
+	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
 func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
-	componentRender(render.Index(user), w, r)
+	response.Component(render.Index(user), w, r)
 }
 
 func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
@@ -22,12 +24,12 @@ func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	componentRender(render.Dashboard(user, pages), w, r)
+	response.Component(render.Dashboard(user, pages), w, r)
 }
 
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
-	componentRender(render.AccountPage(user), w, r)
+	response.Component(render.AccountPage(user), w, r)
 	return
 }
 
@@ -36,7 +38,7 @@ type PutAccountRequest struct {
 }
 
 func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
-	req := requestBind[PutAccountRequest](w, r)
+	req := request.BindRequest[PutAccountRequest](w, r)
 	if req == nil {
 		return
 	}
