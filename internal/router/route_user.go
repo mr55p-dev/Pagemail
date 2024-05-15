@@ -3,7 +3,6 @@ package router
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -27,7 +26,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	req := requestBind[PostLoginRequest](w, r)
 	if req == nil {
-		genericResponse(w, http.StatusBadRequest)
+		errorResponse(w, r, "Email and password are required", http.StatusBadRequest)
 		return
 	}
 
@@ -35,9 +34,9 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			genericResponse(w, http.StatusUnauthorized)
+			errorResponse(w, r, "Email not found.", http.StatusBadRequest)
 		} else {
-			genericResponse(w, http.StatusInternalServerError)
+			errorResponse(w, r, "Something went wrong", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -45,12 +44,12 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	// Validate user
 	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
 		logger.DebugCtx(r.Context(), "Invalid username")
-		genericResponse(w, http.StatusUnauthorized)
+		errorResponse(w, r, "The email address provided is not valid", http.StatusUnauthorized)
 		return
 	}
 	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
 		logger.DebugCtx(r.Context(), "Invalid password")
-		genericResponse(w, http.StatusUnauthorized)
+		errorResponse(w, r, "Incorrect password", http.StatusUnauthorized)
 		return
 	}
 
@@ -59,15 +58,6 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	sess.Save(r, w)
 	w.Header().Add("HX-Redirect", "/pages/dashboard")
 	return
-}
-
-func errorResponse(w http.ResponseWriter, r *http.Request, detail string, status int) {
-	if isHtmx(r) {
-		w.WriteHeader(status)
-		componentRender(render.ErrorBox("Error", detail), w, r)
-	} else {
-		http.Error(w, fmt.Sprintf("Error: %s", detail), status)
-	}
 }
 
 type PostSignupRequest struct {

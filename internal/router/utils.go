@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/request"
 )
 
@@ -32,11 +33,12 @@ func isHtmx(r *http.Request) bool {
 	return r.Header.Get("Hx-Request") == "true"
 }
 
-func mixedRender(message string, component func(string) templ.Component, w http.ResponseWriter, r *http.Request) {
+func errorResponse(w http.ResponseWriter, r *http.Request, detail string, status int) {
 	if isHtmx(r) {
-		componentRender(component(message), w, r)
+		w.WriteHeader(status)
+		componentRender(render.ErrorBox("Error", detail), w, r)
 	} else {
-		textRender(message, w, r)
+		http.Error(w, fmt.Sprintf("Error: %s", detail), status)
 	}
 }
 

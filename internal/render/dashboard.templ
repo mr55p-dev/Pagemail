@@ -9,7 +9,7 @@ templ Dashboard(user *dbqueries.User, pages []dbqueries.Page) {
 		<h4>Save a page</h4>
 		@SavePageWidget()
 		<h4>Your saved pages</h4>
-		<div id="pageview" class="f-col" >
+		<div id="pageview" class="f-col">
 			@PageList(pages, 1)
 		</div>
 	}
@@ -46,18 +46,6 @@ templ SavePageSuccess(msg string) {
 		<p>{ msg }</p>
 		<button onClick={ RemoveElement("save-page-success-msg") }>Close</button>
 	</div>
-}
-
-templ SavePageError(msg string) {
-	<div class="box bad" id="save-page-err-msg">
-		<strong class="block titlebar">Error</strong>
-		<p>{ msg }</p>
-		<button onClick={ RemoveElement("save-page-err-msg") }>Close</button>
-	</div>
-}
-
-script RemoveElement(id string) {
-	document.getElementById(id).remove();
 }
 
 script PasteFromClipboard(toId string) {

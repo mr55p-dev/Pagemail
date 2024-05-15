@@ -93,7 +93,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
-		mixedRender("Missing URL in request", render.SavePageError, w, r)
+		errorResponse(w, r, "Missing URL in request", http.StatusBadRequest)
 		return
 	}
 
@@ -114,7 +114,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Error ")
-		mixedRender("Failed to save page", render.SavePageError, w, r)
+		errorResponse(w, r, "Failed to save page", http.StatusInternalServerError)
 		return
 	}
 

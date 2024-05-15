@@ -6,9 +6,8 @@ templ Login() {
 			<form
 				class="table rows"
 				hx-post="/login"
-				hx-swap="outerHTML"
-				hx-target="#errors"
-				hx-target-error="#errors"
+				hx-swap="innerHTML"
+				hx-target-error="#error"
 			>
 				<p>
 					<label for="email">E-mail</label>
@@ -22,7 +21,6 @@ templ Login() {
 			</form>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
 		</div>
-		<div id="errors"></div>
 	}
 }
 
