@@ -12,19 +12,29 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
+	"github.com/mr55p-dev/pagemail/internal/preview"
 )
 
 var logger = logging.NewLogger("router")
 
 type Router struct {
-	DBClient *dbqueries.Queries
-	Sessions sessions.Store
-	Mux      http.Handler
+	DBClient  *dbqueries.Queries
+	Previewer *preview.Client
+	Sessions  sessions.Store
+	Mux       http.Handler
 }
 
-func New(ctx context.Context, conn *sql.DB, assets fs.FS, mailClient mail.Sender, cookieKey io.Reader) (*Router, error) {
+func New(
+	ctx context.Context,
+	conn *dbqueries.Queries,
+	assets fs.FS,
+	mailClient mail.Sender,
+	previewClient *preview.Client,
+	cookieKey io.Reader,
+) (*Router, error) {
 	router := &Router{}
-	router.DBClient = dbqueries.New(conn)
+	router.DBClient = conn
+	router.Previewer = previewClient
 
 	// Load the cookie encryption key
 	err := loadCookieKey(router, cookieKey)

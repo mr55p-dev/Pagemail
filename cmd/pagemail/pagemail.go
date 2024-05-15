@@ -15,8 +15,10 @@ import (
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/assets"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
+	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/router"
 )
 
@@ -48,7 +50,17 @@ func main() {
 		panic(err)
 	}
 
-	router, err := router.New(ctx, conn, assets, client, cookieKey)
+	queries := dbqueries.New(conn)
+	previewer := preview.New(ctx, queries)
+
+	router, err := router.New(
+		ctx,
+		queries,
+		assets,
+		client,
+		previewer,
+		cookieKey,
+	)
 	if err != nil {
 		panic(err)
 	}
