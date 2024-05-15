@@ -113,7 +113,6 @@ func getCookieKey(path string) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to open cookie key file at %s: %w", path, err)
 		}
-		defer cookieDataFile.Close()
 		return cookieDataFile, nil
 	}
 }
