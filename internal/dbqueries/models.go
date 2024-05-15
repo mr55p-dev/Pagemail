@@ -21,6 +21,7 @@ type Page struct {
 	IsReadable          sql.NullBool
 	Created             time.Time
 	Updated             time.Time
+	PreviewState        string
 }
 
 type SchemaMigration struct {

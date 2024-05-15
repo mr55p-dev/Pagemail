@@ -115,10 +115,9 @@ func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) GetLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:   auth.SessionKey,
-		MaxAge: -1,
-	})
-	w.Header().Add("HX-Redirect", "/pages/dashboard")
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
+	auth.DelId(sess)
+	_ = sess.Save(r, w)
+	w.Header().Add("HX-Redirect", "/")
 	return
 }

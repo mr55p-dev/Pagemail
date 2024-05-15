@@ -21,7 +21,15 @@ templ PageList(pages []dbqueries.Page, p int) {
 }
 
 templ PageCard(page *dbqueries.Page) {
-	<article class="box" sse-swap={ page.ID } id={ fmt.Sprintf("page-%s", page.ID) }>
+	<article
+		class="box"
+		id={ fmt.Sprintf("page-%s", page.ID) }
+		hx-swap="innerHTML"
+		hx-trigger="every 1s"
+		hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
+		hx-target={ fmt.Sprintf("#page-%s", page.ID) }
+		hx-select={ fmt.Sprintf("#page-%s>*", page.ID) }
+	>
 		<header>
 			if page.Title.Valid {
 				<h3><a href={ templ.URL(page.Url) } target="_blank">{ page.Title.String }</a></h3>

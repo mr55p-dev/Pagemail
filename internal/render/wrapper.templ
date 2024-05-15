@@ -48,7 +48,7 @@ templ Header(user *dbqueries.User) {
 					<li><a href={ templ.URL("/pages/dashboard") }>Pages</a></li>
 					<li><a href={ templ.URL("/user/account") }>Account</a></li>
 					<li>
-						<a hx-get="/user/logout">Logout</a>
+						<a hx-get="/user/logout" hx-swap="none">Logout</a>
 					</li>
 				} else {
 					<li><a href="/login">Login</a></li>

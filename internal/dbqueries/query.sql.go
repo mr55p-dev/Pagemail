@@ -12,8 +12,8 @@ import (
 )
 
 const createPage = `-- name: CreatePage :exec
-INSERT INTO pages (id, user_id, url, created, updated)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO pages (id, user_id, url, preview_state, created, updated)
+VALUES (?, ?, ?, 'unknown', ?, ?)
 `
 
 type CreatePageParams struct {
@@ -99,7 +99,7 @@ func (q *Queries) DeletePagesByUserId(ctx context.Context, userID string) (int64
 }
 
 const readPageById = `-- name: ReadPageById :one
-SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated, preview_state FROM pages
 WHERE id = ?
 LIMIT 1
 `
@@ -119,14 +119,16 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 		&i.IsReadable,
 		&i.Created,
 		&i.Updated,
+		&i.PreviewState,
 	)
 	return i, err
 }
 
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
-SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages 
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated, preview_state FROM pages 
 WHERE created BETWEEN ?1 AND ?2
 AND user_id = ?3
+ORDER BY created DESC
 `
 
 type ReadPagesByUserBetweenParams struct {
@@ -156,6 +158,7 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 			&i.IsReadable,
 			&i.Created,
 			&i.Updated,
+			&i.PreviewState,
 		); err != nil {
 			return nil, err
 		}
@@ -171,7 +174,7 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 }
 
 const readPagesByUserId = `-- name: ReadPagesByUserId :many
-SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated FROM pages
+SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated, preview_state FROM pages
 WHERE user_id = ?
 ORDER BY created DESC
 `
@@ -197,6 +200,7 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, userID string) ([]Page,
 			&i.IsReadable,
 			&i.Created,
 			&i.Updated,
+			&i.PreviewState,
 		); err != nil {
 			return nil, err
 		}
@@ -355,6 +359,37 @@ func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const updatePagePreview = `-- name: UpdatePagePreview :exec
+UPDATE pages SET
+	title = ?,
+	description = ?,
+	image_url = ?,
+	preview_state = ?,
+	updated = ?
+WHERE id = ?
+`
+
+type UpdatePagePreviewParams struct {
+	Title        sql.NullString
+	Description  sql.NullString
+	ImageUrl     sql.NullString
+	PreviewState string
+	Updated      time.Time
+	ID           string
+}
+
+func (q *Queries) UpdatePagePreview(ctx context.Context, arg UpdatePagePreviewParams) error {
+	_, err := q.db.ExecContext(ctx, updatePagePreview,
+		arg.Title,
+		arg.Description,
+		arg.ImageUrl,
+		arg.PreviewState,
+		arg.Updated,
+		arg.ID,
+	)
+	return err
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users SET
 	username = ?,
@@ -441,7 +476,6 @@ func (q *Queries) UpdateUserSubscription(ctx context.Context, arg UpdateUserSubs
 }
 
 const upsertPage = `-- name: UpsertPage :exec
-
 INSERT OR REPLACE INTO pages (
 	id, user_id, url, title, description,
 	image_url, readability_status, readability_task_data,
@@ -464,7 +498,6 @@ type UpsertPageParams struct {
 	Updated             time.Time
 }
 
-// ORDER BY created DESC;
 func (q *Queries) UpsertPage(ctx context.Context, arg UpsertPageParams) error {
 	_, err := q.db.ExecContext(ctx, upsertPage,
 		arg.ID,

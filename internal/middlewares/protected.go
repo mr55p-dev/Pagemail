@@ -21,7 +21,8 @@ func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sess, err := store.Get(r, auth.SessionKey)
 			if err != nil {
-				logger.WithError(err).Error("Failed to load session")
+				logger.WithError(err).DebugCtx(r.Context(), "Failed to load session")
+				next.ServeHTTP(w, r)
 				return
 			}
 			uid := auth.GetId(sess)

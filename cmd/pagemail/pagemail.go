@@ -37,7 +37,7 @@ func main() {
 			panic(err)
 		}
 		logger.InfoCtx(ctx, "Starting mail job")
-		client = mail.NewSesSender(ctx, awsCfg)
+		client = mail.NewAwsSender(ctx, awsCfg)
 	} else {
 		client = mail.NewNoOpSender(ctx)
 	}
@@ -107,7 +107,7 @@ func getAssets(env string) fs.FS {
 
 func getCookieKey(path string) (io.Reader, error) {
 	if path == "-" {
-		return rand.Reader, nil
+		return io.LimitReader(rand.Reader, 32), nil
 	} else {
 		logger.Debug("Using cookie key from file", "file", path)
 		cookieDataFile, err := os.Open(path)
