@@ -6,9 +6,8 @@ templ Login() {
 			<form
 				class="table rows"
 				hx-post="/login"
-				hx-swap="outerHTML"
-				hx-target="#errors"
-				hx-target-error="#errors"
+				hx-swap="innerHTML"
+				hx-target-error="#error"
 			>
 				<p>
 					<label for="email">E-mail</label>
@@ -22,14 +21,18 @@ templ Login() {
 			</form>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
 		</div>
-		<div id="errors"></div>
 	}
 }
 
 templ Signup() {
 	@Wrapper(nil, "Signup") {
 		<div class="center box">
-			<form class="table rows" hx-post="/signup">
+			<form
+				class="table rows"
+				hx-post="/signup"
+				hx-target-error="#error"
+				hx-swap="innerHTML"
+			>
 				<p>
 					<label for="username">Username</label>
 					<input type="text" name="username" value=""/>
@@ -45,6 +48,10 @@ templ Signup() {
 				<p>
 					<label for="password-repeat">Repeat password</label>
 					<input type="password" name="password-repeat" value=""/>
+				</p>
+				<p>
+					<label for="subscribed">Subscribe to email alerts?</label>
+					<input type="checkbox" name="subscribed" checked/>
 				</p>
 				<button type="submit">Create account</button>
 			</form>

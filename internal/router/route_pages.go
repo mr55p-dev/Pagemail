@@ -12,6 +12,8 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
+	"github.com/mr55p-dev/pagemail/pkg/request"
+	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
 type GetPagesRequest struct {
@@ -19,7 +21,8 @@ type GetPagesRequest struct {
 }
 
 func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
-	req := requestBind[GetPagesRequest](w, r)
+	logger := logger.WithRequest(r)
+	req := request.BindRequest[GetPagesRequest](w, r)
 	if req == nil {
 		return
 	}
@@ -27,18 +30,19 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	page, err := strconv.Atoi(req.Page)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		response.Error(w, r, "Invalid page index", http.StatusBadRequest)
 		return
 	}
 
 	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
+		response.Error(w, r, "Failed to load your pages", http.StatusInternalServerError)
 		return
 	}
 	// pageinate for fun
 	pages = pages[(page-1)*render.PAGE_SIZE : page*render.PAGE_SIZE]
-	componentRender(render.PageList(pages, page), w, r)
+	response.Component(render.PageList(pages, page), w, r)
 }
 
 func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
@@ -46,10 +50,10 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 
 	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.ID)
 	if err != nil {
-		genericResponse(w, http.StatusInternalServerError)
+		response.Generic(w, http.StatusInternalServerError)
 		return
 	}
-	componentRender(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
+	response.Component(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
 
 }
 
@@ -57,26 +61,26 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	id := r.PathValue("page_id")
 	if id == "" {
-		http.Error(w, "Missing page id", http.StatusBadRequest)
+		response.Error(w, r, "Missing page id", http.StatusBadRequest)
 		return
 	}
 	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), id)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load page")
-		http.Error(w, "Failed to get page id", http.StatusInternalServerError)
+		response.Error(w, r, "Failed to get page", http.StatusInternalServerError)
 		return
 	}
 	if page.UserID != user.ID {
-		http.Error(w, "Not found", http.StatusNotFound)
+		response.Error(w, r, "No page found", http.StatusNotFound)
 		return
 	}
-	if isHtmx(r) {
+	if request.IsHtmx(r) {
 		if page.PreviewState != "unknown" {
 			w.WriteHeader(286) // tell htmx to stop polling
 		}
 	}
-	componentRender(render.PageCard(&page), w, r)
+	response.Component(render.PageCard(&page), w, r)
 }
 
 type PostPageRequest struct {
@@ -85,7 +89,7 @@ type PostPageRequest struct {
 
 func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
-	req := requestBind[PostPageRequest](w, r)
+	req := request.BindRequest[PostPageRequest](w, r)
 	if req == nil {
 		return
 	}
@@ -93,7 +97,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
-		mixedRender("Missing URL in request", render.SavePageError, w, r)
+		response.Error(w, r, "Missing URL in request", http.StatusBadRequest)
 		return
 	}
 
@@ -114,7 +118,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Error ")
-		mixedRender("Failed to save page", render.SavePageError, w, r)
+		response.Error(w, r, "Failed to save page", http.StatusInternalServerError)
 		return
 	}
 
@@ -141,27 +145,35 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}(router.DBClient, page)
 
-	if isHtmx(r) {
-		componentRender(render.PageCard(&page), w, r)
+	if request.IsHtmx(r) {
+		response.Component(render.PageCard(&page), w, r)
 	} else {
-		textRender("Added page successfully", w, r)
+		response.Text("Added page successfully", w, r)
 	}
 	return
 }
 
 func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), r.PathValue("page_id"))
 	if err != nil {
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to find page in db")
+		response.Error(w, r, "Failed to delete page", http.StatusInternalServerError)
 		return
 	}
 
 	if !(user.ID == page.UserID) {
-		http.Error(w, "Permission denied", http.StatusForbidden)
+		logger.WithError(err).ErrorCtx(r.Context(), "Attempt to delete another users page")
+		response.Error(w, r, "Permission denied", http.StatusForbidden)
 		return
 	}
 
-	router.DBClient.DeletePageById(r.Context(), page.ID)
+	_, err = router.DBClient.DeletePageById(r.Context(), page.ID)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete page from db")
+		response.Error(w, r, "Failed to delete page", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }

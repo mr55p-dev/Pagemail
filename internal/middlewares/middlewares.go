@@ -38,6 +38,7 @@ func Recover(next http.Handler) http.Handler {
 		defer func() {
 			if rec := recover(); rec != nil {
 				logger.WithRecover(rec).ErrorCtx(r.Context(), "Recovered from panic")
+
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
 		}()

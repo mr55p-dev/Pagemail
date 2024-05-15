@@ -19,10 +19,11 @@ templ Wrapper(user *dbqueries.User, title string) {
 			<link rel="stylesheet" href="/assets/css/missing.css"/>
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
 		</head>
-		<body hx-boost="true">
+		<body hx-boost="true" hx-ext="response-targets">
 			@Header(user)
 			<main class="wrapper">
 				<h2>{ title }</h2>
+				<div id="error"></div>
 				{ children... }
 			</main>
 			<script src="/assets/js/htmx.min.js"></script>

@@ -24,10 +24,3 @@ templ AccountPage(user *dbqueries.User) {
 		<div id="account-status"></div>
 	}
 }
-
-templ ErrorBox(msg string) {
-	<div class="box bad">
-		<strong class="sub-title">Error</strong>
-		<p>Error: { msg }</p>
-	</div>
-}

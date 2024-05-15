@@ -16,6 +16,16 @@ var ErrUnsupportedType = errors.New("unsupported type")
 var ErrNonPointerArg = errors.New("non-pointer argument")
 var ErrNonStructArg = errors.New("non-struct argument")
 
+func BindRequest[T any](w http.ResponseWriter, r *http.Request) *T {
+	out := new(T)
+	err := Bind(out, r)
+	if err != nil {
+		http.Error(w, "Failed to bind request", http.StatusBadRequest)
+		return nil
+	}
+	return out
+}
+
 func Bind(v any, r *http.Request) (err error) {
 	log := logging.NewLogger("bind")
 	defer func() {
