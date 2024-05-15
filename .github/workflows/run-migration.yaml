@@ -1,0 +1,55 @@
+---
+name: Run migrations
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Environment to migrate
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        description: Environment to migrate
+        required: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Disable host verification
+        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
+
+      - name: Build image locally
+        run: |
+          docker build \
+          -t pagemail-migrations:latest \
+          -f Dockerfile.migrations .
+
+      - name: Backup database
+        run: cp \
+          ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3 \
+          ./pagemail/${{ vars.ENV_NAME }}/db/pagemail.sqlite3.bak
+
+      - name: Run migration on the server
+        run: |
+          docker run \
+          -v /home/ubuntu/pagemail/${{ vars.ENV_NAME }}/db:/db \
+          -e DATABASE_URL=sqlite3:./db/pagemail.sqlite3 \
+          -e DBMATE_MIGRATIONS_DIR=/migrations \
+          -e DBMATE_NO_DUMP_SCHEMA=1 \
+          --rm \
+          pagemail-migrations:latest migrate

@@ -6,5 +6,4 @@ pagemail-jwt-signature.key.pub
 deploy/
 **/*.sqlite3
 db/query.sql
-db/migrations
 pagemail.yaml
