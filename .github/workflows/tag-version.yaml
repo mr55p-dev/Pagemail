@@ -27,7 +27,7 @@ jobs:
 
   deploy-prd:
     needs: build
-    if: jobs.build.outputs.new_tag != ''
+    if: needs.build.outputs.new_tag != ''
     uses: ./.github/workflows/deploy-env.yaml
     with:
       environment: prd
