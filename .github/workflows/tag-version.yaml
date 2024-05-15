@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     outputs:
-      new_tag: ${{ steps.bump.outputs.new_tag }}
+      bumped: ${{ steps.bump.outputs.part }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,7 +27,7 @@ jobs:
 
   deploy-prd:
     needs: build
-    if: needs.build.outputs.new_tag != ''
+    if: needs.build.outputs.bumped != 'none'
     uses: ./.github/workflows/deploy-env.yaml
     secrets: inherit
     with:
