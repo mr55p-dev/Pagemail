@@ -25,9 +25,14 @@ templ AccountPage(user *dbqueries.User) {
 	}
 }
 
-templ ErrorBox(msg string) {
-	<div class="box bad">
+templ ErrorBox( title, msg string) {
+	<div class="box bad" id="error-msg">
 		<strong class="sub-title">Error</strong>
 		<p>Error: { msg }</p>
+		<button on-click={ deleteElement("error-msg") }></button>
 	</div>
+}
+
+script deleteElement(id string) {
+	document.getElementById(id).remove()
 }

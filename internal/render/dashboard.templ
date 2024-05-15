@@ -9,7 +9,7 @@ templ Dashboard(user *dbqueries.User, pages []dbqueries.Page) {
 		<h4>Save a page</h4>
 		@SavePageWidget()
 		<h4>Your saved pages</h4>
-		<div id="pageview" class="f-col" hx-ext="response-targets">
+		<div id="pageview" class="f-col" >
 			@PageList(pages, 1)
 		</div>
 	}

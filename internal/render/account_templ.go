@@ -86,7 +86,7 @@ func AccountPage(user *dbqueries.User) templ.Component {
 	})
 }
 
-func ErrorBox(msg string) templ.Component {
+func ErrorBox(title, msg string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -99,7 +99,7 @@ func ErrorBox(msg string) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box bad\"><strong class=\"sub-title\">Error</strong><p>Error: ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box bad\" id=\"error-msg\"><strong class=\"sub-title\">Error</strong><p>Error: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -112,7 +112,24 @@ func ErrorBox(msg string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, deleteElement("error-msg"))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button on-click=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 templ.ComponentScript = deleteElement("error-msg")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6.Call)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></button></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -121,4 +138,14 @@ func ErrorBox(msg string) templ.Component {
 		}
 		return templ_7745c5c3_Err
 	})
+}
+
+func deleteElement(id string) templ.ComponentScript {
+	return templ.ComponentScript{
+		Name: `__templ_deleteElement_be05`,
+		Function: `function __templ_deleteElement_be05(id){document.getElementById(id).remove()
+}`,
+		Call:       templ.SafeScript(`__templ_deleteElement_be05`, id),
+		CallInline: templ.SafeScriptInline(`__templ_deleteElement_be05`, id),
+	}
 }

@@ -3,9 +3,11 @@ package router
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/render"
@@ -59,6 +61,15 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func errorResponse(w http.ResponseWriter, r *http.Request, detail string, status int) {
+	if isHtmx(r) {
+		w.WriteHeader(status)
+		componentRender(render.ErrorBox("Error", detail), w, r)
+	} else {
+		http.Error(w, fmt.Sprintf("Error: %s", detail), status)
+	}
+}
+
 type PostSignupRequest struct {
 	Username       string `form:"username"`
 	Email          string `form:"email"`
@@ -76,7 +87,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Read the form requests
 	if req.Password != req.PasswordRepeat {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		errorResponse(w, r, "Passwords do not match", http.StatusBadRequest)
 		return
 	}
 
@@ -98,7 +109,16 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	err := router.DBClient.CreateUser(r.Context(), user)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
-		genericResponse(w, http.StatusInternalServerError)
+		sqlErr, ok := err.(sqlite3.Error)
+		if !ok {
+			goto unknown
+		}
+		if sqlErr.Code == sqlite3.ErrConstraint {
+			errorResponse(w, r, "Looks like that email address is already taken. If you can't remember your password please reach out to help@pagemail.io for assistence.", http.StatusBadRequest)
+			return
+		}
+	unknown:
+		errorResponse(w, r, "Something went wrong signing you up", http.StatusInternalServerError)
 		return
 	}
 	// Generate a token for the user from the session manager

@@ -68,7 +68,7 @@ func Signup() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/signup\"><p><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" value=\"\"></p><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" value=\"\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" value=\"\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" value=\"\"></p><button type=\"submit\">Create account</button></form><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/signup\" hx-target-error=\"#error\" hx-swap=\"innerHTML\"><p><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" value=\"\"></p><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" value=\"\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" value=\"\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" value=\"\"></p><p><label for=\"subscribed\">Subscribe to email alerts?</label> <input type=\"checkbox\" name=\"subscribed\" checked></p><button type=\"submit\">Create account</button></form><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

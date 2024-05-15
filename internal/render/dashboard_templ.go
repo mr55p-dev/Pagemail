@@ -41,7 +41,7 @@ func Dashboard(user *dbqueries.User, pages []dbqueries.Page) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h4>Your saved pages</h4><div id=\"pageview\" class=\"f-col\" hx-ext=\"response-targets\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h4>Your saved pages</h4><div id=\"pageview\" class=\"f-col\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
