@@ -19,6 +19,7 @@ type GetPagesRequest struct {
 }
 
 func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	req := requestBind[GetPagesRequest](w, r)
 	if req == nil {
 		return
@@ -27,13 +28,14 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	page, err := strconv.Atoi(req.Page)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		errorResponse(w, r, "Invalid page index", http.StatusBadRequest)
 		return
 	}
 
 	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
+		errorResponse(w, r, "Failed to load your pages", http.StatusInternalServerError)
 		return
 	}
 	// pageinate for fun
@@ -57,18 +59,18 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	id := r.PathValue("page_id")
 	if id == "" {
-		http.Error(w, "Missing page id", http.StatusBadRequest)
+		errorResponse(w, r, "Missing page id", http.StatusBadRequest)
 		return
 	}
 	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), id)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load page")
-		http.Error(w, "Failed to get page id", http.StatusInternalServerError)
+		errorResponse(w, r, "Failed to get page", http.StatusInternalServerError)
 		return
 	}
 	if page.UserID != user.ID {
-		http.Error(w, "Not found", http.StatusNotFound)
+		errorResponse(w, r, "No page found", http.StatusNotFound)
 		return
 	}
 	if isHtmx(r) {
