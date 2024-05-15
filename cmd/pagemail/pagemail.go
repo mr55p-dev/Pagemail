@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/fs"
@@ -108,7 +109,7 @@ func getAssets(env string) fs.FS {
 func getCookieKey(path string) (io.Reader, error) {
 	if path == "-" {
 		logger.Debug("Using cookie key from crpyto/rand")
-		wrapper := NewBase64EncodedReader(rand.Reader)
+		wrapper := NewBase64EncodedReader(rand.Reader, base64.URLEncoding)
 		return wrapper, nil
 	} else {
 		logger.Debug("Using cookie key from file", "file", path)

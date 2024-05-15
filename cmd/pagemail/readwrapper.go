@@ -13,9 +13,9 @@ type EncodedReader struct {
 	encoderOut io.Reader
 }
 
-func NewBase64EncodedReader(source io.Reader) *EncodedReader {
+func NewBase64EncodedReader(source io.Reader, encoding *base64.Encoding) *EncodedReader {
 	dest := new(bytes.Buffer)
-	encoder := base64.NewEncoder(base64.StdEncoding, dest)
+	encoder := base64.NewEncoder(encoding, dest)
 
 	return &EncodedReader{
 		Source:     source,

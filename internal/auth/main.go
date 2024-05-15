@@ -16,7 +16,7 @@ var (
 	logger = logging.NewLogger("auth")
 
 	uid        uidKeyType = "uid"
-	SessionKey string     = "pm-auth-tkn"
+	SessionKey string     = "SessionCookie"
 
 	ErrNoUserInSession = errors.New("No user found in session")
 	ErrInvlaidUsername = errors.New("Incorrect username")

@@ -28,7 +28,7 @@ func TestEncodedReader(t *testing.T) {
 
 func TestBase64EncodedReader(t *testing.T) {
 	src := strings.NewReader("this is a test")
-	reader := NewBase64EncodedReader(src)
+	reader := NewBase64EncodedReader(src, base64.StdEncoding)
 	res, err := io.ReadAll(reader)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("dGhpcyBpcyBhIHRlc3Q="), res)
