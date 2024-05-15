@@ -37,7 +37,7 @@ func main() {
 			panic(err)
 		}
 		logger.InfoCtx(ctx, "Starting mail job")
-		client = mail.NewSesSender(ctx, awsCfg)
+		client = mail.NewAwsSender(ctx, awsCfg)
 	} else {
 		client = mail.NewNoOpSender(ctx)
 	}
