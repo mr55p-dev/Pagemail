@@ -29,7 +29,6 @@ jobs:
     needs: build
     if: needs.build.outputs.new_tag != ''
     uses: ./.github/workflows/deploy-env.yaml
-    secrets:
-      inherit
+    secrets: inherit
     with:
-      environment: prd
+      environment: Production
