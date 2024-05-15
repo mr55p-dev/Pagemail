@@ -20,7 +20,7 @@ var (
 		Subscribed: true,
 	}
 
-	mailSender = &MailSenderNoOp{}
+	mailSender = &NoOpSender{}
 	dbReader   = &MailDbReaderNoOp{
 		created:  created,
 		numPages: 1,

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
@@ -17,21 +18,13 @@ type GetPagesRequest struct {
 	Page string `query:"p"`
 }
 
-type GetPageRequest struct {
-	PageID string `param:"page_id"`
-}
-
-type PostPageRequest struct {
-	Url string `form:"url"`
-}
-
 func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	req := requestBind[GetPagesRequest](w, r)
 	if req == nil {
 		return
 	}
 
-	user := dbqueries.GetUser(r.Context())
+	user := auth.GetUser(r.Context())
 	page, err := strconv.Atoi(req.Page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -49,7 +42,7 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
-	user := dbqueries.GetUser(r.Context())
+	user := auth.GetUser(r.Context())
 
 	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.ID)
 	if err != nil {
@@ -60,13 +53,17 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 
 }
 
+type GetPageRequest struct {
+	PageID string `param:"page_id"`
+}
+
 func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	req := requestBind[GetPageRequest](w, r)
 	if req == nil {
 		return
 	}
 
-	user := dbqueries.GetUser(r.Context())
+	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), req.PageID)
 	if err != nil {
 		http.Error(w, "Failed to get page id", http.StatusInternalServerError)
@@ -84,6 +81,10 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	componentRender(render.PageCard(&page), w, r)
 }
 
+type PostPageRequest struct {
+	Url string `form:"url"`
+}
+
 func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	req := requestBind[PostPageRequest](w, r)
@@ -91,7 +92,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := dbqueries.GetUser(r.Context())
+	user := auth.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
 		mixedRender("Missing URL in request", render.SavePageError, w, r)
@@ -153,14 +154,14 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
-	user := dbqueries.GetUser(r.Context())
+	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), r.PathValue("page_id"))
 	if err != nil {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
-	if !router.Authorizer.ValUserAgainstPage(user.ID, page.UserID) {
+	if !(user.ID == page.UserID) {
 		http.Error(w, "Permission denied", http.StatusForbidden)
 		return
 	}

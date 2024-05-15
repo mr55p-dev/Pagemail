@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/stretchr/testify/assert"
@@ -16,15 +17,12 @@ var uid = tools.GenerateNewId(5)
 
 func init() {
 	ctx := context.TODO()
-	conn := dbqueries.MustGetDB(ctx, ":memory:")
+	conn := db.MustConnect(ctx, ":memory:")
+	db.MustLoadSchema(ctx, conn)
 	queries = dbqueries.New(conn)
-	err := dbqueries.LoadTables(ctx, conn)
-	if err != nil {
-		panic(err)
-	}
 
 	// add a test user
-	err = queries.CreateUser(ctx, dbqueries.CreateUserParams{
+	err := queries.CreateUser(ctx, dbqueries.CreateUserParams{
 		ID:             uid,
 		Username:       "test",
 		Email:          "test@mail.com",

@@ -15,15 +15,21 @@ services:
       - type: bind
         source: /home/ubuntu/pagemail/prd/
         target: /data/
+    secrets:
+      - cookie-key
     logging:
       options:
         awslogs-group: /splat/pagemail
     labels:
+      - "traefik.http.routers.pagemail-prd.rule=Host(`pagemail.io`)"
       - "traefik.http.routers.pagemail-prd.entrypoints=websecure"
       - "traefik.http.routers.pagemail-prd.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.pagemail-prd.rule=Host(`pagemail.io`)"
 
 networks:
   traefik:
     name: traefik_proxy
     external: true
+
+secrets:
+  cookie-key:
+    file: /home/ubuntu/pagemail/prd/cookie-key.txt

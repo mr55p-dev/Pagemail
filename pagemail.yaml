@@ -3,5 +3,6 @@ app:
   environment: dev
   log-level: DEBUG
   host: 127.0.0.1:8080
+  cookie-key-file: "-"
 db:
   path: ./db/pagemail.sqlite3

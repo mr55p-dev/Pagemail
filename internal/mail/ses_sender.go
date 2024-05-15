@@ -11,20 +11,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 )
 
-// SesMailClient implements the MailSender interface using AWS SES SDK
-type SesMailClient struct {
+// SesSender implements the MailSender interface using AWS SES SDK
+type SesSender struct {
 	sesClient *ses.Client
 }
 
-func NewSesMailClient(ctx context.Context, awsConfig aws.Config) *SesMailClient {
+func NewSesSender(ctx context.Context, awsConfig aws.Config) *SesSender {
 	client := ses.NewFromConfig(awsConfig)
-	return &SesMailClient{
+	return &SesSender{
 		sesClient: client,
 	}
 }
 
 // Send will produce an email to the given address with the given body
-func (c *SesMailClient) Send(ctx context.Context, recipient string, body io.Reader) error {
+func (c *SesSender) Send(ctx context.Context, recipient string, body io.Reader) error {
 	logger := logger.With("recipient", body)
 	logger.DebugCtx(ctx, "Sending mail", "recipient")
 	bodyTextBuilder := strings.Builder{}

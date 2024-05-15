@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/tools"
@@ -59,13 +60,10 @@ func main() {
 	}
 
 	// Setup the database
-	conn := dbqueries.MustGetDB(ctx, ":memory:")
-	err = dbqueries.LoadTables(ctx, conn)
-	if err != nil {
-		panic(err)
-	}
+	conn := db.MustConnect(ctx, ":memory:")
+	db.MustLoadSchema(ctx, conn)
 	queries := dbqueries.New(conn)
-	client := mail.NewSesMailClient(ctx, cfg)
+	client := mail.NewSesSender(ctx, cfg)
 
 	//
 	now := time.Now()
