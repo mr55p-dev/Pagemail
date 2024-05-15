@@ -150,18 +150,26 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), r.PathValue("page_id"))
 	if err != nil {
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to find page in db")
+		errorResponse(w, r, "Failed to delete page", http.StatusInternalServerError)
 		return
 	}
 
 	if !(user.ID == page.UserID) {
-		http.Error(w, "Permission denied", http.StatusForbidden)
+		logger.WithError(err).ErrorCtx(r.Context(), "Attempt to delete another users page")
+		errorResponse(w, r, "Permission denied", http.StatusForbidden)
 		return
 	}
 
-	router.DBClient.DeletePageById(r.Context(), page.ID)
+	_, err = router.DBClient.DeletePageById(r.Context(), page.ID)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete page from db")
+		errorResponse(w, r, "Failed to delete page", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
