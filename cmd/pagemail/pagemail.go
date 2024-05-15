@@ -108,9 +108,7 @@ func getAssets(env string) fs.FS {
 
 func getCookieKey(path string) (io.Reader, error) {
 	if path == "-" {
-		logger.Debug("Using cookie key from crpyto/rand")
-		wrapper := NewBase64EncodedReader(rand.Reader, base64.URLEncoding)
-		return wrapper, nil
+		return rand.Reader, nil
 	} else {
 		logger.Debug("Using cookie key from file", "file", path)
 		cookieDataFile, err := os.Open(path)
