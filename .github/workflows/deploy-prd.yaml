@@ -11,3 +11,9 @@ jobs:
     with:
       environment: Production
     secrets: inherit
+  migrate:
+    name: Run migrations
+    uses: ./.github/workflows/run-migration.yaml
+    with:
+      environment: Production
+    secrets: inherit
