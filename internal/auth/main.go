@@ -42,6 +42,10 @@ func SetId(sess *sessions.Session, id string) {
 	sess.Values[uid] = id
 }
 
+func DelId(sess *sessions.Session) {
+	delete(sess.Values, uid)
+}
+
 func ValidateEmail(userEmail, dbEmail []byte) bool {
 	isValid := subtle.ConstantTimeCompare(userEmail, dbEmail)
 	if isValid != 1 {
