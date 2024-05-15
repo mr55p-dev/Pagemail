@@ -11,11 +11,11 @@ templ Login() {
 			>
 				<p>
 					<label for="email">E-mail</label>
-					<input type="email" name="email" value=""/>
+					<input type="email" name="email" autocomplete="username"/>
 				</p>
 				<p>
 					<label for="password">Password</label>
-					<input type="password" name="password" value=""/>
+					<input type="password" name="password" autocomplete="current-password"/>
 				</p>
 				<button type="submit">Login</button>
 			</form>
@@ -35,19 +35,19 @@ templ Signup() {
 			>
 				<p>
 					<label for="username">Username</label>
-					<input type="text" name="username" value=""/>
+					<input type="text" name="username" autocomplete="username"/>
 				</p>
 				<p>
 					<label for="email">E-mail</label>
-					<input type="email" name="email" value=""/>
+					<input type="email" name="email" autocomplete="email"/>
 				</p>
 				<p>
 					<label for="password">Password</label>
-					<input type="password" name="password" value=""/>
+					<input type="password" name="password" autocomplete="new-password"/>
 				</p>
 				<p>
 					<label for="password-repeat">Repeat password</label>
-					<input type="password" name="password-repeat" value=""/>
+					<input type="password" name="password-repeat" autocomplete="new-password"/>
 				</p>
 				<p>
 					<label for="subscribed">Subscribe to email alerts?</label>
