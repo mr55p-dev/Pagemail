@@ -53,19 +53,17 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 
 }
 
-type GetPageRequest struct {
-	PageID string `param:"page_id"`
-}
-
 func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
-	req := requestBind[GetPageRequest](w, r)
-	if req == nil {
+	logger := logger.WithRequest(r)
+	id := r.PathValue("page_id")
+	if id == "" {
+		http.Error(w, "Missing page id", http.StatusBadRequest)
 		return
 	}
-
 	user := auth.GetUser(r.Context())
-	page, err := router.DBClient.ReadPageById(r.Context(), req.PageID)
+	page, err := router.DBClient.ReadPageById(r.Context(), id)
 	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load page")
 		http.Error(w, "Failed to get page id", http.StatusInternalServerError)
 		return
 	}
@@ -73,10 +71,10 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	_, err = router.DBClient.DeletePageById(r.Context(), req.PageID)
-	if err != nil {
-		genericResponse(w, http.StatusInternalServerError)
-		return
+	if isHtmx(r) {
+		if page.PreviewState != "unknown" {
+			w.WriteHeader(286) // tell htmx to stop polling
+		}
 	}
 	componentRender(render.PageCard(&page), w, r)
 }
@@ -120,30 +118,28 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go func(cli *dbqueries.Queries) {
+	go func(cli *dbqueries.Queries, page dbqueries.Page) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		err := preview.FetchPreview(ctx, &page)
+		pageUpdate := dbqueries.UpdatePagePreviewParams{
+			ID:          page.ID,
+			Title:       page.Title,
+			Description: page.Description,
+			ImageUrl:    page.ImageUrl,
+			Updated:     time.Now(),
+		}
+		if err == nil {
+			pageUpdate.PreviewState = "success"
+		} else {
+			pageUpdate.PreviewState = "error"
+		}
+
+		err = cli.UpdatePagePreview(ctx, pageUpdate)
 		if err != nil {
 			return
 		}
-		err = cli.UpsertPage(ctx, dbqueries.UpsertPageParams{
-			ID:                  page.ID,
-			UserID:              page.UserID,
-			Url:                 page.Url,
-			Title:               page.Title,
-			Description:         page.Description,
-			ImageUrl:            page.ImageUrl,
-			ReadabilityStatus:   page.ReadabilityStatus,
-			ReadabilityTaskData: page.ReadabilityTaskData,
-			IsReadable:          page.IsReadable,
-			Created:             page.Created,
-			Updated:             page.Updated,
-		})
-		if err != nil {
-			return
-		}
-	}(router.DBClient)
+	}(router.DBClient, page)
 
 	if isHtmx(r) {
 		componentRender(render.PageCard(&page), w, r)
