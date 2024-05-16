@@ -14,10 +14,15 @@ import (
 
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/auth"
+	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 	"github.com/stretchr/testify/assert"
 )
+
+type NilPreviewer struct{}
+
+func (NilPreviewer) Queue(string) {}
 
 var mux http.Handler
 var session_cookie *http.Cookie
@@ -30,7 +35,7 @@ func init() {
 	conn := db.MustConnect(ctx, ":memory:")
 	db.MustLoadSchema(ctx, conn)
 
-	router, err := New(ctx, conn, nil, nil, strings.NewReader("passwordpassword"))
+	router, err := New(ctx, dbqueries.New(conn), nil, nil, &NilPreviewer{}, strings.NewReader("passwordpassword"))
 	if err != nil {
 		panic(err)
 	}

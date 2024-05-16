@@ -11,16 +11,19 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
-	"github.com/mr55p-dev/pagemail/internal/preview"
 )
 
 var logger = logging.NewLogger("router")
 
 type Router struct {
 	DBClient  *dbqueries.Queries
-	Previewer *preview.Client
+	Previewer Previewer
 	Sessions  sessions.Store
 	Mux       http.Handler
+}
+
+type Previewer interface {
+	Queue(string)
 }
 
 func New(
@@ -28,7 +31,7 @@ func New(
 	conn *dbqueries.Queries,
 	assets fs.FS,
 	mailClient mail.Sender,
-	previewClient *preview.Client,
+	previewClient Previewer,
 	cookieKey io.Reader,
 ) (*Router, error) {
 	router := &Router{}
