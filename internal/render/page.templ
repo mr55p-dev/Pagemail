@@ -42,7 +42,11 @@ templ PageCard(page *dbqueries.Page) {
 		if page.Description.Valid {
 			<p>{ page.Description.String }</p>
 		} else {
-			<p>No description</p>
+			if page.PreviewState == "unknown" {
+				<p>Fetching preview</p>
+			} else {
+				<p>No description</p>
+			}
 		}
 		<footer style="padding-top: 4px;">
 			<button onClick={ OpenInNewTab(page.Url) }>Open</button>
