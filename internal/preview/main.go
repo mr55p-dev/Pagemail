@@ -13,9 +13,75 @@ import (
 	"net/http"
 )
 
-var READSTAT_UNKNOWN = "unknown"
+type Client struct {
+	jobs    chan string
+	queries *dbqueries.Queries
+}
 
-func FetchUrlContents(url string) ([]byte, error) {
+// New returns a new [Client] and starts waiting for jobs
+func New(ctx context.Context, queries *dbqueries.Queries) *Client {
+	client := &Client{
+		jobs:    make(chan string, 1),
+		queries: queries,
+	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case pageID := <-client.jobs:
+				page, err := queries.ReadPageById(ctx, pageID)
+				if err != nil {
+					// TODO: handle error
+					continue
+				}
+				go client.fetch(ctx, &page)
+			}
+		}
+	}()
+	return client
+}
+
+// Queue adds a pageID to the queue of previews
+func (c *Client) Queue(pageID string) {
+	c.jobs <- pageID
+}
+
+// Sweep checks for any pages marked unknown and attempts to generate a preview
+func (c *Client) Sweep(ctx context.Context) {
+	pageIDs, err := c.queries.ReadPageIdsByPreviewState(ctx, "unknown")
+	if err != nil {
+		panic(err)
+	}
+	for _, ID := range pageIDs {
+		c.Queue(ID)
+	}
+}
+
+func (c *Client) fetch(ctx context.Context, page *dbqueries.Page) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	err := fetchPreview(ctx, page)
+	pageUpdate := dbqueries.UpdatePagePreviewParams{
+		Title:       page.Title,
+		Description: page.Description,
+		ImageUrl:    page.ImageUrl,
+		Updated:     time.Now(),
+		ID:          page.ID,
+	}
+	if err == nil {
+		pageUpdate.PreviewState = "success"
+	} else {
+		pageUpdate.PreviewState = "error"
+	}
+
+	err = c.queries.UpdatePagePreview(ctx, pageUpdate)
+	if err != nil {
+		return
+	}
+}
+
+func fetchUrl(url string) ([]byte, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -36,7 +102,7 @@ type DocumentMeta struct {
 	ImageUrl    string
 }
 
-func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
+func fetchMeta(contents []byte) (*DocumentMeta, error) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(contents))
 	if err != nil {
 		return nil, err
@@ -61,14 +127,14 @@ func FetchDocumentMeta(contents []byte) (*DocumentMeta, error) {
 	return page_data, nil
 }
 
-func FetchPreview(ctx context.Context, page *dbqueries.Page) error {
+func fetchPreview(ctx context.Context, page *dbqueries.Page) error {
 	now := time.Now()
 	page.Updated = now
-	page.ReadabilityStatus.String = READSTAT_UNKNOWN
+	page.ReadabilityStatus.String = "unknown"
 	page.ReadabilityStatus.Valid = true
 
 	// fetch the document
-	content, err := FetchUrlContents(page.Url)
+	content, err := fetchUrl(page.Url)
 	if err != nil {
 		log.Printf("fetch error, %s", err)
 		return err
@@ -79,13 +145,13 @@ func FetchPreview(ctx context.Context, page *dbqueries.Page) error {
 	errorChan := make(chan error)
 	isReadableChan := make(chan bool)
 	go func() {
-		out, err := FetchDocumentMeta(content)
+		out, err := fetchMeta(content)
 		previewChan <- *out
 		errorChan <- err
 	}()
 
 	go func() {
-		isReadableChan <- CheckIsReadable(ctx, page.Url, content)
+		isReadableChan <- checkIsReadable(ctx, page.Url, content)
 	}()
 
 	isReadable, ok := <-isReadableChan
@@ -115,6 +181,6 @@ func FetchPreview(ctx context.Context, page *dbqueries.Page) error {
 	return nil
 }
 
-func CheckIsReadable(ctx context.Context, url string, content []byte) bool {
+func checkIsReadable(ctx context.Context, url string, content []byte) bool {
 	return true
 }

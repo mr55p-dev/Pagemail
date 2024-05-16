@@ -1,12 +1,12 @@
 ---
-name: Bump version
+name: Deploy production
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  tag:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,9 +26,19 @@ jobs:
           DEFAULT_BUMP: none
 
   deploy-prd:
-    needs: build
-    if: needs.build.outputs.bumped != 'none'
+    name: Deploy production
+    needs: tag
+    if: needs.tag.outputs.bumped != 'none'
     uses: ./.github/workflows/deploy-env.yaml
+    secrets: inherit
+    with:
+      environment: Production
+
+  migrate:
+    name: Run migrations
+    needs: tag
+    if: needs.tag.outputs.bumped != 'none'
+    uses: ./.github/workflows/run-migration.yaml
     secrets: inherit
     with:
       environment: Production

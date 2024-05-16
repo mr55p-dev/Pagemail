@@ -2,7 +2,6 @@ package router
 
 import (
 	"context"
-	"database/sql"
 	"io"
 	"io/fs"
 	"net/http"
@@ -17,14 +16,27 @@ import (
 var logger = logging.NewLogger("router")
 
 type Router struct {
-	DBClient *dbqueries.Queries
-	Sessions sessions.Store
-	Mux      http.Handler
+	DBClient  *dbqueries.Queries
+	Previewer Previewer
+	Sessions  sessions.Store
+	Mux       http.Handler
 }
 
-func New(ctx context.Context, conn *sql.DB, assets fs.FS, mailClient mail.Sender, cookieKey io.Reader) (*Router, error) {
+type Previewer interface {
+	Queue(string)
+}
+
+func New(
+	ctx context.Context,
+	conn *dbqueries.Queries,
+	assets fs.FS,
+	mailClient mail.Sender,
+	previewClient Previewer,
+	cookieKey io.Reader,
+) (*Router, error) {
 	router := &Router{}
-	router.DBClient = dbqueries.New(conn)
+	router.DBClient = conn
+	router.Previewer = previewClient
 
 	// Load the cookie encryption key
 	err := loadCookieKey(router, cookieKey)

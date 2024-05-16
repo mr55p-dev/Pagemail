@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
-	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -122,28 +120,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go func(cli *dbqueries.Queries, page dbqueries.Page) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
-		err := preview.FetchPreview(ctx, &page)
-		pageUpdate := dbqueries.UpdatePagePreviewParams{
-			ID:          page.ID,
-			Title:       page.Title,
-			Description: page.Description,
-			ImageUrl:    page.ImageUrl,
-			Updated:     time.Now(),
-		}
-		if err == nil {
-			pageUpdate.PreviewState = "success"
-		} else {
-			pageUpdate.PreviewState = "error"
-		}
-
-		err = cli.UpdatePagePreview(ctx, pageUpdate)
-		if err != nil {
-			return
-		}
-	}(router.DBClient, page)
+	router.Previewer.Queue(page.ID)
 
 	if request.IsHtmx(r) {
 		response.Component(render.PageCard(&page), w, r)
