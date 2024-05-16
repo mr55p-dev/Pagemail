@@ -8,6 +8,7 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -28,14 +29,14 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	page, err := strconv.Atoi(req.Page)
 	if err != nil {
-		response.Error(w, r, "Invalid page index", http.StatusBadRequest)
+		response.Error(w, r, pmerror.ErrBadPagination)
 		return
 	}
 
 	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.ID)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
-		response.Error(w, r, "Failed to load your pages", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to load your pages"))
 		return
 	}
 	// pageinate for fun
@@ -59,18 +60,18 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	id := r.PathValue("page_id")
 	if id == "" {
-		response.Error(w, r, "Missing page id", http.StatusBadRequest)
+		response.Error(w, r, pmerror.ErrNoParam)
 		return
 	}
 	user := auth.GetUser(r.Context())
 	page, err := router.DBClient.ReadPageById(r.Context(), id)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load page")
-		response.Error(w, r, "Failed to get page", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to get page"))
 		return
 	}
 	if page.UserID != user.ID {
-		response.Error(w, r, "No page found", http.StatusNotFound)
+		response.Error(w, r, pmerror.ErrNoPage)
 		return
 	}
 	if request.IsHtmx(r) {
@@ -95,7 +96,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	url := req.Url
 	if url == "" {
-		response.Error(w, r, "Missing URL in request", http.StatusBadRequest)
+		response.Error(w, r, pmerror.ErrNoParam)
 		return
 	}
 
@@ -116,7 +117,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Error ")
-		response.Error(w, r, "Failed to save page", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to save page"))
 		return
 	}
 
@@ -136,20 +137,20 @@ func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
 	page, err := router.DBClient.ReadPageById(r.Context(), r.PathValue("page_id"))
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to find page in db")
-		response.Error(w, r, "Failed to delete page", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to delete page"))
 		return
 	}
 
 	if !(user.ID == page.UserID) {
 		logger.WithError(err).ErrorCtx(r.Context(), "Attempt to delete another users page")
-		response.Error(w, r, "Permission denied", http.StatusForbidden)
+		response.Error(w, r, pmerror.ErrNotAllowed)
 		return
 	}
 
 	_, err = router.DBClient.DeletePageById(r.Context(), page.ID)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete page from db")
-		response.Error(w, r, "Failed to delete page", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to delete page"))
 		return
 	}
 	w.WriteHeader(http.StatusOK)

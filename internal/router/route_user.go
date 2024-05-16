@@ -9,6 +9,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -28,7 +29,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	req := request.BindRequest[PostLoginRequest](w, r)
 	if req == nil {
-		response.Error(w, r, "Email and password are required", http.StatusBadRequest)
+		response.Error(w, r, pmerror.ErrNoParam)
 		return
 	}
 
@@ -36,9 +37,9 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			response.Error(w, r, "Email not found.", http.StatusBadRequest)
+			response.Error(w, r, pmerror.ErrBadEmail)
 		} else {
-			response.Error(w, r, "Something went wrong", http.StatusInternalServerError)
+			response.Error(w, r, pmerror.NewInternalError("Sign-up failed"))
 		}
 		return
 	}
@@ -46,12 +47,12 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	// Validate user
 	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
 		logger.DebugCtx(r.Context(), "Invalid username")
-		response.Error(w, r, "The email address provided is not valid", http.StatusUnauthorized)
+		response.Error(w, r, pmerror.ErrBadEmail)
 		return
 	}
 	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
 		logger.DebugCtx(r.Context(), "Invalid password")
-		response.Error(w, r, "Incorrect password", http.StatusUnauthorized)
+		response.Error(w, r, pmerror.ErrBadPassword)
 		return
 	}
 
@@ -79,7 +80,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	// Read the form requests
 	if req.Password != req.PasswordRepeat {
-		response.Error(w, r, "Passwords do not match", http.StatusBadRequest)
+		response.Error(w, r, pmerror.ErrDiffPasswords)
 		return
 	}
 
@@ -106,11 +107,11 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 			goto unknown
 		}
 		if sqlErr.Code == sqlite3.ErrConstraint {
-			response.Error(w, r, "Looks like that email address is already taken. If you can't remember your password please reach out to help@pagemail.io for assistence.", http.StatusBadRequest)
+			response.Error(w, r, pmerror.ErrDuplicateEmail)
 			return
 		}
 	unknown:
-		response.Error(w, r, "Something went wrong signing you up", http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Something went wrong signing you up"))
 		return
 	}
 	// Generate a token for the user from the session manager

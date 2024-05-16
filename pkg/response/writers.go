@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 )
 
@@ -17,12 +18,16 @@ func Component(component templ.Component, w http.ResponseWriter, r *http.Request
 	}
 }
 
-func Error(w http.ResponseWriter, r *http.Request, detail string, status int) {
+func Error(w http.ResponseWriter, r *http.Request, err error) {
+	data, ok := err.(*pmerror.PMError)
+	if !ok {
+		data = pmerror.ErrUnspecified
+	}
 	if request.IsHtmx(r) {
-		w.WriteHeader(status)
-		Component(ErrorComponent("Error", detail), w, r)
+		w.WriteHeader(data.Status)
+		Component(ErrorComponent("Error", data.Message), w, r)
 	} else {
-		http.Error(w, fmt.Sprintf("Error: %s", detail), status)
+		http.Error(w, fmt.Sprintf("Error: %s", data.Message), data.Status)
 	}
 }
 

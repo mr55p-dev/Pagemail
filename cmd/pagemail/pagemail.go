@@ -19,7 +19,9 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/preview"
+	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/router"
+	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
 var logger = logging.NewLogger("routes")
@@ -66,6 +68,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// setup the error handler
+	response.ErrorComponent = render.ErrorBox
 
 	logger.Info("Starting http server", "config", cfg)
 	if err := http.ListenAndServe(cfg.Host, router.Mux); err != nil {
