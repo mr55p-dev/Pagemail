@@ -50,8 +50,10 @@ func main() {
 		panic(err)
 	}
 
+	// Create the previewer and check for any "unknown" entries
 	queries := dbqueries.New(conn)
 	previewer := preview.New(ctx, queries)
+	go previewer.Sweep(ctx)
 
 	router, err := router.New(
 		ctx,

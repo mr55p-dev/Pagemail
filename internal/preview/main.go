@@ -18,9 +18,11 @@ type Client struct {
 	queries *dbqueries.Queries
 }
 
+// New returns a new [Client] and starts waiting for jobs
 func New(ctx context.Context, queries *dbqueries.Queries) *Client {
 	client := &Client{
-		jobs: make(chan string, 1),
+		jobs:    make(chan string, 1),
+		queries: queries,
 	}
 	go func() {
 		for {
@@ -40,8 +42,20 @@ func New(ctx context.Context, queries *dbqueries.Queries) *Client {
 	return client
 }
 
+// Queue adds a pageID to the queue of previews
 func (c *Client) Queue(pageID string) {
 	c.jobs <- pageID
+}
+
+// Sweep checks for any pages marked unknown and attempts to generate a preview
+func (c *Client) Sweep(ctx context.Context) {
+	pageIDs, err := c.queries.ReadPageIdsByPreviewState(ctx, "unknown")
+	if err != nil {
+		panic(err)
+	}
+	for _, ID := range pageIDs {
+		c.Queue(ID)
+	}
 }
 
 func (c *Client) fetch(ctx context.Context, page *dbqueries.Page) {
@@ -49,11 +63,11 @@ func (c *Client) fetch(ctx context.Context, page *dbqueries.Page) {
 	defer cancel()
 	err := fetchPreview(ctx, page)
 	pageUpdate := dbqueries.UpdatePagePreviewParams{
-		ID:          page.ID,
 		Title:       page.Title,
 		Description: page.Description,
 		ImageUrl:    page.ImageUrl,
 		Updated:     time.Now(),
+		ID:          page.ID,
 	}
 	if err == nil {
 		pageUpdate.PreviewState = "success"

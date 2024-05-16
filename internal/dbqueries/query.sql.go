@@ -124,6 +124,34 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 	return i, err
 }
 
+const readPageIdsByPreviewState = `-- name: ReadPageIdsByPreviewState :many
+SELECT id FROM pages
+WHERE preview_state = ?
+`
+
+func (q *Queries) ReadPageIdsByPreviewState(ctx context.Context, previewState string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, readPageIdsByPreviewState, previewState)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
 SELECT id, user_id, url, title, description, image_url, readability_status, readability_task_data, is_readable, created, updated, preview_state FROM pages 
 WHERE created BETWEEN ?1 AND ?2

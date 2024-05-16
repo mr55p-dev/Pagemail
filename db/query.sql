@@ -72,6 +72,10 @@ SELECT * FROM pages
 WHERE user_id = ?
 ORDER BY created DESC;
 
+-- name: ReadPageIdsByPreviewState :many
+SELECT id FROM pages
+WHERE preview_state = ?;
+
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
 WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)

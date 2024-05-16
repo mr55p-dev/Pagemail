@@ -2,7 +2,6 @@ package router
 
 import (
 	"context"
-	"database/sql"
 	"io"
 	"io/fs"
 	"net/http"

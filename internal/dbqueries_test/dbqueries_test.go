@@ -2,6 +2,7 @@ package dbqueries_test
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 var queries *dbqueries.Queries
 var now = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
 var uid = tools.GenerateNewId(5)
+var pid = tools.GenerateNewId(5)
 
 func init() {
 	ctx := context.TODO()
@@ -39,7 +41,7 @@ func init() {
 
 	// add a test page
 	err = queries.CreatePage(ctx, dbqueries.CreatePageParams{
-		ID:      tools.GenerateNewId(5),
+		ID:      pid,
 		UserID:  uid,
 		Url:     "https://example.com",
 		Created: now.Add(-time.Hour),
@@ -61,4 +63,17 @@ func TestReadPagesByUserBetween(t *testing.T) {
 	assert.Len(pages, 1)
 	assert.Equal("https://example.com", pages[0].Url)
 	assert.Len(pages[0].ID, 5)
+}
+
+func TestUpdatePagePreview(t *testing.T) {
+	assert := assert.New(t)
+	err := queries.UpdatePagePreview(context.TODO(), dbqueries.UpdatePagePreviewParams{
+		Title:        sql.NullString{},
+		Description:  sql.NullString{},
+		ImageUrl:     sql.NullString{},
+		PreviewState: "failed",
+		Updated:      now,
+		ID:           pid,
+	})
+	assert.NoError(err)
 }
