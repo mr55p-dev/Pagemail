@@ -6,10 +6,14 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
+	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 )
 
-var ErrorComponent func(string, string) templ.Component
+type MessageFn = func(string, string) templ.Component
+
+var ErrorComponent MessageFn = render.ErrorBox
+var OkComponent MessageFn = render.MessageBox
 
 func Component(component templ.Component, w http.ResponseWriter, r *http.Request) {
 	err := component.Render(r.Context(), w)
@@ -31,10 +35,14 @@ func Error(w http.ResponseWriter, r *http.Request, err error) {
 	}
 }
 
-func Text(message string, w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintln(w, message)
-	if err != nil {
-		http.Error(w, "Error rendering response", http.StatusInternalServerError)
+func Success(message string, w http.ResponseWriter, r *http.Request) {
+	if request.IsHtmx(r) {
+		Component(OkComponent("Success", message), w, r)
+	} else {
+		_, err := fmt.Fprint(w, message)
+		if err != nil {
+			http.Error(w, "Error writing response", http.StatusInternalServerError)
+		}
 	}
 }
 

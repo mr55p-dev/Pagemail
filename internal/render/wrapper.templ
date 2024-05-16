@@ -21,9 +21,10 @@ templ Wrapper(user *dbqueries.User, title string) {
 		</head>
 		<body hx-boost="true" hx-ext="response-targets">
 			@Header(user)
-			<main class="wrapper">
+			<main class="wrapper" hx-target-error="error">
 				<h2>{ title }</h2>
-				<div id="error"></div>
+				<div id="err"></div>
+				<div id="msg"></div>
 				{ children... }
 			</main>
 			<script src="/assets/js/htmx.min.js"></script>
