@@ -205,9 +205,16 @@ func PageCard(page *dbqueries.Page) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p>No description</p>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
+			if page.PreviewState == "unknown" {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p>Fetching preview</p>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p>No description</p>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<footer style=\"padding-top: 4px;\">")
@@ -267,7 +274,7 @@ func PageCard(page *dbqueries.Page) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(page.Created.Format("02-01-2006"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/page.templ`, Line: 54, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/page.templ`, Line: 58, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
