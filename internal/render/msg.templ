@@ -1,7 +1,7 @@
 package render
 
 templ MessageBox(title, msg string) {
-	<div class="box good" id="good-msg">
+	<div class="box ok" id="good-msg">
 		<strong class="block titlebar">{ title }</strong>
 		<p>{ msg }</p>
 		<button onClick={ RemoveElement("good-msg") }>Close</button>

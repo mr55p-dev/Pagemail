@@ -45,15 +45,16 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
 	user := auth.GetUser(r.Context())
 
 	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.ID)
 	if err != nil {
-		response.Generic(w, http.StatusInternalServerError)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete all pages")
+		response.Error(w, r, pmerror.NewInternalError("Failed to delete pages"))
 		return
 	}
-	response.Component(render.SavePageSuccess(fmt.Sprintf("Deleted %d pages", n)), w, r)
-
+	response.Success(fmt.Sprintf("Deleted %d pages", n), w, r)
 }
 
 func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +127,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	if request.IsHtmx(r) {
 		response.Component(render.PageCard(&page), w, r)
 	} else {
-		response.Text("Added page successfully", w, r)
+		response.Success("Added page successfully", w, r)
 	}
 	return
 }

@@ -21,7 +21,6 @@ templ SavePageWidget() {
 			hx-trigger="submit,click from:#save-page-submit"
 			hx-post="/pages/"
 			hx-target="#pageview"
-			hx-target-error="#save-response"
 			hx-swap="afterbegin"
 		>
 			<input type="url" name="url" placeholder="url" id="save-page-input"/>
@@ -33,18 +32,10 @@ templ SavePageWidget() {
 			class="warn"
 			hx-delete="/pages"
 			hx-confirm="Are you sure you want to delete all saved pages?"
-			hx-target="#save-response"
+			hx-target="#msg"
+			hx-target-error="#err"
 			hx-swap="innerHTML"
 		>Delete all</button>
-	</div>
-	<div id="save-response"></div>
-}
-
-templ SavePageSuccess(msg string) {
-	<div class="box ok" id="save-page-success-msg">
-		<strong class="block titlebar">Success</strong>
-		<p>{ msg }</p>
-		<button onClick={ RemoveElement("save-page-success-msg") }>Close</button>
 	</div>
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -34,7 +35,7 @@ func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 }
 
 type PutAccountRequest struct {
-	Subscribed string `form:"email-list"`
+	Subscribed string `form:"subscribed"`
 }
 
 func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
@@ -48,9 +49,10 @@ func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 		ID:         user.ID,
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.Error(w, r, pmerror.NewInternalError("Failed to update account"))
 		return
 	}
+	response.Success("Updated account", w, r)
 }
 
 func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) {

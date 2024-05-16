@@ -29,6 +29,7 @@ templ PageCard(page *dbqueries.Page) {
 		hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
 		hx-target={ fmt.Sprintf("#page-%s", page.ID) }
 		hx-select={ fmt.Sprintf("#page-%s>*", page.ID) }
+		hx-target-error={ fmt.Sprintf("#page-%s", page.ID) }
 	>
 		<header>
 			if page.Title.Valid {
@@ -50,7 +51,6 @@ templ PageCard(page *dbqueries.Page) {
 				hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
 				hx-swap="outerHTML"
 				hx-target={ fmt.Sprintf("#page-%s", page.ID) }
-				hx-target-error={ fmt.Sprintf("#page-%s", page.ID) }
 			>Delete</button>
 			<small>Added { page.Created.Format("02-01-2006") }</small>
 		</footer>

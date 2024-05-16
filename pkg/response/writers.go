@@ -9,7 +9,10 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/request"
 )
 
-var ErrorComponent func(string, string) templ.Component
+type MessageFn = func(string, string) templ.Component
+
+var ErrorComponent MessageFn
+var OkComponent MessageFn
 
 func Component(component templ.Component, w http.ResponseWriter, r *http.Request) {
 	err := component.Render(r.Context(), w)
@@ -31,9 +34,10 @@ func Error(w http.ResponseWriter, r *http.Request, err error) {
 	}
 }
 
-func Text(message string, w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintln(w, message)
-	if err != nil {
+func Success(message string, w http.ResponseWriter, r *http.Request) {
+	if request.IsHtmx(r) {
+		Component(OkComponent("Success", message), w, r)
+	} else {
 		http.Error(w, "Error rendering response", http.StatusInternalServerError)
 	}
 }

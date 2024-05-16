@@ -71,6 +71,7 @@ func main() {
 
 	// setup the error handler
 	response.ErrorComponent = render.ErrorBox
+	response.OkComponent = render.MessageBox
 
 	logger.Info("Starting http server", "config", cfg)
 	if err := http.ListenAndServe(cfg.Host, router.Mux); err != nil {
