@@ -106,6 +106,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		ID:      tools.GenerateNewId(20),
 		UserID:  user.ID,
 		Url:     url,
+		PreviewState: "unknown",
 		Created: now,
 		Updated: now,
 	}
