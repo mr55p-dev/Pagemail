@@ -61,12 +61,12 @@ templ Signup() {
 	}
 }
 
-templ PasswordResetSubmit() {
-	@Wrapper(nil, "Reset password") {
+templ PasswordResetReq() {
+	@Wrapper(nil, "Request password reset") {
 		<div class="center box">
 			<form
 				class="table rows"
-				hx-post="/password-reset"
+				hx-post="/password-reset/request"
 				hx-swap="innerHTML"
 				hx-target-error="#err"
 			>
@@ -80,12 +80,22 @@ templ PasswordResetSubmit() {
 	}
 }
 
+templ PasswordResetMail(userId string, url templ.SafeURL) {
+	<div>
+		<h1>Reset your password</h1>
+		<p>Please click <a href={ url }>here</a> to reset your password</p>
+		<p>Alternatively paste this link in your browser: { string(url) }</p>
+		<p>This link will expire in one hour.</p>
+		<p>If you did not request this action then please contact <a href="mailto:support@pagemail.io">support@pagemail.io</a>.</p>
+	</div>
+}
+
 templ PasswordReset() {
 	@Wrapper(nil, "Reset password") {
 		<div class="center box">
 			<form
 				class="table rows"
-				hx-post="/..."
+				hx-post="/password-reset/"
 				hx-swap="innerHTML"
 				hx-target-error="#err"
 			>

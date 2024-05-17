@@ -18,6 +18,7 @@ var logger = logging.NewLogger("router")
 type Router struct {
 	DBClient  *dbqueries.Queries
 	Previewer Previewer
+	Sender    mail.Sender
 	Sessions  sessions.Store
 	Mux       http.Handler
 }
@@ -58,9 +59,6 @@ func New(
 		http.MethodGet:  http.HandlerFunc(router.GetSignup),
 		http.MethodPost: http.HandlerFunc(router.PostSignup),
 	}))
-	rootMux.Handle("/password-reset", HandleMethods(map[string]http.Handler{
-		http.MethodGet: http.HandlerFunc(router.GetPasswordReset),
-	}))
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
@@ -69,6 +67,7 @@ func New(
 	))
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
+	rootMux.Handle("/password-reset/", getPasswordResetMux(router))
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", http.FileServerFS(assets)))

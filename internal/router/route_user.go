@@ -1,11 +1,15 @@
 package router
 
 import (
+	"bytes"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/mattn/go-sqlite3"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
@@ -59,7 +63,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	sess.Save(r, w)
-	w.Header().Add("HX-Redirect", "/pages/dashboard")
+	response.Redirect(w, r, "/pages/dashboard")
 	return
 }
 
@@ -118,7 +122,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	sess.Save(r, w)
-	w.Header().Add("HX-Redirect", "/pages/dashboard")
+	response.Redirect(w, r, "/pages/dashboard")
 	return
 }
 
@@ -126,14 +130,59 @@ func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 	response.Component(render.Signup(), w, r)
 }
 
-func (router *Router) GetPasswordReset(w http.ResponseWriter, r *http.Request) {
-	response.Component(render.PasswordResetSubmit(), w, r)
+func (Router) GetPassResetReq(w http.ResponseWriter, r *http.Request) {
+	response.Component(render.PasswordResetReq(), w, r)
+}
+
+type PostPasswordResetParams struct {
+	Email string `form:"email"`
+}
+
+func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
+	req := request.BindRequest[PostPasswordResetParams](w, r)
+	if req == nil {
+		return
+	}
+
+	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
+	if err != nil {
+		logger.WithError(err).InfoCtx(r.Context(), "Error fetching user from DB")
+		response.Error(w, r, pmerror.ErrBadEmail)
+		return
+	}
+
+	token := tools.GenerateNewId(30)
+	// expires := time.Now().Add(time.Hour)
+
+	// generate the reset url
+	params := url.Values{}
+	params.Add("token", token)
+	url := fmt.Sprintf("https://pagemail.io/password-reset/reset?%s", params.Encode())
+
+	buf := new(bytes.Buffer)
+	err = render.PasswordResetMail(user.ID, templ.SafeURL(url)).Render(r.Context(), buf)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Writing password reset mail buffer")
+		response.Error(w, r, pmerror.ErrCreatingMail)
+		return
+	}
+
+	err = router.Sender.Send(r.Context(), user.Email, buf)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Sending password reset email")
+		response.Error(w, r, pmerror.ErrCreatingMail)
+		return
+	}
+
+	// generate a password reset link and send it
+	response.Success("Check your inbox for an email from support@pagemail.io", w, r)
 }
 
 func (router *Router) GetLogout(w http.ResponseWriter, r *http.Request) {
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.DelId(sess)
 	_ = sess.Save(r, w)
-	w.Header().Add("HX-Redirect", "/")
+	response.Redirect(w, r, "/")
 	return
 }
