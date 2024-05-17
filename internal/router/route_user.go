@@ -124,7 +124,10 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 	response.Component(render.Signup(), w, r)
-	return
+}
+
+func (router *Router) GetPasswordReset(w http.ResponseWriter, r *http.Request) {
+	response.Component(render.PasswordResetSubmit(), w, r)
 }
 
 func (router *Router) GetLogout(w http.ResponseWriter, r *http.Request) {

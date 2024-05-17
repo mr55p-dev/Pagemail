@@ -58,6 +58,9 @@ func New(
 		http.MethodGet:  http.HandlerFunc(router.GetSignup),
 		http.MethodPost: http.HandlerFunc(router.PostSignup),
 	}))
+	rootMux.Handle("/password-reset", HandleMethods(map[string]http.Handler{
+		http.MethodGet: http.HandlerFunc(router.GetPasswordReset),
+	}))
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
