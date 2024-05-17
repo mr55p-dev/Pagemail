@@ -84,7 +84,7 @@ func Wrapper(user *dbqueries.User, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script><script data-goatcounter=\"https://pagemail.goatcounter.com/count\" async src=\"//gc.zgo.at/count.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
