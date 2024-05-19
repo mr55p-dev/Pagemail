@@ -84,7 +84,15 @@ func Wrapper(user *dbqueries.User, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script><script data-goatcounter=\"https://pagemail.goatcounter.com/count\" async src=\"//gc.zgo.at/count.js\"></script></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script><script data-goatcounter=\"https://pagemail.goatcounter.com/count\" async src=\"//gc.zgo.at/count.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -142,6 +150,30 @@ func Header(user *dbqueries.User) templ.Component {
 			}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul></nav></header>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if !templ_7745c5c3_IsBuffer {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
+		}
+		return templ_7745c5c3_Err
+	})
+}
+
+func Footer() templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+		if !templ_7745c5c3_IsBuffer {
+			templ_7745c5c3_Buffer = templ.GetBuffer()
+			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<footer><p>Made with <a href=\"https://htmx.org\">htmx</a> and <a href=\"https://templ.guide\">templ</a>.</p><p>Check out this project on <a href=\"https://github.com/mr55p-dev/pagemail\">Github</a>.</p><p>For help, reach out to <a href=\"mailto:ellislunnon@gmail.com\">ellislunnon@gmail.com</a></p></footer>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
