@@ -12,6 +12,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
@@ -188,7 +189,13 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrCreatingMail)
 		return
 	}
-	err = router.Sender.Send(r.Context(), user.Email, buf)
+	msg := mail.MakeMessage(
+		user.Email,
+		mail.WithSender("support@pagemail.io"),
+		mail.WithSubject("Reset your password"),
+		mail.WithBody(buf),
+	)
+	err = router.Sender.Send(r.Context(), msg)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Sending password reset email")
 		response.Error(w, r, pmerror.ErrCreatingMail)

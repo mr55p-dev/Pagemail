@@ -72,7 +72,7 @@ func main() {
 		panic(err)
 	}
 
-	err = mail.MailJob(ctx, queries, client, now)
+	err = mail.DigestJob(ctx, queries, client, now)
 	if err != nil {
 		panic(err)
 	}
