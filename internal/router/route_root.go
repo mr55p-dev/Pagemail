@@ -8,7 +8,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
-	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
@@ -57,14 +56,14 @@ func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 
 func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
-	token := tools.GenerateNewShortcutToken()
+	token, tokenHash := auth.NewShortcutToken()
 	err := router.DBClient.UpdateUserShortcutToken(r.Context(), dbqueries.UpdateUserShortcutTokenParams{
-		ShortcutToken: token,
+		ShortcutToken: tokenHash,
 		ID:            user.ID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "%s", token)
+	response.Success(fmt.Sprintf("Generated new shortcut token: %s", token), w, r)
 }

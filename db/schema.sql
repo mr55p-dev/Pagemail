@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS pages (
 	readability_task_data TEXT,
 	is_readable BOOL,
 	created DATETIME NOT NULL,
-	updated DATETIME NOT NULL, 
-	preview_state TEXT DEFAULT 'unknown' NOT NULL,
+	updated DATETIME NOT NULL, preview_state TEXT DEFAULT 'unknown' NOT NULL,
 
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -20,9 +19,11 @@ CREATE TABLE IF NOT EXISTS users (
 	username TEXT UNIQUE NOT NULL,
 	email TEXT UNIQUE NOT NULL ,
 	password BLOB NOT NULL,
+	reset_token BLOB,
+	reset_token_exp DATETIME,
 	avatar TEXT,
 	subscribed BOOL NOT NULL DEFAULT false,
-	shortcut_token TEXT NOT NULL,
+	shortcut_token BLOB NOT NULL,
 	has_readability BOOL NOT NULL DEFAULT false,
 	created DATETIME NOT NULL,
 	updated DATETIME NOT NULL
@@ -35,4 +36,6 @@ INSERT INTO schema_migrations (version) VALUES
   ('20240510132816'),
   ('20240510134137'),
   ('20240513090548'),
-  ('20240515151753');
+  ('20240515151753'),
+  ('20240520062158'),
+  ('20240520065956');

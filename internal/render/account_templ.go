@@ -31,15 +31,7 @@ func AccountPage(user *dbqueries.User) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box center\"><form class=\"table rows\" hx-put=\"/user/account\" hx-target=\"#msg\" hx-target-error=\"#err\"><p><label for=\"shortcut\">Shortcut token</label> <input disabled id=\"shortcut\" type=\"text\" value=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(user.ShortcutToken))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></p><p><label for=\"account\">Email</label> <input disabled id=\"account\" type=\"text\" value=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box center\"><form class=\"table rows\" hx-put=\"/user/account\" hx-target=\"#msg\" hx-target-error=\"#err\"><p><label for=\"account\">Email</label> <input disabled id=\"account\" type=\"text\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -57,24 +49,7 @@ func AccountPage(user *dbqueries.User) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("></p><div class=\"tool-bar\"><button type=\"submit\">Save</button> ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, CopyToClipboard(user.ShortcutToken))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button onClick=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var3 templ.ComponentScript = CopyToClipboard(user.ShortcutToken)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3.Call)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Copy token</button></div></form><p>Install the iOS shortcut <a href=\"https://www.icloud.com/shortcuts/a581bc41fcde4d73863fb96f47f3a532\">here</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("></p><div class=\"tool-bar\"><button type=\"submit\">Save</button> <button hx-get=\"/user/token/shortcut\">Get new token</button></div></form><p>Install the iOS shortcut <a href=\"https://www.icloud.com/shortcuts/a581bc41fcde4d73863fb96f47f3a532\">here</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

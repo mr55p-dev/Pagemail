@@ -30,3 +30,12 @@ func getPagesMux(router *Router) http.Handler {
 		middlewares.ProtectRoute,
 	)
 }
+
+func getPasswordResetMux(router *Router) http.Handler {
+	resetMux := http.NewServeMux()
+	resetMux.Handle("GET /request", http.HandlerFunc(router.GetPassResetReq))
+	resetMux.Handle("POST /request", http.HandlerFunc(router.PostPassResetReq))
+	resetMux.Handle("GET /redeem", http.HandlerFunc(router.GetPassResetRedeem))
+	resetMux.Handle("POST /redeem", http.HandlerFunc(router.PostPassResetRedeem))
+	return http.StripPrefix("/password-reset", resetMux)
+}

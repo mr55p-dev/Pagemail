@@ -44,6 +44,11 @@ func init() {
 	mux = fn(router.Mux)
 }
 
+func WithHtmx(r *http.Request) *http.Request {
+	r.Header.Add("Hx-Request", "true")
+	return r
+}
+
 func TestRoot(t *testing.T) {
 	assert := assert.New(t)
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -65,7 +70,7 @@ func TestSignup(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/signup", form)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, r)
+	mux.ServeHTTP(w, WithHtmx(r))
 
 	res := w.Result()
 	assert.Equal(res.StatusCode, http.StatusOK)
@@ -88,7 +93,7 @@ func TestLogin(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/login", form)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, r)
+	mux.ServeHTTP(w, WithHtmx(r))
 
 	res := w.Result()
 	assert.Equal(res.StatusCode, http.StatusOK)
@@ -112,7 +117,7 @@ func TestPostPage(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(session_cookie)
 	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, r)
+	mux.ServeHTTP(w, WithHtmx(r))
 
 	res := w.Result()
 	assert.Equal(res.StatusCode, http.StatusOK)
@@ -124,7 +129,7 @@ func TestLogout(t *testing.T) {
 	r.AddCookie(session_cookie)
 	w := httptest.NewRecorder()
 
-	mux.ServeHTTP(w, r)
+	mux.ServeHTTP(w, WithHtmx(r))
 	res := w.Result()
 	assert.Equal(res.StatusCode, http.StatusOK)
 }

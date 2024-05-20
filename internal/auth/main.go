@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/mr55p-dev/pagemail/internal/logging"
+	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -52,6 +53,13 @@ func ValidateEmail(userEmail, dbEmail []byte) bool {
 		return false
 	}
 	return true
+}
+
+func CheckSubmittedPasswords(pass, passRepeat []byte) error {
+	if ok := subtle.ConstantTimeCompare(pass, passRepeat); ok != 1 {
+		return pmerror.ErrDiffPasswords
+	}
+	return nil
 }
 
 func ValidatePassword(userPassword, dbPasswordHash []byte) bool {

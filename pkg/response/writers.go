@@ -49,3 +49,12 @@ func Success(message string, w http.ResponseWriter, r *http.Request) {
 func Generic(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
+
+func Redirect(w http.ResponseWriter, r *http.Request, url string) {
+	if request.IsHtmx(r) {
+		w.Header().Add("HX-Redirect", url)
+	} else {
+		w.Header().Add("Location", url)
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}

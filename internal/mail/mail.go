@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -18,13 +17,18 @@ import (
 )
 
 // Email address to send mail from
-const FROM_ADDR = "mail@pagemail.io"
+const (
+	ADDR_DIGEST = "mail@pagemail.io"
+	SUBJ_DIGEST = "Your daily digest"
+	ADDR_RESET  = "support@pagemail.io"
+	SUBJ_RESET  = "Reset your password"
+)
 
 var logger = logging.NewLogger("mail")
 
 // Sender allows for different implementations of email clients using a send method
 type Sender interface {
-	Send(context.Context, string, io.Reader) error
+	Send(ctx context.Context, msg Message) error
 }
 
 // DB wraps the methods from database which are required for pulling users and their saved
@@ -45,7 +49,7 @@ func MailGo(ctx context.Context, reader DB, sender Sender) {
 	for now := range timer.T {
 		ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
 		logger.InfoCtx(ctx, "Starting mail job", "time", now.Format(time.Stamp))
-		err := MailJob(ctx, reader, sender, now)
+		err := DigestJob(ctx, reader, sender, now)
 		cancel()
 		if err != nil {
 			logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
@@ -53,9 +57,9 @@ func MailGo(ctx context.Context, reader DB, sender Sender) {
 	}
 }
 
-// MailJob collects all subscribed users, their pages between 24 hours ago and now, and then sends
+// DigestJob collects all subscribed users, their pages between 24 hours ago and now, and then sends
 // them
-func MailJob(ctx context.Context, reader DB, sender Sender, now time.Time) error {
+func DigestJob(ctx context.Context, reader DB, sender Sender, now time.Time) error {
 	// Get users with mail enabled
 	users, err := reader.ReadUsersWithMail(ctx)
 	if err != nil {
@@ -72,7 +76,7 @@ func MailJob(ctx context.Context, reader DB, sender Sender, now time.Time) error
 		go func() {
 			defer wg.Done()
 			for user := range jobs {
-				err := SendMailToUser(ctx, &user, reader, sender, now)
+				err := SendUserDigest(ctx, &user, reader, sender, now)
 				if err != nil {
 					errChan <- err
 				}
@@ -102,8 +106,8 @@ func MailJob(ctx context.Context, reader DB, sender Sender, now time.Time) error
 	return nil
 }
 
-// SendMailToUser fetches the users pages, constructs an email and sends it via the sender interface
-func SendMailToUser(ctx context.Context, user *dbqueries.User, db DB, sender Sender, now time.Time) error {
+// SendUserDigest fetches the users pages, constructs an email and sends it via the sender interface
+func SendUserDigest(ctx context.Context, user *dbqueries.User, db DB, sender Sender, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 
@@ -131,7 +135,13 @@ func SendMailToUser(ctx context.Context, user *dbqueries.User, db DB, sender Sen
 	if err != nil {
 		return err
 	}
-	err = sender.Send(ctx, user.Email, &buf)
+	msg := MakeMessage(
+		user.Email,
+		WithSubject(SUBJ_DIGEST),
+		WithBody(&buf),
+		WithTags(map[string]string{"puropse:": "digest"}),
+	)
+	err = sender.Send(ctx, msg)
 	if err != nil {
 		return err
 	}

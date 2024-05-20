@@ -52,6 +52,11 @@ var (
 		Status:  http.StatusForbidden,
 		Message: "Permission denied",
 	}
+
+	ErrCreatingMail = &PMError{
+		Status:  http.StatusInternalServerError,
+		Message: "Failed to generate reset email",
+	}
 )
 
 func NewInternalError(msg string) *PMError {

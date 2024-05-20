@@ -39,10 +39,17 @@ UPDATE users SET
 	updated = ?
 WHERE id = :id;
 
--- name: UpdateUserPassword :exec
+-- name: ReadUserByResetToken :one
+SELECT * FROM users
+WHERE reset_token = ?
+AND reset_token_exp > ?;
+
+-- name: UpdateUserPassword :execrows
 UPDATE users SET 
 password = ? 
-WHERE id = ?;
+WHERE reset_token = ?
+AND reset_token_exp > ?
+RETURNING id;
 
 -- name: UpdateUserSubscription :exec
 UPDATE users SET 
@@ -52,6 +59,12 @@ WHERE id = ?;
 -- name: UpdateUserShortcutToken :exec
 UPDATE users SET 
 shortcut_token = ? 
+WHERE id = ?;
+
+-- name: UpdateUserResetToken :exec
+UPDATE users SET
+reset_token = ?,
+reset_token_exp = ?
 WHERE id = ?;
 
 -- name: CreatePage :exec

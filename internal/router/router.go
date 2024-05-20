@@ -18,6 +18,7 @@ var logger = logging.NewLogger("router")
 type Router struct {
 	DBClient  *dbqueries.Queries
 	Previewer Previewer
+	Sender    mail.Sender
 	Sessions  sessions.Store
 	Mux       http.Handler
 }
@@ -37,15 +38,17 @@ func New(
 	router := &Router{}
 	router.DBClient = conn
 	router.Previewer = previewClient
+	router.Sender = mailClient
 
 	// Load the cookie encryption key
-	err := loadCookieKey(router, cookieKey)
+	key, err := io.ReadAll(cookieKey)
 	if err != nil {
 		return nil, err
 	}
-
-	// Load the mail client
-	go mail.MailGo(ctx, router.DBClient, mailClient)
+	router.Sessions = sessions.NewCookieStore(key)
+	if err != nil {
+		return nil, err
+	}
 
 	// Serve root
 	rootMux := http.NewServeMux()
@@ -66,6 +69,7 @@ func New(
 	))
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
+	rootMux.Handle("/password-reset/", getPasswordResetMux(router))
 
 	mux := http.NewServeMux()
 	mux.Handle("/assets/", http.StripPrefix("/assets", http.FileServerFS(assets)))

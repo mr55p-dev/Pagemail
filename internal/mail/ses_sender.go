@@ -17,28 +17,38 @@ type AwsSender struct {
 }
 
 func NewAwsSender(ctx context.Context, awsConfig aws.Config) *AwsSender {
-	client := ses.NewFromConfig(awsConfig)
+	client := ses.NewFromConfig(awsConfig, func(o *ses.Options) {
+		o.Region = "eu-west-2"
+	})
 	return &AwsSender{
 		sesClient: client,
 	}
 }
 
 // Send will produce an email to the given address with the given body
-func (c *AwsSender) Send(ctx context.Context, recipient string, body io.Reader) error {
-	logger := logger.With("recipient", body)
+func (c *AwsSender) Send(ctx context.Context, msg Message) error {
+	logger := logger.With("recipient", msg.Body)
 	logger.DebugCtx(ctx, "Sending mail", "recipient")
 	bodyTextBuilder := strings.Builder{}
-	_, err := io.Copy(&bodyTextBuilder, body)
+	_, err := io.Copy(&bodyTextBuilder, msg.Body)
 	if err != nil {
 		return fmt.Errorf("Failed to copy mail body: %w", err)
+	}
+
+	tags := make([]types.MessageTag, 0)
+	for _, v := range msg.Tags {
+		tags = append(tags, types.MessageTag{
+			Name:  &v.Name,
+			Value: &v.Value,
+		})
 	}
 
 	bodyText := bodyTextBuilder.String()
 	_, err = c.sesClient.SendEmail(ctx, &ses.SendEmailInput{
 		Destination: &types.Destination{
-			ToAddresses: []string{recipient},
+			ToAddresses: []string{msg.To},
 		},
-		Source: aws.String(FROM_ADDR),
+		Source: &msg.From,
 		Message: &types.Message{
 			Body: &types.Body{
 				Html: &types.Content{
@@ -47,17 +57,12 @@ func (c *AwsSender) Send(ctx context.Context, recipient string, body io.Reader) 
 				},
 			},
 			Subject: &types.Content{
-				Data:    aws.String("Pagemail digest"),
+				Data:    &msg.Subject,
 				Charset: aws.String("UTF-8"),
 			},
 		},
-		ReplyToAddresses: []string{FROM_ADDR},
-		Tags: []types.MessageTag{
-			{
-				Name:  aws.String("purpose"),
-				Value: aws.String("daily-digest"),
-			},
-		},
+		ReplyToAddresses: []string{ADDR_DIGEST},
+		Tags:             tags,
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(ctx, "Error sending mail")
