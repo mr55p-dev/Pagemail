@@ -4,5 +4,7 @@ app:
   log-level: DEBUG
   host: 127.0.0.1:8080
   cookie-key-file: "password.txt"
+  google-client-id-file: "client-id.txt"
+  google-client-secret-file: "client-secret.txt"
 db:
   path: ./db/pagemail.sqlite3

@@ -41,10 +41,11 @@ func main() {
 	client = mail.NewAwsSender(ctx, awsCfg)
 
 	assets := getAssets(cfg.Environment)
-	cookieKey, err := getCookieKey(cfg.CookieKeyFile)
-	if err != nil {
-		panic(err)
-	}
+
+	// Load config files
+	cookieKey := MustReadFile(cfg.CookieKeyFile)
+	clientId := MustReadFile(cfg.ClientIdFile)
+	clientSecret := MustReadFile(cfg.ClientSecretFile)
 
 	// Create the previewer and check for any "unknown" entries
 	queries := dbqueries.New(conn)
@@ -123,15 +124,15 @@ func getAssets(env string) fs.FS {
 	}
 }
 
-func getCookieKey(path string) (io.Reader, error) {
+func MustReadFile(path string) io.Reader {
 	if path == "-" {
-		return io.LimitReader(rand.Reader, 32), nil
+		return io.LimitReader(rand.Reader, 32)
 	} else {
 		logger.Debug("Using cookie key from file", "file", path)
 		cookieDataFile, err := os.Open(path)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to open cookie key file at %s: %w", path, err)
+			panic(err)
 		}
-		return cookieDataFile, nil
+		return cookieDataFile
 	}
 }
