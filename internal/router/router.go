@@ -38,15 +38,13 @@ func New(
 	router := &Router{}
 	router.DBClient = conn
 	router.Previewer = previewClient
+	router.Sender = mailClient
 
 	// Load the cookie encryption key
 	err := loadCookieKey(router, cookieKey)
 	if err != nil {
 		return nil, err
 	}
-
-	// Load the mail client
-	go mail.MailGo(ctx, router.DBClient, mailClient)
 
 	// Serve root
 	rootMux := http.NewServeMux()

@@ -33,16 +33,12 @@ func main() {
 	defer conn.Close()
 
 	var client mail.Sender
-	if cfg.Environment == "prd" {
-		awsCfg, err := config.LoadDefaultConfig(ctx)
-		if err != nil {
-			panic(err)
-		}
-		logger.InfoCtx(ctx, "Starting mail job")
-		client = mail.NewAwsSender(ctx, awsCfg)
-	} else {
-		client = mail.NewNoOpSender(ctx)
+	awsCfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		panic(err)
 	}
+	logger.InfoCtx(ctx, "Starting mail job")
+	client = mail.NewAwsSender(ctx, awsCfg)
 
 	assets := getAssets(cfg.Environment)
 	cookieKey, err := getCookieKey(cfg.CookieKeyFile)
@@ -65,6 +61,14 @@ func main() {
 	)
 	if err != nil {
 		panic(err)
+	}
+
+	// Load the mail client
+	if cfg.Environment == "prd" {
+		logger.Info("Starting mail client")
+		go mail.MailGo(ctx, router.DBClient, router.Sender)
+	} else {
+		logger.Warn("Environment is not production, not starting mailGo")
 	}
 
 	logger.Info("Starting http server", "config", cfg)

@@ -42,7 +42,8 @@ WHERE id = :id;
 -- name: UpdateUserPassword :exec
 UPDATE users SET 
 password = ? 
-WHERE id = ?;
+WHERE reset_token = ?
+AND reset_token_exp < ?;
 
 -- name: UpdateUserSubscription :exec
 UPDATE users SET 
@@ -59,6 +60,11 @@ UPDATE users SET
 reset_token = ?,
 reset_token_exp = ?
 WHERE id = ?;
+
+-- name: UpdatePasswordWithToken :exec
+UPDATE users SET
+password = ?
+WHERE reset_token = ?;
 
 -- name: CreatePage :exec
 INSERT INTO pages (id, user_id, url, preview_state, created, updated)

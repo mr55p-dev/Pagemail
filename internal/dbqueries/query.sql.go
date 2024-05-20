@@ -426,6 +426,22 @@ func (q *Queries) UpdatePagePreview(ctx context.Context, arg UpdatePagePreviewPa
 	return err
 }
 
+const updatePasswordWithToken = `-- name: UpdatePasswordWithToken :exec
+UPDATE users SET
+password = ?
+WHERE reset_token = ?
+`
+
+type UpdatePasswordWithTokenParams struct {
+	Password   []byte
+	ResetToken []byte
+}
+
+func (q *Queries) UpdatePasswordWithToken(ctx context.Context, arg UpdatePasswordWithTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updatePasswordWithToken, arg.Password, arg.ResetToken)
+	return err
+}
+
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users SET
 	username = ?,
@@ -466,16 +482,18 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users SET 
 password = ? 
-WHERE id = ?
+WHERE reset_token = ?
+AND reset_token_exp < ?
 `
 
 type UpdateUserPasswordParams struct {
-	Password []byte
-	ID       string
+	Password      []byte
+	ResetToken    []byte
+	ResetTokenExp sql.NullTime
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.ResetToken, arg.ResetTokenExp)
 	return err
 }
 

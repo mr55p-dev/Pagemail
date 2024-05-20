@@ -19,7 +19,7 @@ templ Login() {
 				</p>
 				<button type="submit">Login</button>
 			</form>
-			<p><a href="/password-reset">Reset password</a></p>
+			<p><a href="/password-reset/request">Reset password</a></p>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
 		</div>
 	}
@@ -95,7 +95,7 @@ templ PasswordReset() {
 		<div class="center box">
 			<form
 				class="table rows"
-				hx-post="/password-reset/"
+				hx-post="/password-reset/redeem"
 				hx-swap="innerHTML"
 				hx-target-error="#err"
 			>

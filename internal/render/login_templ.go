@@ -29,7 +29,7 @@ func Login() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><p><a href=\"/password-reset\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><p><a href=\"/password-reset/request\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -192,7 +192,7 @@ func PasswordReset() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"password\">New password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><button type=\"submit\">Submit</button></form></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/redeem\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"password\">New password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><button type=\"submit\">Submit</button></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
