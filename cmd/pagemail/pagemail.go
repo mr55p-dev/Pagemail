@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -44,8 +43,8 @@ func main() {
 
 	// Load config files
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-	clientId := MustReadFile(cfg.ClientIdFile)
-	clientSecret := MustReadFile(cfg.ClientSecretFile)
+	// clientId := MustReadFile(cfg.ClientIdFile)
+	// clientSecret := MustReadFile(cfg.ClientSecretFile)
 
 	// Create the previewer and check for any "unknown" entries
 	queries := dbqueries.New(conn)

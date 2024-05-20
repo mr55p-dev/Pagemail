@@ -19,6 +19,22 @@ templ Login() {
 				</p>
 				<button type="submit">Login</button>
 			</form>
+			<script src="https://accounts.google.com/gsi/client" async></script>
+			<div
+				id="g_id_onload"
+				data-client_id="556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
+				data-login_uri="http://localhost:8080/login/google"
+				data-auto_prompt="false"
+			></div>
+			<div
+				class="g_id_signin"
+				data-type="standard"
+				data-size="large"
+				data-theme="outline"
+				data-text="sign_in_with"
+				data-shape="rectangular"
+				data-logo_alignment="left"
+			></div>
 			<p><a href="/password-reset/request">Reset password</a></p>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
 		</div>

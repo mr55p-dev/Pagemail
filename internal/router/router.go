@@ -53,10 +53,6 @@ func New(
 	// Serve root
 	rootMux := http.NewServeMux()
 	rootMux.HandleFunc("/", router.GetRoot)
-	rootMux.Handle("/login", HandleMethods(map[string]http.Handler{
-		http.MethodGet:  http.HandlerFunc(router.GetLogin),
-		http.MethodPost: http.HandlerFunc(router.PostLogin),
-	}))
 	rootMux.Handle("/signup", HandleMethods(map[string]http.Handler{
 		http.MethodGet:  http.HandlerFunc(router.GetSignup),
 		http.MethodPost: http.HandlerFunc(router.PostSignup),
@@ -67,6 +63,7 @@ func New(
 			middlewares.GetShortcutLoader(router.Sessions, router.DBClient),
 		),
 	))
+	rootMux.Handle("/login/", getLoginMux(router))
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
 	rootMux.Handle("/password-reset/", getPasswordResetMux(router))

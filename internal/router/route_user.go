@@ -78,6 +78,41 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
+	logger.InfoCtx(r.Context(), "Received google login request")
+	// validate credential
+	email := "hello@mail.com"
+
+	// lookup the user by email
+	// if the user does not exist, create a new user
+	user, err := router.DBClient.ReadUserByEmail(r.Context(), email)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			logger.WithError(err).ErrorCtx(r.Context(), "Failed to read user from DB")
+			response.Error(w, r, pmerror.ErrUnspecified)
+			return
+		}
+		user, err = auth.SignupUserIdp(r.Context(), router.DBClient, email, "Google user")
+		if err != nil {
+			logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
+			response.Error(w, r, pmerror.ErrUnspecified)
+			return
+		}
+	}
+
+	// set the session
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
+	auth.SetId(sess, user.ID)
+	err = sess.Save(r, w)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+	response.Redirect(w, r, "/pages/dashboard")
+}
+
 type PostSignupRequest struct {
 	Username       string `form:"username"`
 	Email          string `form:"email"`

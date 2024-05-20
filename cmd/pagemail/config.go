@@ -12,8 +12,8 @@ type AppConfig struct {
 	Host             string `config:"app.host" log:"host"`
 	DBPath           string `config:"db.path" log:"db-path"`
 	CookieKeyFile    string `config:"app.cookie-key-file" log:"cookie-key-file"`
-	ClientIdFile     string `config:"app.client-id-file" log:"client-id"`
-	ClientSecretFile string `config:"app.client-secret-file"`
+	ClientIdFile     string `config:"app.google-client-id-file" log:"client-id"`
+	ClientSecretFile string `config:"app.google-client-secret-file"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {
