@@ -17,7 +17,9 @@ type AwsSender struct {
 }
 
 func NewAwsSender(ctx context.Context, awsConfig aws.Config) *AwsSender {
-	client := ses.NewFromConfig(awsConfig)
+	client := ses.NewFromConfig(awsConfig, func(o *ses.Options) {
+		o.Region = "eu-west-2"
+	})
 	return &AwsSender{
 		sesClient: client,
 	}
