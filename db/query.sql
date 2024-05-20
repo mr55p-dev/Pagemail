@@ -54,6 +54,12 @@ UPDATE users SET
 shortcut_token = ? 
 WHERE id = ?;
 
+-- name: UpdateUserResetToken :exec
+UPDATE users SET
+reset_token = ?,
+reset_token_exp = ?
+WHERE id = ?;
+
 -- name: CreatePage :exec
 INSERT INTO pages (id, user_id, url, preview_state, created, updated)
 VALUES (?, ?, ?, 'unknown', ?, ?);

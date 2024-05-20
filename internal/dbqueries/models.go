@@ -39,4 +39,6 @@ type User struct {
 	HasReadability bool
 	Created        time.Time
 	Updated        time.Time
+	ResetToken     []byte
+	ResetTokenExp  sql.NullTime
 }

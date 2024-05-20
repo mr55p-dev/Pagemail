@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -83,8 +82,8 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read the form requests
-	if req.Password != req.PasswordRepeat {
-		response.Error(w, r, pmerror.ErrDiffPasswords)
+	if err := auth.CheckSubmittedPasswords([]byte(req.Password), []byte(req.PasswordRepeat)); err != nil {
+		response.Error(w, r, err)
 		return
 	}
 
@@ -96,7 +95,6 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 		Username:       req.Username,
 		Email:          req.Email,
 		Password:       passwordHash,
-		Avatar:         sql.NullString{},
 		Subscribed:     req.Subscribed,
 		ShortcutToken:  tools.GenerateNewShortcutToken(),
 		HasReadability: false,
@@ -148,26 +146,45 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		logger.WithError(err).InfoCtx(r.Context(), "Error fetching user from DB")
+		if errors.Is(err, sql.ErrNoRows) {
+			response.Success("If such an email exists, check the inbox for a reset url.", w, r)
+			return
+		}
+		logger.WithError(err).InfoCtx(r.Context(), "Error fetching user from DB")
 		response.Error(w, r, pmerror.ErrBadEmail)
 		return
 	}
 
-	token := tools.GenerateNewId(30)
-	// expires := time.Now().Add(time.Hour)
+	// generate a new token and hash
+	token, tokenHash := auth.NewResetToken()
+	expires := time.Now().Add(time.Hour)
+
+	err = router.DBClient.UpdateUserResetToken(r.Context(), dbqueries.UpdateUserResetTokenParams{
+		ID:            user.ID,
+		ResetToken:    tokenHash,
+		ResetTokenExp: sql.NullTime{Valid: true, Time: expires},
+	})
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Seting password reset token")
+		response.Error(w, r, pmerror.NewInternalError("Failed to generate a reset token."))
+	}
 
 	// generate the reset url
-	params := url.Values{}
-	params.Add("token", token)
-	url := fmt.Sprintf("https://pagemail.io/password-reset/reset?%s", params.Encode())
+	urlAddr := url.URL{
+		Scheme: "https",
+		Host:   "pagemail.io",
+		Path:   "password-reset/reset",
+	}
+	urlAddr.Query().Add("token", string(token))
 
+	// Send an email
 	buf := new(bytes.Buffer)
-	err = render.PasswordResetMail(user.ID, templ.SafeURL(url)).Render(r.Context(), buf)
+	err = render.PasswordResetMail(user.ID, templ.SafeURL(urlAddr.String())).Render(r.Context(), buf)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Writing password reset mail buffer")
 		response.Error(w, r, pmerror.ErrCreatingMail)
 		return
 	}
-
 	err = router.Sender.Send(r.Context(), user.Email, buf)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Sending password reset email")
@@ -175,8 +192,24 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// generate a password reset link and send it
 	response.Success("Check your inbox for an email from support@pagemail.io", w, r)
+}
+
+type PostPasswordResetRedeemParams struct {
+	Token          string `query:"token"`
+	Password       string `form:"password"`
+	PasswordRepeat string `form:"password-repeat"`
+}
+
+func (router *Router) PostPasswordResetRedeem(w http.ResponseWriter, r *http.Request) {
+	req := request.BindRequest[PostPasswordResetRedeemParams](w, r)
+	if req == nil {
+		return
+	}
+
+	if req.Password != req.PasswordRepeat {
+
+	}
 }
 
 func (router *Router) GetLogout(w http.ResponseWriter, r *http.Request) {

@@ -244,7 +244,7 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, userID string) ([]Page,
 }
 
 const readUserByEmail = `-- name: ReadUserByEmail :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
 WHERE email = ?
 LIMIT 1
 `
@@ -263,12 +263,14 @@ func (q *Queries) ReadUserByEmail(ctx context.Context, email string) (User, erro
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 	)
 	return i, err
 }
 
 const readUserById = `-- name: ReadUserById :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
 WHERE id = ? 
 LIMIT 1
 `
@@ -287,12 +289,14 @@ func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 	)
 	return i, err
 }
 
 const readUserByShortcutToken = `-- name: ReadUserByShortcutToken :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
 WHERE shortcut_token = ?
 LIMIT 1
 `
@@ -311,6 +315,8 @@ func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken str
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 	)
 	return i, err
 }
@@ -349,7 +355,7 @@ func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcu
 }
 
 const readUsersWithMail = `-- name: ReadUsersWithMail :many
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
+SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
 WHERE subscribed = true
 `
 
@@ -373,6 +379,8 @@ func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
 			&i.HasReadability,
 			&i.Created,
 			&i.Updated,
+			&i.ResetToken,
+			&i.ResetTokenExp,
 		); err != nil {
 			return nil, err
 		}
@@ -468,6 +476,24 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.Password, arg.ID)
+	return err
+}
+
+const updateUserResetToken = `-- name: UpdateUserResetToken :exec
+UPDATE users SET
+reset_token = ?,
+reset_token_exp = ?
+WHERE id = ?
+`
+
+type UpdateUserResetTokenParams struct {
+	ResetToken    []byte
+	ResetTokenExp sql.NullTime
+	ID            string
+}
+
+func (q *Queries) UpdateUserResetToken(ctx context.Context, arg UpdateUserResetTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserResetToken, arg.ResetToken, arg.ResetTokenExp, arg.ID)
 	return err
 }
 

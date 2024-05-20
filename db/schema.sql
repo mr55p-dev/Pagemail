@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS pages (
 	readability_task_data TEXT,
 	is_readable BOOL,
 	created DATETIME NOT NULL,
-	updated DATETIME NOT NULL, 
-	preview_state TEXT DEFAULT 'unknown' NOT NULL,
+	updated DATETIME NOT NULL, preview_state TEXT DEFAULT 'unknown' NOT NULL,
 
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -26,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
 	has_readability BOOL NOT NULL DEFAULT false,
 	created DATETIME NOT NULL,
 	updated DATETIME NOT NULL
-);
+, reset_token BLOB, reset_token_exp DATETIME);
 -- Dbmate schema migrations
 INSERT INTO schema_migrations (version) VALUES
   ('20240104200335'),
@@ -35,4 +34,5 @@ INSERT INTO schema_migrations (version) VALUES
   ('20240510132816'),
   ('20240510134137'),
   ('20240513090548'),
-  ('20240515151753');
+  ('20240515151753'),
+  ('20240520062158');
