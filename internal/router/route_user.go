@@ -174,9 +174,11 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 	urlAddr := url.URL{
 		Scheme: "https",
 		Host:   "pagemail.io",
-		Path:   "password-reset/reset",
+		Path:   "password-reset/redeem",
 	}
-	urlAddr.Query().Add("token", string(token))
+	q := urlAddr.Query()
+	q.Add("token", string(token))
+	urlAddr.RawQuery = q.Encode()
 
 	// Send an email
 	buf := new(bytes.Buffer)
@@ -201,7 +203,7 @@ func (Router) GetPassResetRedeem(w http.ResponseWriter, r *http.Request) {
 }
 
 type PostPassResetRedeemParams struct {
-	Token          string `query:"token"`
+	Token          string `form:"token"`
 	Password       string `form:"password"`
 	PasswordRepeat string `form:"password-repeat"`
 }
@@ -219,13 +221,19 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 
 	// generate and update the password for the matching reset token
 	hashedPassword := auth.HashPassword([]byte(req.Password))
-	err := router.DBClient.UpdateUserPassword(r.Context(), dbqueries.UpdateUserPasswordParams{
+	hashedToken := auth.HashValue([]byte(req.Token))
+	n, err := router.DBClient.UpdateUserPassword(r.Context(), dbqueries.UpdateUserPasswordParams{
 		Password:      hashedPassword,
-		ResetToken:    []byte(req.Token),
+		ResetToken:    hashedToken,
 		ResetTokenExp: sql.NullTime{Valid: true, Time: time.Now()},
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to update password")
+		response.Error(w, r, pmerror.NewInternalError("Failed to update password"))
+		return
+	}
+	if n == 0 {
+		logger.ErrorCtx(r.Context(), "No rows affected when updating password")
 		response.Error(w, r, pmerror.NewInternalError("Failed to update password"))
 		return
 	}

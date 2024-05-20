@@ -97,6 +97,7 @@ templ PasswordReset() {
 				class="table rows"
 				hx-post="/password-reset/redeem"
 				hx-swap="innerHTML"
+				hx-vals="js:{token: (new URLSearchParams(window.location.search)).get('token')}"
 				hx-target-error="#err"
 			>
 				<p>
