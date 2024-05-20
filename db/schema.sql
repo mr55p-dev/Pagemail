@@ -1,19 +1,4 @@
 CREATE TABLE IF NOT EXISTS "schema_migrations" (version varchar(128) primary key);
-CREATE TABLE IF NOT EXISTS "pages" (
-	id TEXT PRIMARY KEY NOT NULL,
-	user_id TEXT NOT NULL,
-	url TEXT NOT NULL,
-	title TEXT,
-	description TEXT,
-	image_url TEXT,
-	readability_status TEXT,
-	readability_task_data TEXT,
-	is_readable BOOL,
-	created DATETIME NOT NULL,
-	updated DATETIME NOT NULL, preview_state TEXT DEFAULT 'unknown' NOT NULL,
-
-	FOREIGN KEY(user_id) REFERENCES users(id)
-);
 CREATE TABLE IF NOT EXISTS "users" (
     id TEXT PRIMARY KEY NOT NULL,
     email TEXT NOT NULL,
@@ -38,6 +23,21 @@ CREATE TABLE auth (
 
     UNIQUE (user_id, platform),
     UNIQUE (platform, credential)
+);
+CREATE TABLE IF NOT EXISTS "pages" (
+    id TEXT PRIMARY KEY NOT NULL,
+    user_id TEXT NOT NULL,
+    url TEXT NOT NULL,
+    title TEXT,
+    description TEXT,
+    image_url TEXT,
+    readability_status TEXT,
+    readability_task_data TEXT,
+    is_readable BOOL,
+    created DATETIME NOT NULL,
+    updated DATETIME NOT NULL, preview_state TEXT DEFAULT 'unknown' NOT NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 -- Dbmate schema migrations
 INSERT INTO "schema_migrations" (version) VALUES
