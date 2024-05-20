@@ -81,15 +81,16 @@ INSERT INTO users_new (id, username, email, password, subscribed, shortcut_token
 		auth.password_hash,
 		user.subscribed,
 		shortcut.credential,
+		FALSE,
 		user.created,
-		user.updated,
+		user.updated
 	FROM users as user
 	LEFT JOIN auth
 	ON user.id = auth.user_id
-	AND auth.cred = 'pagemail'
+	AND auth.platform = 'pagemail'
 	LEFT JOIN auth as shortcut
 	ON shortcut.user_id = user.id
-	AND shotcut.platform = 'shortcut';
+	AND shortcut.platform = 'shortcut';
 
 
 DROP TABLE users;
