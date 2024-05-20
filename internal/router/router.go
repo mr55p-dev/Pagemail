@@ -41,7 +41,11 @@ func New(
 	router.Sender = mailClient
 
 	// Load the cookie encryption key
-	err := loadCookieKey(router, cookieKey)
+	key, err := io.ReadAll(cookieKey)
+	if err != nil {
+		return nil, err
+	}
+	router.Sessions = sessions.NewCookieStore(key)
 	if err != nil {
 		return nil, err
 	}
