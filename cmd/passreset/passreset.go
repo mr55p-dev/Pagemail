@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/db"
@@ -51,9 +53,20 @@ func main() {
 
 	conn := db.MustConnect(ctx, cfg.Url)
 	queries := dbqueries.New(conn)
-	err = queries.UpdateUserPassword(ctx, dbqueries.UpdateUserPasswordParams{
-		Password: passwordHash,
-		ID:       *userId,
+	now := time.Now()
+	_, hashedToken := auth.NewResetToken()
+	queries.UpdateUserResetToken(ctx, dbqueries.UpdateUserResetTokenParams{
+		ResetToken: hashedToken,
+		ResetTokenExp: sql.NullTime{
+			Time:  now.Add(time.Hour),
+			Valid: true,
+		},
+		ID: *userId,
+	})
+	_, err = queries.UpdateUserPassword(ctx, dbqueries.UpdateUserPasswordParams{
+		Password:      passwordHash,
+		ResetToken:    hashedToken,
+		ResetTokenExp: sql.NullTime{Valid: true, Time: now},
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error updating password: %v", err)
