@@ -1,22 +1,38 @@
 -- name: ReadUserByResetToken :one
-SELECT * FROM users
-WHERE reset_token = ?
-AND reset_token_exp > ?;
+SELECT users.* FROM auth
+LEFT JOIN users
+	ON users.id = auth.user_id
+	AND auth.platform = 'pagemail'
+WHERE auth.reset_token = ?
+	AND reset_token_exp > ?;
 
 -- name: UpdateUserPassword :execrows
-UPDATE users SET 
-password = ? 
-WHERE reset_token = ?
-AND reset_token_exp > ?
-RETURNING id;
+UPDATE auth 
+SET password_hash = ? 
+FROM auth 
+LEFT JOIN users
+    ON auth.user_id = users.id
+    AND auth.platform = 'pagemail'
+WHERE auth.reset_token = ?
+    AND auth.reset_token_exp > ?
+RETURNING users.id;
 
 -- name: UpdateUserShortcutToken :exec
-UPDATE users SET 
-shortcut_token = ? 
-WHERE id = ?;
+UPDATE auth 
+SET auth.shortcut_token = ? 
+FROM auth
+LEFT JOIN users
+    ON users.id = auth.user_id
+    AND auth.platform = 'pagemail'
+WHERE users.id = ?;
 
 -- name: UpdateUserResetToken :exec
-UPDATE users SET
-reset_token = ?,
-reset_token_exp = ?
-WHERE id = ?;
+UPDATE auth
+SET 
+    auth.reset_token = ?,
+    auth.reset_token_exp = ?
+FROM users
+LEFT JOIN auth
+	ON auth.user_id = users.id
+	AND auth.platform = pagemail
+WHERE users.id = ?;

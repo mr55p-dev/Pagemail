@@ -6,7 +6,7 @@ sql:
     schema: "db/schema.sql"
     gen:
       go:
-        package: "pages"
+        package: "querypages"
         out: "db/queries/pages"
 
   - engine: "sqlite"
@@ -14,5 +14,13 @@ sql:
     schema: "db/schema.sql"
     gen:
       go:
-        package: "users"
+        package: "queryuser"
         out: "db/queries/users"
+
+  - engine: "sqlite"
+    queries: "db/query.auth.sql"
+    schema: "db/schema.sql"
+    gen:
+      go:
+        package: "queryauth"
+        out: "db/queries/auth"
