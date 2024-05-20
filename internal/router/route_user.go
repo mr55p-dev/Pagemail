@@ -219,13 +219,25 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// generate and update the password for the matching reset token
+	// get the user
 	hashedPassword := auth.HashPassword([]byte(req.Password))
 	hashedToken := auth.HashValue([]byte(req.Token))
+	now := time.Now()
+	user, err := router.DBClient.ReadUserByResetToken(r.Context(), dbqueries.ReadUserByResetTokenParams{
+		ResetToken:    hashedToken,
+		ResetTokenExp: sql.NullTime{Valid: true, Time: now},
+	})
+	if err != nil {
+		logger.WithError(err).Info("No user with valid reset token found", "token-hash", hashedToken)
+		response.Error(w, r, pmerror.NewInternalError("Failed to update password"))
+		return
+	}
+
+	// generate and update the password for the matching reset token
 	n, err := router.DBClient.UpdateUserPassword(r.Context(), dbqueries.UpdateUserPasswordParams{
 		Password:      hashedPassword,
 		ResetToken:    hashedToken,
-		ResetTokenExp: sql.NullTime{Valid: true, Time: time.Now()},
+		ResetTokenExp: sql.NullTime{Valid: true, Time: now},
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to update password")
@@ -237,6 +249,13 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 		response.Error(w, r, pmerror.NewInternalError("Failed to update password"))
 		return
 	}
+
+	// clear the password reset token
+	router.DBClient.UpdateUserResetToken(r.Context(), dbqueries.UpdateUserResetTokenParams{
+		ResetToken:    []byte{},
+		ResetTokenExp: sql.NullTime{},
+		ID:            user.ID,
+	})
 
 	logger.Info("Updated password")
 	response.Success("Updated password", w, r)

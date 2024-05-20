@@ -295,6 +295,37 @@ func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
 	return i, err
 }
 
+const readUserByResetToken = `-- name: ReadUserByResetToken :one
+SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users
+WHERE reset_token = ?
+AND reset_token_exp > ?
+`
+
+type ReadUserByResetTokenParams struct {
+	ResetToken    []byte
+	ResetTokenExp sql.NullTime
+}
+
+func (q *Queries) ReadUserByResetToken(ctx context.Context, arg ReadUserByResetTokenParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, readUserByResetToken, arg.ResetToken, arg.ResetTokenExp)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.ResetToken,
+		&i.ResetTokenExp,
+		&i.Avatar,
+		&i.Subscribed,
+		&i.ShortcutToken,
+		&i.HasReadability,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const readUserByShortcutToken = `-- name: ReadUserByShortcutToken :one
 SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE shortcut_token = ?
@@ -468,6 +499,7 @@ UPDATE users SET
 password = ? 
 WHERE reset_token = ?
 AND reset_token_exp > ?
+RETURNING id
 `
 
 type UpdateUserPasswordParams struct {

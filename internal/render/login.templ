@@ -68,6 +68,7 @@ templ PasswordResetReq() {
 				class="table rows"
 				hx-post="/password-reset/request"
 				hx-swap="innerHTML"
+				hx-target="#msg"
 				hx-target-error="#err"
 			>
 				<p>
@@ -98,6 +99,7 @@ templ PasswordReset() {
 				hx-post="/password-reset/redeem"
 				hx-swap="innerHTML"
 				hx-vals="js:{token: (new URLSearchParams(window.location.search)).get('token')}"
+				hx-target="#msg"
 				hx-target-error="#err"
 			>
 				<p>

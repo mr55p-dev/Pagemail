@@ -107,7 +107,7 @@ func PasswordResetReq() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/request\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><button type=\"submit\">Send reset link</button></form></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/request\" hx-swap=\"innerHTML\" hx-target=\"#msg\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><button type=\"submit\">Send reset link</button></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -156,7 +156,7 @@ func PasswordResetMail(userId string, url templ.SafeURL) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(string(url))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 86, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 87, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -192,7 +192,7 @@ func PasswordReset() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/redeem\" hx-swap=\"innerHTML\" hx-vals=\"js:{token: (new URLSearchParams(window.location.search)).get(&#39;token&#39;)}\" hx-target-error=\"#err\"><p><label for=\"password\">New password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><button type=\"submit\">Submit</button></form></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/password-reset/redeem\" hx-swap=\"innerHTML\" hx-vals=\"js:{token: (new URLSearchParams(window.location.search)).get(&#39;token&#39;)}\" hx-target=\"#msg\" hx-target-error=\"#err\"><p><label for=\"password\">New password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><button type=\"submit\">Submit</button></form></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
