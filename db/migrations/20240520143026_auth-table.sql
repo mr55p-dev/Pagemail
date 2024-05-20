@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE IF NOT EXISTS users_new (
+CREATE TABLE users_new (
     id TEXT PRIMARY KEY NOT NULL,
     email TEXT NOT NULL,
     username TEXT NOT NULL,
@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS users_new (
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS auth (
+CREATE TABLE auth (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT,
+    user_id TEXT NOT NULL,
     platform TEXT NOT NULL,
     password_hash BLOB,
     password_reset_token BLOB,
@@ -58,7 +58,7 @@ ALTER TABLE users_new RENAME TO users;
 
 
 -- migrate:down
-CREATE TABLE IF NOT EXISTS users_new (
+CREATE TABLE users_new (
 	id TEXT UNIQUE NOT NULL PRIMARY KEY,
 	username TEXT UNIQUE NOT NULL,
 	email TEXT UNIQUE NOT NULL ,
@@ -93,5 +93,6 @@ INSERT INTO users_new (id, username, email, password, subscribed, shortcut_token
 	AND shortcut.platform = 'shortcut';
 
 
+DROP TABLE auth;
 DROP TABLE users;
 ALTER TABLE users_new RENAME TO users;

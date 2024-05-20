@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE IF NOT EXISTS pages_new (
+CREATE TABLE pages_new (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     url TEXT NOT NULL,
@@ -40,7 +40,7 @@ ALTER TABLE pages_new RENAME TO pages;
 
 
 -- migrate:down
-CREATE TABLE IF NOT EXISTS pages_new (
+CREATE TABLE pages_new (
     id TEXT PRIMARY KEY NOT NULL,
     user_id TEXT NOT NULL,
     url TEXT NOT NULL,
