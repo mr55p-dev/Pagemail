@@ -31,15 +31,17 @@ type PostLoginRequest struct {
 
 func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
+	logger.InfoCtx(r.Context(), "Received login request")
 	req := request.BindRequest[PostLoginRequest](w, r)
 	if req == nil {
+		logger.ErrorCtx(r.Context(), "Failed to bind request parameters")
 		response.Error(w, r, pmerror.ErrNoParam)
 		return
 	}
 
-	logger.DebugCtx(r.Context(), "Received bound data", "email", req.Email, "req", req)
 	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to read user from DB")
 		if errors.Is(err, sql.ErrNoRows) {
 			response.Error(w, r, pmerror.ErrBadEmail)
 		} else {
@@ -47,22 +49,31 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	logger.InfoCtx(r.Context(), "User found", "user-id", user.ID)
 
 	// Validate user
 	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
-		logger.DebugCtx(r.Context(), "Invalid username")
+		logger.InfoCtx(r.Context(), "Invalid username")
 		response.Error(w, r, pmerror.ErrBadEmail)
 		return
 	}
 	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
-		logger.DebugCtx(r.Context(), "Invalid password")
+		logger.InfoCtx(r.Context(), "Invalid password")
 		response.Error(w, r, pmerror.ErrBadPassword)
 		return
 	}
+	logger.InfoCtx(r.Context(), "User authenticated", "user-id", user.ID)
 
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
-	sess.Save(r, w)
+	err = sess.Save(r, w)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+
+	logger.InfoCtx(r.Context(), "Written session")
 	response.Redirect(w, r, "/pages/dashboard")
 	return
 }
