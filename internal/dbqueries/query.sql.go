@@ -50,7 +50,7 @@ type CreateUserParams struct {
 	Password       []byte
 	Avatar         sql.NullString
 	Subscribed     bool
-	ShortcutToken  string
+	ShortcutToken  []byte
 	HasReadability bool
 	Created        time.Time
 	Updated        time.Time
@@ -244,7 +244,7 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, userID string) ([]Page,
 }
 
 const readUserByEmail = `-- name: ReadUserByEmail :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
+SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE email = ?
 LIMIT 1
 `
@@ -257,20 +257,20 @@ func (q *Queries) ReadUserByEmail(ctx context.Context, email string) (User, erro
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
-		&i.ResetToken,
-		&i.ResetTokenExp,
 	)
 	return i, err
 }
 
 const readUserById = `-- name: ReadUserById :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
+SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE id = ? 
 LIMIT 1
 `
@@ -283,25 +283,25 @@ func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
-		&i.ResetToken,
-		&i.ResetTokenExp,
 	)
 	return i, err
 }
 
 const readUserByShortcutToken = `-- name: ReadUserByShortcutToken :one
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
+SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE shortcut_token = ?
 LIMIT 1
 `
 
-func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken string) (User, error) {
+func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken []byte) (User, error) {
 	row := q.db.QueryRowContext(ctx, readUserByShortcutToken, shortcutToken)
 	var i User
 	err := row.Scan(
@@ -309,14 +309,14 @@ func (q *Queries) ReadUserByShortcutToken(ctx context.Context, shortcutToken str
 		&i.Username,
 		&i.Email,
 		&i.Password,
+		&i.ResetToken,
+		&i.ResetTokenExp,
 		&i.Avatar,
 		&i.Subscribed,
 		&i.ShortcutToken,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
-		&i.ResetToken,
-		&i.ResetTokenExp,
 	)
 	return i, err
 }
@@ -328,7 +328,7 @@ WHERE shortcut_token IS NOT NULL
 
 type ReadUserShortcutTokensRow struct {
 	ID            string
-	ShortcutToken string
+	ShortcutToken []byte
 }
 
 func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcutTokensRow, error) {
@@ -355,7 +355,7 @@ func (q *Queries) ReadUserShortcutTokens(ctx context.Context) ([]ReadUserShortcu
 }
 
 const readUsersWithMail = `-- name: ReadUsersWithMail :many
-SELECT id, username, email, password, avatar, subscribed, shortcut_token, has_readability, created, updated, reset_token, reset_token_exp FROM users 
+SELECT id, username, email, password, reset_token, reset_token_exp, avatar, subscribed, shortcut_token, has_readability, created, updated FROM users 
 WHERE subscribed = true
 `
 
@@ -373,14 +373,14 @@ func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Email,
 			&i.Password,
+			&i.ResetToken,
+			&i.ResetTokenExp,
 			&i.Avatar,
 			&i.Subscribed,
 			&i.ShortcutToken,
 			&i.HasReadability,
 			&i.Created,
 			&i.Updated,
-			&i.ResetToken,
-			&i.ResetTokenExp,
 		); err != nil {
 			return nil, err
 		}
@@ -443,7 +443,7 @@ type UpdateUserParams struct {
 	Password       []byte
 	Avatar         sql.NullString
 	Subscribed     bool
-	ShortcutToken  string
+	ShortcutToken  []byte
 	HasReadability bool
 	Updated        time.Time
 	ID             string
@@ -504,7 +504,7 @@ WHERE id = ?
 `
 
 type UpdateUserShortcutTokenParams struct {
-	ShortcutToken string
+	ShortcutToken []byte
 	ID            string
 }
 

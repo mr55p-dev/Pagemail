@@ -12,7 +12,7 @@ import (
 
 type DB interface {
 	ReadUserById(context.Context, string) (dbqueries.User, error)
-	ReadUserByShortcutToken(context.Context, string) (dbqueries.User, error)
+	ReadUserByShortcutToken(context.Context, []byte) (dbqueries.User, error)
 }
 
 func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
@@ -39,7 +39,7 @@ func GetUserLoader(store sessions.Store, db DB) MiddlewareFunc {
 	}
 }
 
-func GetShortcutLoader(auth sessions.Store, db DB) MiddlewareFunc {
+func GetShortcutLoader(authorizer sessions.Store, db DB) MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tkn := r.Header.Get("Authorization")
@@ -48,7 +48,8 @@ func GetShortcutLoader(auth sessions.Store, db DB) MiddlewareFunc {
 				return
 			}
 
-			user, err := db.ReadUserByShortcutToken(r.Context(), tkn)
+			tokenHash := auth.HashValue([]byte(tkn))
+			user, err := db.ReadUserByShortcutToken(r.Context(), tokenHash)
 			if err != nil {
 				http.Error(w, "invalid shortcut token", http.StatusUnauthorized)
 				return

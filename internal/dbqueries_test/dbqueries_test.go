@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mr55p-dev/pagemail/db"
+	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/stretchr/testify/assert"
@@ -24,13 +25,14 @@ func init() {
 	queries = dbqueries.New(conn)
 
 	// add a test user
+	_, tokenHash := auth.NewShortcutToken()
 	err := queries.CreateUser(ctx, dbqueries.CreateUserParams{
 		ID:             uid,
 		Username:       "test",
 		Email:          "test@mail.com",
 		Password:       []byte("password"),
 		Subscribed:     true,
-		ShortcutToken:  tools.GenerateNewShortcutToken(),
+		ShortcutToken:  tokenHash,
 		HasReadability: false,
 		Created:        now,
 		Updated:        now,

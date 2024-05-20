@@ -90,13 +90,14 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	// Generate a new user
 	now := time.Now()
 	passwordHash := auth.HashPassword([]byte(req.Password))
+	_, tokenHash := auth.NewShortcutToken()
 	user := dbqueries.CreateUserParams{
 		ID:             tools.GenerateNewId(10),
 		Username:       req.Username,
 		Email:          req.Email,
 		Password:       passwordHash,
 		Subscribed:     req.Subscribed,
-		ShortcutToken:  tools.GenerateNewShortcutToken(),
+		ShortcutToken:  tokenHash,
 		HasReadability: false,
 		Created:        now,
 		Updated:        now,

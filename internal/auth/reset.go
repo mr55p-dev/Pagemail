@@ -8,7 +8,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-func hashValue(val []byte) []byte {
+func HashValue(val []byte) []byte {
 	hasher := sha256.New()
 	fmt.Fprint(hasher, val)
 
@@ -18,11 +18,11 @@ func hashValue(val []byte) []byte {
 
 func NewResetToken() (token, hash []byte) {
 	token = []byte(tools.GenerateNewId(64))
-	hash = hashValue(token)
+	hash = HashValue(token)
 	return
 }
 
-func CheckResetToken(passed, stored []byte) bool {
-	hashed := hashValue(passed)
+func CheckHashedToken(passed, stored []byte) bool {
+	hashed := HashValue(passed)
 	return subtle.ConstantTimeCompare(hashed, stored) == 1
 }

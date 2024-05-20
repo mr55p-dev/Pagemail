@@ -19,13 +19,15 @@ CREATE TABLE IF NOT EXISTS users (
 	username TEXT UNIQUE NOT NULL,
 	email TEXT UNIQUE NOT NULL ,
 	password BLOB NOT NULL,
+	reset_token BLOB,
+	reset_token_exp DATETIME,
 	avatar TEXT,
 	subscribed BOOL NOT NULL DEFAULT false,
-	shortcut_token TEXT NOT NULL,
+	shortcut_token BLOB NOT NULL,
 	has_readability BOOL NOT NULL DEFAULT false,
 	created DATETIME NOT NULL,
 	updated DATETIME NOT NULL
-, reset_token BLOB, reset_token_exp DATETIME);
+);
 -- Dbmate schema migrations
 INSERT INTO schema_migrations (version) VALUES
   ('20240104200335'),
@@ -35,4 +37,5 @@ INSERT INTO schema_migrations (version) VALUES
   ('20240510134137'),
   ('20240513090548'),
   ('20240515151753'),
-  ('20240520062158');
+  ('20240520062158'),
+  ('20240520065956');

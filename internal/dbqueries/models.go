@@ -33,12 +33,12 @@ type User struct {
 	Username       string
 	Email          string
 	Password       []byte
+	ResetToken     []byte
+	ResetTokenExp  sql.NullTime
 	Avatar         sql.NullString
 	Subscribed     bool
-	ShortcutToken  string
+	ShortcutToken  []byte
 	HasReadability bool
 	Created        time.Time
 	Updated        time.Time
-	ResetToken     []byte
-	ResetTokenExp  sql.NullTime
 }

@@ -12,10 +12,6 @@ templ AccountPage(user *dbqueries.User) {
 				hx-target-error="#err"
 			>
 				<p>
-					<label for="shortcut">Shortcut token</label>
-					<input disabled id="shortcut" type="text" value={ user.ShortcutToken }/>
-				</p>
-				<p>
 					<label for="account">Email</label>
 					<input disabled id="account" type="text" value={ user.Email }/>
 				</p>
@@ -31,7 +27,7 @@ templ AccountPage(user *dbqueries.User) {
 				</p>
 				<div class="tool-bar">
 					<button type="submit">Save</button>
-					<button onClick={ CopyToClipboard(user.ShortcutToken) }>Copy token</button>
+					<button hx-get="/user/token/shortcut">Get new token</button>
 				</div>
 			</form>
 			<p>Install the iOS shortcut <a href="https://www.icloud.com/shortcuts/a581bc41fcde4d73863fb96f47f3a532">here</a></p>
