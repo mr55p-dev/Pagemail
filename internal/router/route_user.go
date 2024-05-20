@@ -43,7 +43,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, sql.ErrNoRows) {
 			response.Error(w, r, pmerror.ErrBadEmail)
 		} else {
-			response.Error(w, r, pmerror.NewInternalError("Sign-up failed"))
+			response.Error(w, r, pmerror.ErrUnspecified)
 		}
 		return
 	}
