@@ -9,7 +9,6 @@ services:
       PM_HOST: 0.0.0.0:80
       PM_PATH: /data/db/pagemail.sqlite3
       PM_COOKIE_KEY_FILE: /run/secrets/cookie-key
-      PM_GOOGLE_CLIENT_ID_FILE: /run/secrets/google-client-id
     logging:
       driver: awslogs
       options:

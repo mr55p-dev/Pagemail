@@ -40,13 +40,13 @@ func New(
 	mailClient mail.Sender,
 	previewClient Previewer,
 	cookieKey io.Reader,
-	googleClientId io.Reader,
+	googleClientId string,
 ) (*Router, error) {
 	router := &Router{}
 	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
-	router.googleClientId = string(mustReadKey(googleClientId))
+	router.googleClientId = googleClientId
 
 	// Load the cookie encryption key
 	router.Sessions = sessions.NewCookieStore(mustReadKey(cookieKey))

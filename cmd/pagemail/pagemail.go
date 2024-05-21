@@ -42,8 +42,6 @@ func main() {
 
 	// Load config files
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-	clientId := MustReadFile(cfg.ClientIdFile)
-	// clientSecret := MustReadFile(cfg.ClientSecretFile)
 
 	// Create the previewer and check for any "unknown" entries
 	previewer := preview.New(ctx, conn)
@@ -55,7 +53,7 @@ func main() {
 		client,
 		previewer,
 		cookieKey,
-		clientId,
+		cfg.GoogleClientId,
 	)
 	if err != nil {
 		panic(err)

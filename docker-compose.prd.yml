@@ -11,13 +11,13 @@ services:
     environment:
       PM_ENVIRONMENT: prd
       PM_LOG_LEVEL: INFO
+      PM_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/prd/
         target: /data/
     secrets:
       - cookie-key
-      - google-client-id
     logging:
       options:
         awslogs-group: /splat/pagemail
@@ -34,5 +34,3 @@ networks:
 secrets:
   cookie-key:
     file: /home/ubuntu/pagemail/prd/cookie-key.txt
-  google-client-id:
-    file: /home/ubuntu/pagemail/prd/google-client-id.txt
