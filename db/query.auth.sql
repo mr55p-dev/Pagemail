@@ -26,26 +26,8 @@ WHERE user_id = ?
 AND platform = ?
 LIMIT 1;
 
--- name: ReadUserByIdp :one
-SELECT * 
-FROM users 
-WHERE id = (
-	SELECT user_id 
-	FROM auth 
-	WHERE platform = ? 
-	AND credential = ? 
-	LIMIT 1
-);
-
 -- name: ReadAuthMethods :many
 SELECT * FROM auth WHERE user_id = ?;
-
--- name: ReadAuthByIdpPlatform :one
-SELECT user_id
-FROM auth
-WHERE platform = ?
-	AND credential = ?
-LIMIT 1;
 
 -- name: ReadUserByShortcut :one
 SELECT users.*

@@ -65,26 +65,6 @@ func (q *Queries) CreateShortcutAuth(ctx context.Context, arg CreateShortcutAuth
 	return err
 }
 
-const readAuthByIdpPlatform = `-- name: ReadAuthByIdpPlatform :one
-SELECT user_id
-FROM auth
-WHERE platform = ?
-	AND credential = ?
-LIMIT 1
-`
-
-type ReadAuthByIdpPlatformParams struct {
-	Platform   string
-	Credential []byte
-}
-
-func (q *Queries) ReadAuthByIdpPlatform(ctx context.Context, arg ReadAuthByIdpPlatformParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, readAuthByIdpPlatform, arg.Platform, arg.Credential)
-	var user_id string
-	err := row.Scan(&user_id)
-	return user_id, err
-}
-
 const readAuthMethods = `-- name: ReadAuthMethods :many
 SELECT id, user_id, platform, password_hash, password_reset_token, password_reset_expiry, credential, created, updated FROM auth WHERE user_id = ?
 `
@@ -166,38 +146,6 @@ func (q *Queries) ReadByUidPlatform(ctx context.Context, arg ReadByUidPlatformPa
 		&i.PasswordResetToken,
 		&i.PasswordResetExpiry,
 		&i.Credential,
-		&i.Created,
-		&i.Updated,
-	)
-	return i, err
-}
-
-const readUserByIdp = `-- name: ReadUserByIdp :one
-SELECT id, email, username, subscribed, has_readability, created, updated 
-FROM users 
-WHERE id = (
-	SELECT user_id 
-	FROM auth 
-	WHERE platform = ? 
-	AND credential = ? 
-	LIMIT 1
-)
-`
-
-type ReadUserByIdpParams struct {
-	Platform   string
-	Credential []byte
-}
-
-func (q *Queries) ReadUserByIdp(ctx context.Context, arg ReadUserByIdpParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, readUserByIdp, arg.Platform, arg.Credential)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Username,
-		&i.Subscribed,
-		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
 	)
