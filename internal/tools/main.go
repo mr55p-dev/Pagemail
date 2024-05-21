@@ -29,3 +29,11 @@ func GenerateNewId(length int) string {
 	enc.Close()
 	return out.String()[:length]
 }
+
+func NewUserId() string {
+	return GenerateNewId(16)
+}
+
+func NewPageId() string {
+	return GenerateNewId(16)
+}

@@ -173,7 +173,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	passwordHash := auth.HashPassword([]byte(req.Password))
 	_, tokenHash := auth.NewShortcutToken()
 	user, err := queries.New(router.db).CreateUser(r.Context(), queries.CreateUserParams{
-		ID:         tools.GenerateNewId(10),
+		ID:         tools.NewUserId(),
 		Username:   req.Username,
 		Email:      req.Email,
 		Subscribed: req.Subscribed,

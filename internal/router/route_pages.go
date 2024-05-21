@@ -102,7 +102,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 
 	page := queries.Page{}
 	page, err := queries.New(router.db).CreatePage(r.Context(), queries.CreatePageParams{
-		ID:     tools.GenerateNewId(20),
+		ID:     tools.NewPageId(),
 		UserID: user.ID,
 		Url:    url,
 	})

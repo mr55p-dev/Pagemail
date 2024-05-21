@@ -42,7 +42,7 @@ func SignupUserIdp(ctx context.Context, db *sql.DB, email, name string, secret [
 	defer commitOrRollback(ctx, tx, err)
 
 	user, err = queries.New(db).WithTx(tx).CreateUser(ctx, queries.CreateUserParams{
-		ID:         tools.GenerateNewId(10),
+		ID:         tools.NewUserId(),
 		Username:   name,
 		Email:      email,
 		Subscribed: true,
