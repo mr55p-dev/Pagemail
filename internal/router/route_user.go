@@ -18,6 +18,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
+	"google.golang.org/api/idtoken"
 )
 
 func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
@@ -65,6 +66,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 
 type PostLoginGoogleParams struct {
 	Credential string `form:"credential"`
+	CRSFToken  string `form:"g_csrf_token"`
 }
 
 func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
@@ -88,20 +90,41 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrUnspecified)
 		return
 	}
-
-	res, err := http.Get("https://www.googleapis.com/oauth2/v1/certs")
-	if err != nil {
-		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load google public PEM")
+	if tkn.Value != req.CRSFToken {
+		logger.InfoCtx(r.Context(), "Invalid CSRF token")
 		response.Error(w, r, pmerror.ErrUnspecified)
 		return
 	}
 
-	res.
+	// decode the JWT
+	logger.InfoCtx(r.Context(), "Got id token")
+	valToken, err := idtoken.Validate(
+		r.Context(),
+		req.Credential,
+		router.googleClientId,
+	)
+	if err != nil {
+		logger.WithError(err).Error("Could not validate token")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
 
-	email := "hello@mail.com"
+	logger.InfoCtx(r.Context(), "Id token is valid")
+	logger.InfoCtx(r.Context(), "Id token values", valToken.Claims)
+	email, ok := valToken.Claims["email"].(string)
+	if !ok {
+		logger.ErrorCtx(r.Context(), "Could not extract email from id token")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+	uid, ok := valToken.Claims["sub"].(string)
+	if !ok {
+		logger.ErrorCtx(r.Context(), "Could not extract user id from id token")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
 
 	// lookup the user by email
-	// if the user does not exist, create a new user
 	user, err := queries.New(router.db).ReadUserByEmail(r.Context(), email)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
@@ -109,7 +132,13 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 			response.Error(w, r, pmerror.ErrUnspecified)
 			return
 		}
-		user, err = auth.SignupUserIdp(r.Context(), router.db, email, "Google user", []byte{})
+		user, err = auth.SignupUserIdp(
+			r.Context(),
+			router.db,
+			email,
+			"Google user",
+			[]byte(uid),
+		)
 		if err != nil {
 			logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
 			response.Error(w, r, pmerror.ErrUnspecified)

@@ -21,6 +21,8 @@ type Router struct {
 	Sender    mail.Sender
 	Sessions  sessions.Store
 	Mux       http.Handler
+
+	googleClientId string
 }
 
 type Previewer interface {
