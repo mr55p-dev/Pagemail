@@ -20,6 +20,7 @@ func BindRequest[T any](w http.ResponseWriter, r *http.Request) *T {
 	out := new(T)
 	err := Bind(out, r)
 	if err != nil {
+		logger.WithRequest(r).WithError(err).ErrorCtx(r.Context(), "Failed to bind request parameters")
 		http.Error(w, "Failed to bind request", http.StatusBadRequest)
 		return nil
 	}

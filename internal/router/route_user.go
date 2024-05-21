@@ -63,10 +63,41 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+type PostLoginGoogleParams struct {
+	Credential string `form:"credential"`
+}
+
 func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	logger.InfoCtx(r.Context(), "Received google login request")
 	// validate credential
+	req := request.BindRequest[PostLoginGoogleParams](w, r)
+	if req == nil {
+		return
+	}
+
+	// validate CSRF token
+	tkn, err := r.Cookie("g_csrf_token")
+	if err != nil {
+		logger.WithError(err).InfoCtx(r.Context(), "failed to load CSRF token")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+	if tkn.Value == "" {
+		logger.InfoCtx(r.Context(), "No body in CSRF token")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+
+	res, err := http.Get("https://www.googleapis.com/oauth2/v1/certs")
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load google public PEM")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+
+	res.
+
 	email := "hello@mail.com"
 
 	// lookup the user by email
