@@ -112,6 +112,8 @@ github.com/mattn/go-sqlite3 v1.14.19 h1:fhGleo2h1p8tVChob4I9HpmVFIAkKGpiukdrgQbW
 github.com/mattn/go-sqlite3 v1.14.19/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/mr55p-dev/gonk v0.0.0-20240312084028-4e975b14d668 h1:uVQwW7+yYu/RJYX3eDEaG7StfzSb87PkCSFv6L6eIJw=
 github.com/mr55p-dev/gonk v0.0.0-20240312084028-4e975b14d668/go.mod h1:FdUKJJ3XT5eqjXe/arn5rtToOTqe7wOJKPjSFUcHMSw=
+github.com/mr55p-dev/gonk v0.2.0 h1:gEVe2g/2F61CiInCayw87xxfhEe1kau7ZLg/Oz6rHuo=
+github.com/mr55p-dev/gonk v0.2.0/go.mod h1:FdUKJJ3XT5eqjXe/arn5rtToOTqe7wOJKPjSFUcHMSw=
 github.com/mr55p-dev/htmx-utils v0.0.0-20240312083008-2d3534dd85bc h1:PZB/62MutMWEj6Siu+6kngl0nOd08vOCP+ecDG0FXqE=
 github.com/mr55p-dev/htmx-utils v0.0.0-20240312083008-2d3534dd85bc/go.mod h1:H461qWNN4dzVHQtjPwnuIIWlT/lDwCKTf8qPMXup9/c=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

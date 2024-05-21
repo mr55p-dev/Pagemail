@@ -75,11 +75,16 @@ func main() {
 
 func getConfig() *AppConfig {
 	cfg := new(AppConfig)
-	err := gonk.LoadConfig(
-		cfg,
-		gonk.FileLoader("pagemail.yaml", true),
-		gonk.EnvironmentLoader("pm"),
-	)
+
+	sources := make([]gonk.Loader, 0)
+	yamlSource, err := gonk.NewYamlLoader("pagemail.yaml")
+	if err == nil {
+		sources = append(sources, yamlSource)
+	} else {
+		logger.WithError(err).Warn("Could not load local pagemail.yaml file")
+	}
+	sources = append(sources, gonk.EnvLoader("pm"))
+	err = gonk.LoadConfig(cfg, sources...)
 	if err != nil {
 		panic(err)
 	}
