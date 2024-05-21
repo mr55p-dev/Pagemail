@@ -1,6 +1,6 @@
 -- name: CreatePage :exec
-INSERT INTO pages (id, user_id, url, preview_state, created, updated)
-VALUES (?, ?, ?, 'unknown', ?, ?);
+INSERT INTO pages (id, user_id, url, preview_state)
+VALUES (?, ?, ?, 'unknown');
 
 -- name: ReadPageById :one
 SELECT * FROM pages
@@ -13,7 +13,7 @@ UPDATE pages SET
     description = ?,
     image_url = ?,
     preview_state = ?,
-    updated = ?
+    updated = CURRENT_TIMESTAMP
 WHERE id = ?;
 
 -- name: DeletePageById :execrows

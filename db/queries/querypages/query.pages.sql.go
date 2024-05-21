@@ -12,26 +12,18 @@ import (
 )
 
 const createPage = `-- name: CreatePage :exec
-INSERT INTO pages (id, user_id, url, preview_state, created, updated)
-VALUES (?, ?, ?, 'unknown', ?, ?)
+INSERT INTO pages (id, user_id, url, preview_state)
+VALUES (?, ?, ?, 'unknown')
 `
 
 type CreatePageParams struct {
-	ID      string
-	UserID  string
-	Url     string
-	Created time.Time
-	Updated time.Time
+	ID     string
+	UserID string
+	Url    string
 }
 
 func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) error {
-	_, err := q.db.ExecContext(ctx, createPage,
-		arg.ID,
-		arg.UserID,
-		arg.Url,
-		arg.Created,
-		arg.Updated,
-	)
+	_, err := q.db.ExecContext(ctx, createPage, arg.ID, arg.UserID, arg.Url)
 	return err
 }
 
@@ -162,7 +154,7 @@ UPDATE pages SET
     description = ?,
     image_url = ?,
     preview_state = ?,
-    updated = ?
+    updated = CURRENT_TIMESTAMP
 WHERE id = ?
 `
 
@@ -171,7 +163,6 @@ type UpdatePagePreviewParams struct {
 	Description  sql.NullString
 	ImageUrl     sql.NullString
 	PreviewState string
-	Updated      time.Time
 	ID           string
 }
 
@@ -181,7 +172,6 @@ func (q *Queries) UpdatePagePreview(ctx context.Context, arg UpdatePagePreviewPa
 		arg.Description,
 		arg.ImageUrl,
 		arg.PreviewState,
-		arg.Updated,
 		arg.ID,
 	)
 	return err

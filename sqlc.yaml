@@ -7,15 +7,15 @@ sql:
     gen:
       go:
         package: "querypages"
-        out: "db/queries/pages"
+        out: "db/queries/querypages"
 
   - engine: "sqlite"
     queries: "db/query.users.sql"
     schema: "db/schema.sql"
     gen:
       go:
-        package: "queryuser"
-        out: "db/queries/users"
+        package: "queryusers"
+        out: "db/queries/queryusers"
 
   - engine: "sqlite"
     queries: "db/query.auth.sql"
@@ -23,4 +23,4 @@ sql:
     gen:
       go:
         package: "queryauth"
-        out: "db/queries/auth"
+        out: "db/queries/queryauth"

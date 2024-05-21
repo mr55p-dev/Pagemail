@@ -3,11 +3,8 @@ INSERT INTO users (
     id,
     email,
     username,
-    subscribed,
-    has_readability,
-    created,
-    updated
-) VALUES (?, ?, ?, ?, ?, ?, ?);
+    subscribed
+) VALUES (?, ?, ?, ?);
 
 -- name: ReadUserById :one
 SELECT * FROM users 

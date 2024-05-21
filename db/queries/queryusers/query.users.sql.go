@@ -3,11 +3,10 @@
 //   sqlc v1.26.0
 // source: query.users.sql
 
-package queryuser
+package queryusers
 
 import (
 	"context"
-	"time"
 )
 
 const createUser = `-- name: CreateUser :exec
@@ -15,21 +14,15 @@ INSERT INTO users (
     id,
     email,
     username,
-    subscribed,
-    has_readability,
-    created,
-    updated
-) VALUES (?, ?, ?, ?, ?, ?, ?)
+    subscribed
+) VALUES (?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
-	ID             string
-	Email          string
-	Username       string
-	Subscribed     bool
-	HasReadability bool
-	Created        time.Time
-	Updated        time.Time
+	ID         string
+	Email      string
+	Username   string
+	Subscribed bool
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
@@ -38,9 +31,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 		arg.Email,
 		arg.Username,
 		arg.Subscribed,
-		arg.HasReadability,
-		arg.Created,
-		arg.Updated,
 	)
 	return err
 }
