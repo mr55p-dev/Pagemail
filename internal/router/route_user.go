@@ -60,7 +60,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.InfoCtx(r.Context(), "Written session")
-	response.Redirect(w, r, "/pages/dashboard")
+	response.Redirect(w, r, DASHBOARD_URI)
 	return
 }
 
@@ -124,26 +124,16 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// lookup the user by email
-	user, err := queries.New(router.db).ReadUserByEmail(r.Context(), email)
+	user, err := auth.HandleIdpRequest(
+		r.Context(),
+		router.db,
+		email,
+		[]byte(uid),
+	)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			logger.WithError(err).ErrorCtx(r.Context(), "Failed to read user from DB")
-			response.Error(w, r, pmerror.ErrUnspecified)
-			return
-		}
-		user, err = auth.SignupUserIdp(
-			r.Context(),
-			router.db,
-			email,
-			"Google user",
-			[]byte(uid),
-		)
-		if err != nil {
-			logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
-			response.Error(w, r, pmerror.ErrUnspecified)
-			return
-		}
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to auth with google")
+		response.Error(w, r, err)
+		return
 	}
 
 	// set the session
@@ -155,7 +145,7 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrUnspecified)
 		return
 	}
-	response.Redirect(w, r, "/pages/dashboard")
+	response.Redirect(w, r, DASHBOARD_URI)
 }
 
 type PostSignupRequest struct {

@@ -15,6 +15,10 @@ import (
 
 var logger = logging.NewLogger("router")
 
+const (
+	DASHBOARD_URI = "/pages/dashboard"
+)
+
 type Router struct {
 	db        *sql.DB
 	Previewer Previewer

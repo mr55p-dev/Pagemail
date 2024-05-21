@@ -38,6 +38,10 @@ var (
 		Status:  http.StatusForbidden,
 		Message: "Looks like your account was created with a different provider.",
 	}
+	ErrMismatchAcc = &PMError{
+		Status:  http.StatusUnauthorized,
+		Message: "Sorry, we currently don't support linking regular accounts with external providers. Please sign in using your email and password.",
+	}
 	ErrUnspecified = &PMError{
 		Status:  http.StatusInternalServerError,
 		Message: "Something went wrong",
