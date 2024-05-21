@@ -40,21 +40,16 @@ func New(
 	mailClient mail.Sender,
 	previewClient Previewer,
 	cookieKey io.Reader,
+	googleClientId io.Reader,
 ) (*Router, error) {
 	router := &Router{}
 	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
+	router.googleClientId = string(mustReadKey(googleClientId))
 
 	// Load the cookie encryption key
-	key, err := io.ReadAll(cookieKey)
-	if err != nil {
-		return nil, err
-	}
-	router.Sessions = sessions.NewCookieStore(key)
-	if err != nil {
-		return nil, err
-	}
+	router.Sessions = sessions.NewCookieStore(mustReadKey(cookieKey))
 
 	// Serve root
 	rootMux := http.NewServeMux()
@@ -84,4 +79,15 @@ func New(
 	))
 	router.Mux = mux
 	return router, nil
+}
+
+func mustReadKey(reader io.Reader) []byte {
+	if reader == nil {
+		return []byte{}
+	}
+	key, err := io.ReadAll(reader)
+	if err != nil {
+		panic(err)
+	}
+	return key
 }

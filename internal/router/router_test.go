@@ -34,7 +34,15 @@ func init() {
 	conn := db.MustConnect(ctx, ":memory:")
 	db.MustLoadSchema(ctx, conn)
 
-	router, err := New(ctx, conn, nil, nil, &NilPreviewer{}, strings.NewReader("passwordpassword"))
+	router, err := New(
+		ctx,
+		conn,
+		nil,
+		nil,
+		&NilPreviewer{},
+		strings.NewReader("passwordpassword"),
+		strings.NewReader("google_client"),
+	)
 	if err != nil {
 		panic(err)
 	}

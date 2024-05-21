@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-func Login() templ.Component {
+func Login(clientId string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -29,7 +29,15 @@ func Login() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><script src=\"https://accounts.google.com/gsi/client\" async></script><div id=\"g_id_onload\" data-client_id=\"556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com\" data-login_uri=\"http://localhost:8080/login/google\" data-auto_prompt=\"false\"></div><div class=\"g_id_signin\" data-type=\"standard\" data-size=\"large\" data-theme=\"outline\" data-text=\"sign_in_with\" data-shape=\"rectangular\" data-logo_alignment=\"left\"></div><p><a href=\"/password-reset/request\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><script src=\"https://accounts.google.com/gsi/client\" async></script><div id=\"g_id_onload\" data-client_id=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(clientId))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-login_uri=\"http://localhost:8080/login/google\" data-auto_prompt=\"false\"></div><div class=\"g_id_signin\" data-type=\"standard\" data-size=\"large\" data-theme=\"outline\" data-text=\"sign_in_with\" data-shape=\"rectangular\" data-logo_alignment=\"left\"></div><p><a href=\"/password-reset/request\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

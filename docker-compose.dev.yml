@@ -17,6 +17,7 @@ services:
         target: /data/
     secrets:
       - cookie-key
+      - google-client-id
     logging:
       options:
         awslogs-group: /splat/pagemail-dev
@@ -33,3 +34,5 @@ networks:
 secrets:
   cookie-key:
     file: /home/ubuntu/pagemail/dev/cookie-key.txt
+  google-client-id:
+    file: /home/ubuntu/pagemail/dev/google-client-id.txt

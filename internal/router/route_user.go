@@ -22,7 +22,7 @@ import (
 )
 
 func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
-	response.Component(render.Login(), w, r)
+	response.Component(render.Login(router.googleClientId), w, r)
 }
 
 type PostLoginRequest struct {

@@ -42,7 +42,7 @@ func main() {
 
 	// Load config files
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-	// clientId := MustReadFile(cfg.ClientIdFile)
+	clientId := MustReadFile(cfg.ClientIdFile)
 	// clientSecret := MustReadFile(cfg.ClientSecretFile)
 
 	// Create the previewer and check for any "unknown" entries
@@ -55,6 +55,7 @@ func main() {
 		client,
 		previewer,
 		cookieKey,
+		clientId,
 	)
 	if err != nil {
 		panic(err)
