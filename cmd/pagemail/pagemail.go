@@ -14,7 +14,6 @@ import (
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/assets"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/preview"
@@ -47,13 +46,11 @@ func main() {
 	// clientSecret := MustReadFile(cfg.ClientSecretFile)
 
 	// Create the previewer and check for any "unknown" entries
-	queries := dbqueries.New(conn)
-	previewer := preview.New(ctx, queries)
-	go previewer.Sweep(ctx)
+	previewer := preview.New(ctx, conn)
 
 	router, err := router.New(
 		ctx,
-		queries,
+		conn,
 		assets,
 		client,
 		previewer,
@@ -66,7 +63,7 @@ func main() {
 	// Load the mail client
 	if cfg.Environment == "prd" {
 		logger.Info("Starting mail client")
-		go mail.MailGo(ctx, router.DBClient, router.Sender)
+		go mail.MailGo(ctx, conn, router.Sender)
 	} else {
 		logger.Warn("Environment is not production, not starting mailGo")
 	}

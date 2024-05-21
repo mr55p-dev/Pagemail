@@ -3,7 +3,7 @@
 //   sqlc v1.26.0
 // source: query.pages.sql
 
-package querypages
+package queries
 
 import (
 	"context"
@@ -11,9 +11,10 @@ import (
 	"time"
 )
 
-const createPage = `-- name: CreatePage :exec
+const createPage = `-- name: CreatePage :one
 INSERT INTO pages (id, user_id, url, preview_state)
 VALUES (?, ?, ?, 'unknown')
+RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated
 `
 
 type CreatePageParams struct {
@@ -22,9 +23,21 @@ type CreatePageParams struct {
 	Url    string
 }
 
-func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) error {
-	_, err := q.db.ExecContext(ctx, createPage, arg.ID, arg.UserID, arg.Url)
-	return err
+func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, error) {
+	row := q.db.QueryRowContext(ctx, createPage, arg.ID, arg.UserID, arg.Url)
+	var i Page
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Title,
+		&i.Description,
+		&i.ImageUrl,
+		&i.PreviewState,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
 
 const deletePageById = `-- name: DeletePageById :execrows
@@ -34,6 +47,19 @@ WHERE id = ?
 
 func (q *Queries) DeletePageById(ctx context.Context, id string) (int64, error) {
 	result, err := q.db.ExecContext(ctx, deletePageById, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const deletePagesByUserId = `-- name: DeletePagesByUserId :execrows
+DELETE FROM pages
+WHERE user_id = ?
+`
+
+func (q *Queries) DeletePagesByUserId(ctx context.Context, userID string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deletePagesByUserId, userID)
 	if err != nil {
 		return 0, err
 	}

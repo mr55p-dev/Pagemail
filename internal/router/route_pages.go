@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
@@ -33,7 +32,7 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.ID)
+	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), user.ID)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
 		response.Error(w, r, pmerror.NewInternalError("Failed to load your pages"))
@@ -48,7 +47,7 @@ func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	user := auth.GetUser(r.Context())
 
-	n, err := router.DBClient.DeletePagesByUserId(r.Context(), user.ID)
+	n, err := queries.New(router.db).DeletePagesByUserId(r.Context(), user.ID)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete all pages")
 		response.Error(w, r, pmerror.NewInternalError("Failed to delete pages"))
@@ -65,7 +64,7 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := auth.GetUser(r.Context())
-	page, err := router.DBClient.ReadPageById(r.Context(), id)
+	page, err := queries.New(router.db).ReadPageById(r.Context(), id)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load page")
 		response.Error(w, r, pmerror.NewInternalError("Failed to get page"))
@@ -101,21 +100,11 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
-	page := dbqueries.Page{
-		ID:      tools.GenerateNewId(20),
-		UserID:  user.ID,
-		Url:     url,
-		PreviewState: "unknown",
-		Created: now,
-		Updated: now,
-	}
-	err := router.DBClient.CreatePage(r.Context(), dbqueries.CreatePageParams{
-		ID:      page.ID,
-		UserID:  page.UserID,
-		Url:     page.Url,
-		Created: page.Created,
-		Updated: page.Updated,
+	page := queries.Page{}
+	page, err := queries.New(router.db).CreatePage(r.Context(), queries.CreatePageParams{
+		ID:     tools.GenerateNewId(20),
+		UserID: user.ID,
+		Url:    url,
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Error ")
@@ -136,7 +125,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	user := auth.GetUser(r.Context())
-	page, err := router.DBClient.ReadPageById(r.Context(), r.PathValue("page_id"))
+	page, err := queries.New(router.db).ReadPageById(r.Context(), r.PathValue("page_id"))
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to find page in db")
 		response.Error(w, r, pmerror.NewInternalError("Failed to delete page"))
@@ -149,7 +138,7 @@ func (router *Router) DeletePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = router.DBClient.DeletePageById(r.Context(), page.ID)
+	_, err = queries.New(router.db).DeletePageById(r.Context(), page.ID)
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to delete page from db")
 		response.Error(w, r, pmerror.NewInternalError("Failed to delete page"))

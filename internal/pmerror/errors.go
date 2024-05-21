@@ -34,6 +34,10 @@ var (
 		Status:  http.StatusBadRequest,
 		Message: "Looks like that email address is already taken. If you can't remember your password please reach out to help@pagemail.io for assistence.",
 	}
+	ErrNoAuth = &PMError{
+		Status:  http.StatusForbidden,
+		Message: "Looks like your account was created with a different provider.",
+	}
 	ErrUnspecified = &PMError{
 		Status:  http.StatusInternalServerError,
 		Message: "Something went wrong",

@@ -12,12 +12,12 @@ import "bytes"
 
 import (
 	"fmt"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/db/queries"
 )
 
 const PAGE_SIZE = 10
 
-func PageList(pages []dbqueries.Page, p int) templ.Component {
+func PageList(pages []queries.Page, p int) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -57,7 +57,7 @@ func PageList(pages []dbqueries.Page, p int) templ.Component {
 	})
 }
 
-func PageCard(page *dbqueries.Page) templ.Component {
+func PageCard(page *queries.Page) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {

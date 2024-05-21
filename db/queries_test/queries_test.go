@@ -7,16 +7,14 @@ import (
 	"time"
 
 	"github.com/mr55p-dev/pagemail/db"
-	"github.com/mr55p-dev/pagemail/db/queries/queryauth"
-	"github.com/mr55p-dev/pagemail/db/queries/querypages"
-	"github.com/mr55p-dev/pagemail/db/queries/queryusers"
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/stretchr/testify/assert"
 )
 
-var authqueries *queryauth.Queries
-var userqueries *queryusers.Queries
-var pagequeries *querypages.Queries
+var authqueries *queries.Queries
+var userqueries *queries.Queries
+var pagequeries *queries.Queries
 var now = time.Now()
 var uid = tools.GenerateNewId(5)
 var pid = tools.GenerateNewId(5)
@@ -25,15 +23,15 @@ func init() {
 	ctx := context.TODO()
 	conn := db.MustConnect(ctx, ":memory:")
 	db.MustLoadSchema(ctx, conn)
-	userqueries = queryusers.New(conn)
-	pagequeries = querypages.New(conn)
+	userqueries = queries.New(conn)
+	pagequeries = queries.New(conn)
 
 	// add a test user
 	tx, err := conn.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		panic(err)
 	}
-	err = userqueries.WithTx(tx).CreateUser(ctx, queryusers.CreateUserParams{
+	_, err = userqueries.WithTx(tx).CreateUser(ctx, queries.CreateUserParams{
 		ID:         uid,
 		Username:   "test",
 		Email:      "test@mail.com",
@@ -42,7 +40,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	err = authqueries.WithTx(tx).CreateLocalAuth(ctx, queryauth.CreateLocalAuthParams{
+	err = authqueries.WithTx(tx).CreateLocalAuth(ctx, queries.CreateLocalAuthParams{
 		UserID:       uid,
 		PasswordHash: []byte("password"),
 	})
@@ -51,7 +49,7 @@ func init() {
 	}
 
 	// add a test page
-	err = pagequeries.WithTx(tx).CreatePage(ctx, querypages.CreatePageParams{
+	_, err = pagequeries.WithTx(tx).CreatePage(ctx, queries.CreatePageParams{
 		ID:     pid,
 		UserID: uid,
 		Url:    "https://example.com",
@@ -67,7 +65,7 @@ func init() {
 
 func TestReadPagesByUserBetween(t *testing.T) {
 	assert := assert.New(t)
-	pages, err := pagequeries.ReadPagesByUserBetween(context.TODO(), querypages.ReadPagesByUserBetweenParams{
+	pages, err := pagequeries.ReadPagesByUserBetween(context.TODO(), queries.ReadPagesByUserBetweenParams{
 		Start:  now.Add(-time.Hour * 2),
 		End:    now.Add(time.Hour * 2),
 		UserID: uid,
@@ -80,7 +78,7 @@ func TestReadPagesByUserBetween(t *testing.T) {
 
 func TestUpdatePagePreview(t *testing.T) {
 	assert := assert.New(t)
-	err := pagequeries.UpdatePagePreview(context.TODO(), querypages.UpdatePagePreviewParams{
+	err := pagequeries.UpdatePagePreview(context.TODO(), queries.UpdatePagePreviewParams{
 		Title:        sql.NullString{},
 		Description:  sql.NullString{},
 		ImageUrl:     sql.NullString{},

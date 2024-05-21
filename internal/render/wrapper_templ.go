@@ -10,11 +10,9 @@ import "context"
 import "io"
 import "bytes"
 
-import (
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
-)
+import "github.com/mr55p-dev/pagemail/db/queries"
 
-func Wrapper(user *dbqueries.User, title string) templ.Component {
+func Wrapper(user *queries.User, title string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -39,7 +37,7 @@ func Wrapper(user *dbqueries.User, title string) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 11, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 9, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -70,7 +68,7 @@ func Wrapper(user *dbqueries.User, title string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 24, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 22, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -103,7 +101,7 @@ func Wrapper(user *dbqueries.User, title string) templ.Component {
 	})
 }
 
-func Header(user *dbqueries.User) templ.Component {
+func Header(user *queries.User) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {

@@ -12,30 +12,52 @@ INSERT INTO auth (
     credential
 ) VALUES (?, 'shortcut', ?);
 
--- name: ReadUserByResetToken :one
+-- name: CreateIdpAuth :exec
+INSERT INTO auth (
+    user_id,
+    platform,
+    credential
+) VALUES (?, ?, ?);
+
+-- name: ReadByUidPlatform :one
+SELECT *
+FROM auth
+WHERE user_id = ?
+AND platform = ?
+LIMIT 1;
+
+-- name: ReadUserByShortcut :one
+SELECT users.*
+FROM users
+LEFT JOIN auth
+    ON auth.user_id = users.id
+    AND auth.platform = 'shortcut'
+WHERE auth.credential = ?
+LIMIT 1;
+
+-- name: ReadByResetToken :one
 SELECT user_id
 FROM auth
 WHERE password_reset_token = ?
     AND password_reset_expiry > ?
 LIMIT 1;
 
--- name: UpdateUserPassword :execrows
+-- name: UpdatePassword :execrows
 UPDATE auth
 SET password_hash = ?
 WHERE user_id = ?
-    AND platform = 'pagemail'
-RETURNING user_id;
+    AND platform = 'pagemail';
 
--- name: UpdateUserShortcutToken :exec
+-- name: UpdateShortcutToken :exec
 UPDATE auth
 SET credential = ?
 WHERE user_id = ?
     AND platform = 'shortcut';
 
--- -- name: UpdateUserResetToken :exec
+-- name: UpdateResetToken :exec
 UPDATE auth
 SET 
-    reset_token = ?,
-    reset_token_exp = ?
+    password_reset_token = ?,
+    password_reset_expiry = ?
 WHERE user_id = ?
     AND platform = 'pagemail';

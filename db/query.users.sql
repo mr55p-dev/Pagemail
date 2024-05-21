@@ -1,10 +1,11 @@
--- name: CreateUser :exec
+-- name: CreateUser :one
 INSERT INTO users (
     id,
     email,
     username,
     subscribed
-) VALUES (?, ?, ?, ?);
+) VALUES (?, ?, ?, ?)
+RETURNING *;
 
 -- name: ReadUserById :one
 SELECT * FROM users 
@@ -17,7 +18,7 @@ WHERE email = ?
 LIMIT 1;
 
 -- name: ReadUsersWithMail :many
-SELECT * FROM users 
+SELECT id, username, email FROM users 
 WHERE subscribed = true;
 
 -- name: UpdateUserSubscription :exec

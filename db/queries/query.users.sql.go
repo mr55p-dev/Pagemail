@@ -3,19 +3,20 @@
 //   sqlc v1.26.0
 // source: query.users.sql
 
-package queryusers
+package queries
 
 import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :exec
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id,
     email,
     username,
     subscribed
 ) VALUES (?, ?, ?, ?)
+RETURNING id, email, username, subscribed, has_readability, created, updated
 `
 
 type CreateUserParams struct {
@@ -25,14 +26,24 @@ type CreateUserParams struct {
 	Subscribed bool
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.ExecContext(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser,
 		arg.ID,
 		arg.Email,
 		arg.Username,
 		arg.Subscribed,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.Subscribed,
+		&i.HasReadability,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
 
 const readUserByEmail = `-- name: ReadUserByEmail :one
@@ -78,28 +89,26 @@ func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
 }
 
 const readUsersWithMail = `-- name: ReadUsersWithMail :many
-SELECT id, email, username, subscribed, has_readability, created, updated FROM users 
+SELECT id, username, email FROM users 
 WHERE subscribed = true
 `
 
-func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]User, error) {
+type ReadUsersWithMailRow struct {
+	ID       string
+	Username string
+	Email    string
+}
+
+func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]ReadUsersWithMailRow, error) {
 	rows, err := q.db.QueryContext(ctx, readUsersWithMail)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ReadUsersWithMailRow
 	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Email,
-			&i.Username,
-			&i.Subscribed,
-			&i.HasReadability,
-			&i.Created,
-			&i.Updated,
-		); err != nil {
+		var i ReadUsersWithMailRow
+		if err := rows.Scan(&i.ID, &i.Username, &i.Email); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

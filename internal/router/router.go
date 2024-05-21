@@ -2,12 +2,12 @@ package router
 
 import (
 	"context"
+	"database/sql"
 	"io"
 	"io/fs"
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
@@ -16,7 +16,7 @@ import (
 var logger = logging.NewLogger("router")
 
 type Router struct {
-	DBClient  *dbqueries.Queries
+	db        *sql.DB
 	Previewer Previewer
 	Sender    mail.Sender
 	Sessions  sessions.Store
@@ -29,14 +29,14 @@ type Previewer interface {
 
 func New(
 	ctx context.Context,
-	conn *dbqueries.Queries,
+	conn *sql.DB,
 	assets fs.FS,
 	mailClient mail.Sender,
 	previewClient Previewer,
 	cookieKey io.Reader,
 ) (*Router, error) {
 	router := &Router{}
-	router.DBClient = conn
+	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
 
@@ -60,7 +60,7 @@ func New(
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
-			middlewares.GetShortcutLoader(router.Sessions, router.DBClient),
+			middlewares.GetShortcutLoader(router.Sessions, router.db),
 		),
 	))
 	rootMux.Handle("/login/", getLoginMux(router))
@@ -74,7 +74,7 @@ func New(
 		middlewares.Recover,
 		middlewares.Tracer,
 		middlewares.RequestLogger,
-		middlewares.GetUserLoader(router.Sessions, router.DBClient),
+		middlewares.GetUserLoader(router.Sessions, router.db),
 	))
 	router.Mux = mux
 	return router, nil

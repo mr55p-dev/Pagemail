@@ -2,25 +2,12 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    queries: "db/query.pages.sql"
+    queries:
+      - "db/query.pages.sql"
+      - "db/query.users.sql"
+      - "db/query.auth.sql"
     schema: "db/schema.sql"
     gen:
       go:
-        package: "querypages"
-        out: "db/queries/querypages"
-
-  - engine: "sqlite"
-    queries: "db/query.users.sql"
-    schema: "db/schema.sql"
-    gen:
-      go:
-        package: "queryusers"
-        out: "db/queries/queryusers"
-
-  - engine: "sqlite"
-    queries: "db/query.auth.sql"
-    schema: "db/schema.sql"
-    gen:
-      go:
-        package: "queryauth"
-        out: "db/queries/queryauth"
+        package: "queries"
+        out: "db/queries"

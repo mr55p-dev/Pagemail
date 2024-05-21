@@ -10,8 +10,8 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/mattn/go-sqlite3"
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
@@ -39,31 +39,16 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
-	if err != nil {
-		logger.WithError(err).ErrorCtx(r.Context(), "Failed to read user from DB")
-		if errors.Is(err, sql.ErrNoRows) {
-			response.Error(w, r, pmerror.ErrBadEmail)
-		} else {
-			response.Error(w, r, pmerror.ErrUnspecified)
-		}
-		return
-	}
-	logger.InfoCtx(r.Context(), "User found", "user-id", user.ID)
-
 	// Validate user
-	if ok := auth.ValidateEmail([]byte(req.Email), []byte(user.Email)); !ok {
-		logger.InfoCtx(r.Context(), "Invalid username")
-		response.Error(w, r, pmerror.ErrBadEmail)
-		return
-	}
-	if ok := auth.ValidatePassword([]byte(req.Password), user.Password); !ok {
-		logger.InfoCtx(r.Context(), "Invalid password")
-		response.Error(w, r, pmerror.ErrBadPassword)
+	user, err := auth.LoginPm(r.Context(), router.db, req.Email, []byte(req.Password))
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to authenticate user")
+		response.Error(w, r, err)
 		return
 	}
 	logger.InfoCtx(r.Context(), "User authenticated", "user-id", user.ID)
 
+	// Write the user session
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	err = sess.Save(r, w)
@@ -86,14 +71,14 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 
 	// lookup the user by email
 	// if the user does not exist, create a new user
-	user, err := router.DBClient.ReadUserByEmail(r.Context(), email)
+	user, err := queries.New(router.db).ReadUserByEmail(r.Context(), email)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			logger.WithError(err).ErrorCtx(r.Context(), "Failed to read user from DB")
 			response.Error(w, r, pmerror.ErrUnspecified)
 			return
 		}
-		user, err = auth.SignupUserIdp(r.Context(), router.DBClient, email, "Google user")
+		user, err = auth.SignupUserIdp(r.Context(), router.db, email, "Google user", []byte{})
 		if err != nil {
 			logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
 			response.Error(w, r, pmerror.ErrUnspecified)
@@ -135,21 +120,22 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate a new user
-	now := time.Now()
 	passwordHash := auth.HashPassword([]byte(req.Password))
 	_, tokenHash := auth.NewShortcutToken()
-	user := dbqueries.CreateUserParams{
-		ID:             tools.GenerateNewId(10),
-		Username:       req.Username,
-		Email:          req.Email,
-		Password:       passwordHash,
-		Subscribed:     req.Subscribed,
-		ShortcutToken:  tokenHash,
-		HasReadability: false,
-		Created:        now,
-		Updated:        now,
-	}
-	err := router.DBClient.CreateUser(r.Context(), user)
+	user, err := queries.New(router.db).CreateUser(r.Context(), queries.CreateUserParams{
+		ID:         tools.GenerateNewId(10),
+		Username:   req.Username,
+		Email:      req.Email,
+		Subscribed: req.Subscribed,
+	})
+	err = queries.New(router.db).CreateLocalAuth(r.Context(), queries.CreateLocalAuthParams{
+		UserID:       user.ID,
+		PasswordHash: passwordHash,
+	})
+	err = queries.New(router.db).CreateShortcutAuth(r.Context(), queries.CreateShortcutAuthParams{
+		UserID:     user.ID,
+		Credential: tokenHash,
+	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to create user")
 		sqlErr, ok := err.(sqlite3.Error)
@@ -191,7 +177,7 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := router.DBClient.ReadUserByEmail(r.Context(), req.Email)
+	user, err := queries.New(router.db).ReadUserByEmail(r.Context(), req.Email)
 	if err != nil {
 		logger.WithError(err).InfoCtx(r.Context(), "Error fetching user from DB")
 		if errors.Is(err, sql.ErrNoRows) {
@@ -207,10 +193,10 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 	token, tokenHash := auth.NewResetToken()
 	expires := time.Now().Add(time.Hour)
 
-	err = router.DBClient.UpdateUserResetToken(r.Context(), dbqueries.UpdateUserResetTokenParams{
-		ID:            user.ID,
-		ResetToken:    tokenHash,
-		ResetTokenExp: sql.NullTime{Valid: true, Time: expires},
+	err = queries.New(router.db).UpdateResetToken(r.Context(), queries.UpdateResetTokenParams{
+		UserID:              user.ID,
+		PasswordResetToken:  tokenHash,
+		PasswordResetExpiry: sql.NullTime{Valid: true, Time: expires},
 	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Seting password reset token")
@@ -276,9 +262,9 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 	hashedPassword := auth.HashPassword([]byte(req.Password))
 	hashedToken := auth.HashValue([]byte(req.Token))
 	now := time.Now()
-	user, err := router.DBClient.ReadUserByResetToken(r.Context(), dbqueries.ReadUserByResetTokenParams{
-		ResetToken:    hashedToken,
-		ResetTokenExp: sql.NullTime{Valid: true, Time: now},
+	userID, err := queries.New(router.db).ReadByResetToken(r.Context(), queries.ReadByResetTokenParams{
+		PasswordResetToken:  hashedToken,
+		PasswordResetExpiry: sql.NullTime{Valid: true, Time: now},
 	})
 	if err != nil {
 		logger.WithError(err).Info("No user with valid reset token found", "token-hash", hashedToken)
@@ -287,11 +273,11 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 	}
 
 	// generate and update the password for the matching reset token
-	n, err := router.DBClient.UpdateUserPassword(r.Context(), dbqueries.UpdateUserPasswordParams{
-		Password:      hashedPassword,
-		ResetToken:    hashedToken,
-		ResetTokenExp: sql.NullTime{Valid: true, Time: now},
+	n, err := queries.New(router.db).UpdatePassword(r.Context(), queries.UpdatePasswordParams{
+		PasswordHash: hashedPassword,
+		UserID:       userID,
 	})
+
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to update password")
 		response.Error(w, r, pmerror.NewInternalError("Failed to update password"))
@@ -304,10 +290,10 @@ func (router *Router) PostPassResetRedeem(w http.ResponseWriter, r *http.Request
 	}
 
 	// clear the password reset token
-	router.DBClient.UpdateUserResetToken(r.Context(), dbqueries.UpdateUserResetTokenParams{
-		ResetToken:    []byte{},
-		ResetTokenExp: sql.NullTime{},
-		ID:            user.ID,
+	queries.New(router.db).UpdateResetToken(r.Context(), queries.UpdateResetTokenParams{
+		PasswordResetToken:  []byte{},
+		PasswordResetExpiry: sql.NullTime{},
+		UserID:              userID,
 	})
 
 	logger.Info("Updated password")

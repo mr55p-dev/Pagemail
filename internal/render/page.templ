@@ -2,12 +2,12 @@ package render
 
 import (
 	"fmt"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/db/queries"
 )
 
 const PAGE_SIZE = 10
 
-templ PageList(pages []dbqueries.Page, p int) {
+templ PageList(pages []queries.Page, p int) {
 	for _, v := range pages {
 		@PageCard(&v)
 	}
@@ -20,7 +20,7 @@ templ PageList(pages []dbqueries.Page, p int) {
 	}
 }
 
-templ PageCard(page *dbqueries.Page) {
+templ PageCard(page *queries.Page) {
 	<article
 		class="box"
 		id={ fmt.Sprintf("page-%s", page.ID) }

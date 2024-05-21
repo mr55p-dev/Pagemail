@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -19,7 +19,7 @@ func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 
 func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
-	pages, err := router.DBClient.ReadPagesByUserId(r.Context(), user.ID)
+	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), user.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,7 +43,7 @@ func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := auth.GetUser(r.Context())
-	err := router.DBClient.UpdateUserSubscription(r.Context(), dbqueries.UpdateUserSubscriptionParams{
+	err := queries.New(router.db).UpdateUserSubscription(r.Context(), queries.UpdateUserSubscriptionParams{
 		Subscribed: req.Subscribed == "on",
 		ID:         user.ID,
 	})
@@ -57,9 +57,9 @@ func (router *Router) PutAccount(w http.ResponseWriter, r *http.Request) {
 func (router *Router) GetShortcutToken(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	token, tokenHash := auth.NewShortcutToken()
-	err := router.DBClient.UpdateUserShortcutToken(r.Context(), dbqueries.UpdateUserShortcutTokenParams{
-		ShortcutToken: tokenHash,
-		ID:            user.ID,
+	err := queries.New(router.db).UpdateShortcutToken(r.Context(), queries.UpdateShortcutTokenParams{
+		UserID:     user.ID,
+		Credential: tokenHash,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

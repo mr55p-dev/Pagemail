@@ -3,6 +3,7 @@ package mail
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"runtime"
@@ -10,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/timer"
@@ -31,16 +32,9 @@ type Sender interface {
 	Send(ctx context.Context, msg Message) error
 }
 
-// DB wraps the methods from database which are required for pulling users and their saved
-// pages inside of an interval
-type DB interface {
-	ReadUsersWithMail(context.Context) ([]dbqueries.User, error)
-	ReadPagesByUserBetween(context.Context, dbqueries.ReadPagesByUserBetweenParams) ([]dbqueries.Page, error)
-}
-
 // MailGo starts a goroutine on a timer to send emails to all subscribed users every 24 hours at
 // 7 am
-func MailGo(ctx context.Context, reader DB, sender Sender) {
+func MailGo(ctx context.Context, db *sql.DB, sender Sender) {
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
 	timer := timer.NewCronTimer(time.Hour*24, start)
@@ -49,7 +43,7 @@ func MailGo(ctx context.Context, reader DB, sender Sender) {
 	for now := range timer.T {
 		ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
 		logger.InfoCtx(ctx, "Starting mail job", "time", now.Format(time.Stamp))
-		err := DigestJob(ctx, reader, sender, now)
+		err := DigestJob(ctx, db, sender, now)
 		cancel()
 		if err != nil {
 			logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
@@ -59,16 +53,16 @@ func MailGo(ctx context.Context, reader DB, sender Sender) {
 
 // DigestJob collects all subscribed users, their pages between 24 hours ago and now, and then sends
 // them
-func DigestJob(ctx context.Context, reader DB, sender Sender, now time.Time) error {
+func DigestJob(ctx context.Context, db *sql.DB, sender Sender, now time.Time) error {
 	// Get users with mail enabled
-	users, err := reader.ReadUsersWithMail(ctx)
+	users, err := queries.New(db).ReadUsersWithMail(ctx)
 	if err != nil {
 		return fmt.Errorf("Failed to get user list: %w", err)
 	}
 
 	// Dispatch jobs to the other goroutines
 	var errCount int32
-	jobs := make(chan dbqueries.User)
+	jobs := make(chan queries.ReadUsersWithMailRow)
 	errChan := make(chan error)
 	wg := &sync.WaitGroup{}
 	for i := 0; i < runtime.NumCPU(); i++ {
@@ -76,7 +70,7 @@ func DigestJob(ctx context.Context, reader DB, sender Sender, now time.Time) err
 		go func() {
 			defer wg.Done()
 			for user := range jobs {
-				err := SendUserDigest(ctx, &user, reader, sender, now)
+				err := SendUserDigest(ctx, &user, db, sender, now)
 				if err != nil {
 					errChan <- err
 				}
@@ -107,14 +101,14 @@ func DigestJob(ctx context.Context, reader DB, sender Sender, now time.Time) err
 }
 
 // SendUserDigest fetches the users pages, constructs an email and sends it via the sender interface
-func SendUserDigest(ctx context.Context, user *dbqueries.User, db DB, sender Sender, now time.Time) error {
+func SendUserDigest(ctx context.Context, user *queries.ReadUsersWithMailRow, db *sql.DB, sender Sender, now time.Time) error {
 	logger := logger.With("user", user.Email)
 	logger.DebugCtx(ctx, "Generating mail for user")
 
 	// Read the users pages
 	start := now.Add(-time.Hour * 24)
 	end := now
-	pages, err := db.ReadPagesByUserBetween(ctx, dbqueries.ReadPagesByUserBetweenParams{
+	pages, err := queries.New(db).ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
 		Start:  start,
 		End:    end,
 		UserID: user.ID,

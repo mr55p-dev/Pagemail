@@ -2,35 +2,57 @@ package auth
 
 import (
 	"context"
-	"time"
+	"database/sql"
 
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 )
 
-func SignupUserIdp(ctx context.Context, queries *dbqueries.Queries, email, name string) (dbqueries.User, error) {
-	now := time.Now()
-	id := tools.GenerateNewId(10)
-	_, shortcutTkn := NewShortcutToken()
-	user := dbqueries.User{
-		ID:             id,
-		Username:       name,
-		Email:          email,
-		Subscribed:     true,
-		ShortcutToken:  shortcutTkn,
-		HasReadability: false,
-		Created:        now,
-		Updated:        now,
+func commitOrRollback(ctx context.Context, tx *sql.Tx, err error) {
+	if err != nil {
+		logger.WithError(err).ErrorCtx(ctx, "Attempting to rollback transaction")
+		txErr := tx.Rollback()
+		if txErr != nil {
+			logger.WithError(txErr).ErrorCtx(ctx, "Failed to rollback transaction")
+		} else {
+			logger.InfoCtx(ctx, "Rolled back user transaction")
+		}
+	} else {
+		txErr := tx.Commit()
+		if txErr != nil {
+			logger.WithError(err).ErrorCtx(ctx, "Failed to commit transaction")
+		} else {
+			logger.InfoCtx(ctx, "Comitted user transaction")
+		}
 	}
-	err := queries.CreateUser(ctx, dbqueries.CreateUserParams{
-		ID:             user.ID,
-		Username:       user.Username,
-		Email:          user.Email,
-		Subscribed:     user.Subscribed,
-		ShortcutToken:  user.ShortcutToken,
-		HasReadability: user.HasReadability,
-		Created:        user.Created,
-		Updated:        user.Updated,
+}
+
+func SignupUserIdp(ctx context.Context, db *sql.DB, email, name string, secret []byte) (queries.User, error) {
+	var user queries.User
+	var err error
+
+	logger.InfoCtx(ctx, "Creating google IDP user")
+	tx, err := db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return user, err
+	}
+	defer commitOrRollback(ctx, tx, err)
+
+	user, err = queries.New(db).WithTx(tx).CreateUser(ctx, queries.CreateUserParams{
+		ID:         tools.GenerateNewId(10),
+		Username:   name,
+		Email:      email,
+		Subscribed: true,
+	})
+	err = queries.New(db).WithTx(tx).CreateIdpAuth(ctx, queries.CreateIdpAuthParams{
+		UserID:     user.ID,
+		Platform:   "google",
+		Credential: secret,
+	})
+	_, hashedToken := NewShortcutToken()
+	err = queries.New(db).WithTx(tx).CreateShortcutAuth(ctx, queries.CreateShortcutAuthParams{
+		UserID:     user.ID,
+		Credential: hashedToken,
 	})
 	return user, err
 }
