@@ -4,27 +4,11 @@ import (
 	"context"
 	"io"
 	"strings"
-	"time"
 )
 
 // NoOpSender implements MailSender for tests
 type NoOpSender struct {
 	mail []Message
-}
-
-func NewNoOpSender(ctx context.Context) *NoOpSender {
-	sender := new(NoOpSender)
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(time.Hour):
-				sender.Reset()
-			}
-		}
-	}()
-	return sender
 }
 
 // Send implements MailSender and stores messages in the instance

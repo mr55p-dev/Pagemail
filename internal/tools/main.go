@@ -29,7 +29,3 @@ func GenerateNewId(length int) string {
 	enc.Close()
 	return out.String()[:length]
 }
-
-func GenerateNewShortcutToken() string {
-	return GenerateNewId(20)
-}

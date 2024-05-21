@@ -22,37 +22,6 @@ func SetHandler(h slog.Handler) {
 	}
 }
 
-func Info(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.out.InfoContext(ctx, msg, keyvals...)
-}
-
-func Debug(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.out.DebugContext(ctx, msg, keyvals...)
-}
-
-func Error(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.out.ErrorContext(ctx, msg, keyvals...)
-}
-
-func WithRequest(r *http.Request) *Logger {
-	return logger.WithRequest(r)
-}
-
-func WithError(err error) *Logger {
-	_, file, line, _ := runtime.Caller(1)
-	return &Logger{
-		out: logger.out.With("error", err.Error(), "file", file, "lineno", line),
-	}
-}
-
-func WithRecover(r any) *Logger {
-	return logger.WithRecover(r)
-}
-
-func Warn(ctx context.Context, msg string, keyvals ...interface{}) {
-	logger.out.WarnContext(ctx, msg, keyvals...)
-}
-
 type Logger struct {
 	out *slog.Logger
 }
