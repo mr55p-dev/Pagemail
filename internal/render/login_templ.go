@@ -29,7 +29,7 @@ func Login(clientId, redirectUrl string) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><script src=\"https://accounts.google.com/gsi/client\" async></script><div id=\"g_id_onload\" data-client_id=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\" hx-ext=\"response-targets\"><form class=\"table rows\" hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"username\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"current-password\"></p><button type=\"submit\">Login</button></form><div id=\"g_id_onload\" data-client_id=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -45,7 +45,7 @@ func Login(clientId, redirectUrl string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-auto_prompt=\"false\"></div><div class=\"g_id_signin\" data-type=\"standard\" data-size=\"large\" data-theme=\"outline\" data-text=\"sign_in_with\" data-shape=\"rectangular\" data-logo_alignment=\"left\"></div><p><a href=\"/password-reset/request\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-context=\"signin\" data-ux_mode=\"popup\" data-itp_support=\"true\"></div><div class=\"g_id_signin\" data-type=\"icon\" data-shape=\"square\" data-theme=\"outline\" data-text=\"signin_with\" data-size=\"large\"></div><p><a href=\"/password-reset/request\">Reset password</a></p><p>Don't have an account? <a href=\"/signup\">Sign up</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -65,7 +65,7 @@ func Login(clientId, redirectUrl string) templ.Component {
 	})
 }
 
-func Signup() templ.Component {
+func Signup(clientId, redirectUrl string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -84,7 +84,23 @@ func Signup() templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/signup\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" autocomplete=\"username\"></p><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"email\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><p><label for=\"subscribed\">Subscribe to email alerts?</label> <input type=\"checkbox\" name=\"subscribed\" checked></p><button type=\"submit\">Create account</button></form><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"center box\"><form class=\"table rows\" hx-post=\"/signup\" hx-swap=\"innerHTML\" hx-target-error=\"#err\"><p><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" autocomplete=\"username\"></p><p><label for=\"email\">E-mail</label> <input type=\"email\" name=\"email\" autocomplete=\"email\"></p><p><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" autocomplete=\"new-password\"></p><p><label for=\"password-repeat\">Repeat password</label> <input type=\"password\" name=\"password-repeat\" autocomplete=\"new-password\"></p><p><label for=\"subscribed\">Subscribe to email alerts?</label> <input type=\"checkbox\" name=\"subscribed\" checked></p><button type=\"submit\">Create account</button></form><div id=\"g_id_onload\" data-client_id=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(clientId))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-context=\"signin\" data-ux_mode=\"popup\" data-login_uri=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(redirectUrl))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-itp_support=\"true\"></div><div class=\"g_id_signin\" data-type=\"icon\" data-shape=\"square\" data-theme=\"outline\" data-text=\"signup_with\" data-size=\"large\"></div><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -172,7 +188,7 @@ func PasswordResetMail(userId string, url templ.SafeURL) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(string(url))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 103, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 119, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -254,7 +270,7 @@ func LinkAccount(email string) templ.Component {
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(email)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 138, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/login.templ`, Line: 154, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {

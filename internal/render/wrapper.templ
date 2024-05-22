@@ -18,6 +18,7 @@ templ Wrapper(user *queries.User, title string) {
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
 		</head>
 		<body hx-boost="true" hx-ext="response-targets">
+			<script src="https://accounts.google.com/gsi/client" async></script>
 			@Header(user)
 			<main class="wrapper" hx-target-error="error">
 				<h2>{ title }</h2>
