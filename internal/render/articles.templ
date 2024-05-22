@@ -1,0 +1,16 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ Articles(user *queries.User, allowed, ready []queries.Page) {
+	@Wrapper(user, "Articles") {
+		<h4>Ready to read</h4>
+		for _, page := range ready {
+			@PageCard(&page)
+		}
+		<h4>Readable</h4>
+		for _, page := range allowed {
+			@PageCard(&page)
+		}
+	}
+}

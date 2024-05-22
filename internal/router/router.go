@@ -75,6 +75,7 @@ func New(
 	rootMux.Handle("/login/", getLoginMux(router))
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
+	rootMux.Handle("/articles/", getArticlesMux(router))
 	rootMux.Handle("/password-reset/", getPasswordResetMux(router))
 
 	mux := http.NewServeMux()
