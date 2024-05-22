@@ -36,8 +36,10 @@ services:
       RDR_BUCKET_NAME: pagemail-readability
       RDR_PREFIX_NAME: dev/
     logging:
+      driver: awslogs
       options:
         awslogs-group: /splat/pagemail-readability-dev
+        awslogs-region: eu-west-2
 
 networks:
   traefik:
