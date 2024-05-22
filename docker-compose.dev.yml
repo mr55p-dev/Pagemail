@@ -27,6 +27,7 @@ services:
       - "traefik.http.routers.pagemail-dev.rule=Host(`dev.pagemail.io`)"
       - "traefik.http.routers.pagemail-dev.entrypoints=websecure"
       - "traefik.http.routers.pagemail-dev.tls.certresolver=letsencrypt"
+
   readability:
     image: 168938868801.dkr.ecr.eu-west-2.amazonaws.com/pagemail-readability:latest
     container_name: pagemail-readability-dev
