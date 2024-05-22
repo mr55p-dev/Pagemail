@@ -7,11 +7,6 @@ resource "aws_ecr_repository" "pagemail" {
   }
 }
 
-import {
-  to = aws_ecr_repository.pagemail
-  id = "pagemail"
-}
-
 resource "aws_ecr_lifecycle_policy" "pagemail" {
   repository = aws_ecr_repository.pagemail.name
   policy     = <<EOF
@@ -35,9 +30,6 @@ resource "aws_ecr_lifecycle_policy" "pagemail" {
 EOF
 }
 
-import {
-  to = aws_ecr_lifecycle_policy.pagemail
-  id = "pagemail"
 
 resource "aws_ecr_repository" "pagemail_migrations" {
   name                 = "pagemail-migrations"
