@@ -22,8 +22,6 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    env:
-      DOCKER_HOST: ${{ vars.DOCKER_HOST }}
     permissions:
       contents: read
       id-token: write
@@ -77,4 +75,4 @@ jobs:
           -e DATABASE_URL=sqlite3:/db/pagemail.sqlite3 \
           -e DBMATE_MIGRATIONS_DIR=/migrations \
           -e DBMATE_NO_DUMP_SCHEMA=1 \
-          ${{ steps.build.outputs.image }}
+          ${{ steps.build.outputs.image }} migrate
