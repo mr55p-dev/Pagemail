@@ -1,18 +1,18 @@
 from flask import Flask, request
 from bs4 import BeautifulSoup
 from readability import Document
-
 from boto3 import Session
 from botocore.exceptions import BotoCoreError, ClientError, ParamValidationError
 from contextlib import closing
 import os
-import sys
-import subprocess
-from tempfile import gettempdir
 
 
-session = Session()
+session = Session(region_name="eu-west-1")
 polly = session.client("polly")
+
+bucket_name = os.getenv("BUCKET_NAME")
+if not bucket_name:
+    raise ValueError("BUCKET_NAME environment variable is not set")
 
 def polly_synthesize(text: str) -> dict: 
     try:
@@ -21,9 +21,8 @@ def polly_synthesize(text: str) -> dict:
             LanguageCode="en-US",
             VoiceId="Joanna",
             OutputFormat="mp3",
-            OutputS3BucketName="polly-audio",
-            OutputS3KeyPrefix="output",
-            Text=text[:30],
+            OutputS3BucketName="pagemail-readability",
+            Text=text,
             TextType="text",
         )
     except (BotoCoreError, ClientError, ParamValidationError) as error:
