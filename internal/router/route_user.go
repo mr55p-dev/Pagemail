@@ -20,14 +20,19 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
-func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
+func loginRedirectUrl(router *Router) string {
 	// generate the reset url
 	urlAddr := url.URL{
 		Scheme: router.proto,
 		Host:   router.host,
 		Path:   "login/google",
 	}
-	response.Component(render.Login(router.googleClientId, urlAddr.String()), w, r)
+	return urlAddr.String()
+}
+
+func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
+	urlAddr := loginRedirectUrl(router)
+	response.Component(render.Login(router.googleClientId, urlAddr), w, r)
 }
 
 type PostLoginRequest struct {
@@ -259,8 +264,10 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (Router) GetSignup(w http.ResponseWriter, r *http.Request) {
-	response.Component(render.Signup(), w, r)
+func (router *Router) GetSignup(w http.ResponseWriter, r *http.Request) {
+	urlAddr := loginRedirectUrl(router)
+	response.Component(render.Signup(router.googleClientId, urlAddr), w, r)
+
 }
 
 func (Router) GetPassResetReq(w http.ResponseWriter, r *http.Request) {

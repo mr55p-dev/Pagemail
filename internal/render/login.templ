@@ -19,21 +19,21 @@ templ Login(clientId, redirectUrl string) {
 				</p>
 				<button type="submit">Login</button>
 			</form>
-			<script src="https://accounts.google.com/gsi/client" async></script>
 			<div
 				id="g_id_onload"
 				data-client_id={ clientId }
 				data-login_uri={ redirectUrl }
-				data-auto_prompt="false"
+				data-context="signin"
+				data-ux_mode="popup"
+				data-itp_support="true"
 			></div>
 			<div
 				class="g_id_signin"
-				data-type="standard"
-				data-size="large"
+				data-type="icon"
+				data-shape="square"
 				data-theme="outline"
-				data-text="sign_in_with"
-				data-shape="rectangular"
-				data-logo_alignment="left"
+				data-text="signin_with"
+				data-size="large"
 			></div>
 			<p><a href="/password-reset/request">Reset password</a></p>
 			<p>Don't have an account? <a href="/signup">Sign up</a></p>
@@ -41,7 +41,7 @@ templ Login(clientId, redirectUrl string) {
 	}
 }
 
-templ Signup() {
+templ Signup(clientId, redirectUrl string) {
 	@Wrapper(nil, "Signup") {
 		<div class="center box">
 			<form
@@ -72,6 +72,22 @@ templ Signup() {
 				</p>
 				<button type="submit">Create account</button>
 			</form>
+			<div
+				id="g_id_onload"
+				data-client_id={ clientId }
+				data-context="signin"
+				data-ux_mode="popup"
+				data-login_uri={ redirectUrl }
+				data-itp_support="true"
+			></div>
+			<div
+				class="g_id_signin"
+				data-type="icon"
+				data-shape="square"
+				data-theme="outline"
+				data-text="signup_with"
+				data-size="large"
+			></div>
 			<p>Already have an account? <a href="/login">Log in</a></p>
 		</div>
 	}

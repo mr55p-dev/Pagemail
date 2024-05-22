@@ -53,7 +53,7 @@ func Wrapper(user *queries.User, title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/assets/css/missing.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/assets/css/missing.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\"><script src=\"https://accounts.google.com/gsi/client\" async></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -68,7 +68,7 @@ func Wrapper(user *queries.User, title string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 22, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/wrapper.templ`, Line: 23, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

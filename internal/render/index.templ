@@ -2,9 +2,18 @@ package render
 
 import "github.com/mr55p-dev/pagemail/db/queries"
 
-templ Index(user *queries.User) {
+templ Index(user *queries.User, clientId, redirectUrl string) {
 	@Wrapper(user, "") {
-		<h1>pagemail</h1>
+		if user == nil {
+			<div
+				id="g_id_onload"
+				data-client_id={ clientId }
+				data-context="signin"
+				data-login_uri={ redirectUrl }
+				data-itp_support="true"
+			></div>
+		}
+		<h1>Pagemail</h1>
 		<p>pagemail is a simple read-it-later client for the web</p>
 		if user != nil {
 			<a href={ templ.URL("/pages/dashboard") }>View dashboard</a>

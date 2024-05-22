@@ -12,9 +12,10 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
-func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
+func (router *Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
-	response.Component(render.Index(user), w, r)
+	urlAddr := loginRedirectUrl(router)
+	response.Component(render.Index(user, router.googleClientId, urlAddr), w, r)
 }
 
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
