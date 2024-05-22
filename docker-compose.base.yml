@@ -6,9 +6,9 @@ services:
     expose:
       - 80
     environment:
-      PM_HOST: 0.0.0.0:80
-      PM_PATH: /data/db/pagemail.sqlite3
-      PM_COOKIE_KEY_FILE: /run/secrets/cookie-key
+      PM_APP_HOST: 0.0.0.0:80
+      PM_DB_PATH: /data/db/pagemail.sqlite3
+      PM_APP_COOKIE_KEY_FILE: /run/secrets/cookie-key
     logging:
       driver: awslogs
       options:

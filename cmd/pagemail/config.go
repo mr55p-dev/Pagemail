@@ -13,6 +13,11 @@ type AppConfig struct {
 	DBPath         string `config:"db.path" log:"db-path"`
 	CookieKeyFile  string `config:"app.cookie-key-file" log:"cookie-key-file"`
 	GoogleClientId string `config:"app.google-client-id" log:"google-client-id"`
+
+	External struct {
+		Host  string `config:"host" log:"extern-host"`
+		Proto string `config:"proto" log:"extern-proto"`
+	} `config:"extern"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {
