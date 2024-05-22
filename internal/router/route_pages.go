@@ -14,6 +14,20 @@ import (
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
+func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
+	user := auth.GetUser(r.Context())
+	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), queries.ReadPagesByUserIdParams{
+		UserID: user.ID,
+		Limit:  render.PAGE_SIZE,
+		Offset: 0,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	response.Component(render.Dashboard(user, pages), w, r)
+}
+
 type GetPagesRequest struct {
 	Page string `query:"p"`
 }
@@ -31,15 +45,18 @@ func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrBadPagination)
 		return
 	}
+	offset := (page - 1) * render.PAGE_SIZE
 
-	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), user.ID)
+	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), queries.ReadPagesByUserIdParams{
+		UserID: user.ID,
+		Limit:  render.PAGE_SIZE,
+		Offset: int64(offset),
+	})
 	if err != nil {
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
 		response.Error(w, r, pmerror.NewInternalError("Failed to load your pages"))
 		return
 	}
-	// pageinate for fun
-	pages = pages[(page-1)*render.PAGE_SIZE : page*render.PAGE_SIZE]
 	response.Component(render.PageList(pages, page), w, r)
 }
 
@@ -73,11 +90,6 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 	if page.UserID != user.ID {
 		response.Error(w, r, pmerror.ErrNoPage)
 		return
-	}
-	if request.IsHtmx(r) {
-		if page.PreviewState != "unknown" {
-			w.WriteHeader(286) // tell htmx to stop polling
-		}
 	}
 	response.Component(render.PageCard(&page), w, r)
 }

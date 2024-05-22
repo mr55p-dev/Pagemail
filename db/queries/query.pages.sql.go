@@ -139,10 +139,17 @@ const readPagesByUserId = `-- name: ReadPagesByUserId :many
 SELECT id, user_id, url, title, description, image_url, preview_state, created, updated FROM pages
 WHERE user_id = ?
 ORDER BY created DESC
+LIMIT ? OFFSET ?
 `
 
-func (q *Queries) ReadPagesByUserId(ctx context.Context, userID string) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByUserId, userID)
+type ReadPagesByUserIdParams struct {
+	UserID string
+	Limit  int64
+	Offset int64
+}
+
+func (q *Queries) ReadPagesByUserId(ctx context.Context, arg ReadPagesByUserIdParams) ([]Page, error) {
+	rows, err := q.db.QueryContext(ctx, readPagesByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

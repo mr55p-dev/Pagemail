@@ -13,7 +13,7 @@ templ PageList(pages []queries.Page, p int) {
 	}
 	if len(pages) >= PAGE_SIZE {
 		<button
-			hx-get={ fmt.Sprintf("/pages?p=%d", p+1) }
+			hx-get={ fmt.Sprintf("/pages/?p=%d", p+1) }
 			hx-swap="outerHTML"
 			hx-trigger="click, intersect once"
 		>Load more</button>
@@ -25,11 +25,10 @@ templ PageCard(page *queries.Page) {
 		class="box"
 		id={ fmt.Sprintf("page-%s", page.ID) }
 		if page.PreviewState == "unknown" {
-			hx-swap="innerHTML"
-			hx-trigger="every 1s"
+			hx-swap="outerHTML"
+			hx-trigger="load delay:0.5s"
 			hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
 			hx-target={ fmt.Sprintf("#page-%s", page.ID) }
-			hx-select={ fmt.Sprintf("#page-%s>*", page.ID) }
 			hx-target-error={ fmt.Sprintf("#page-%s", page.ID) }
 		}
 	>

@@ -17,16 +17,6 @@ func (Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	response.Component(render.Index(user), w, r)
 }
 
-func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
-	user := auth.GetUser(r.Context())
-	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), user.ID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	response.Component(render.Dashboard(user, pages), w, r)
-}
-
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	response.Component(render.AccountPage(user), w, r)
