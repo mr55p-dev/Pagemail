@@ -8,6 +8,11 @@ SELECT * FROM pages
 WHERE id = ?
 LIMIT 1;
 
+-- name: ReadPagesByReadable :many
+SELECT * FROM pages
+WHERE readable = ?
+AND user_id = ?;
+
 -- name: UpdatePagePreview :exec
 UPDATE pages SET
     title = ?,

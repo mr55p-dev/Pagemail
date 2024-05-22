@@ -12,7 +12,7 @@ import "bytes"
 
 import "github.com/mr55p-dev/pagemail/db/queries"
 
-func Articles(user *queries.User, allowed, ready []queries.Page) templ.Component {
+func Articles(user *queries.User, ready, pending, unknown []queries.Page) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -31,7 +31,17 @@ func Articles(user *queries.User, allowed, ready []queries.Page) templ.Component
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Ready to read</h4>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Pending</h4>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			for _, page := range pending {
+				templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h4>Ready to read</h4>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -45,7 +55,7 @@ func Articles(user *queries.User, allowed, ready []queries.Page) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, page := range allowed {
+			for _, page := range unknown {
 				templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

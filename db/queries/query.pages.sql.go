@@ -14,7 +14,7 @@ import (
 const createPage = `-- name: CreatePage :one
 INSERT INTO pages (id, user_id, url, preview_state)
 VALUES (?, ?, ?, 'unknown')
-RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated
+RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated, readable, reading_job_status, reading_job_id
 `
 
 type CreatePageParams struct {
@@ -36,6 +36,9 @@ func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, e
 		&i.PreviewState,
 		&i.Created,
 		&i.Updated,
+		&i.Readable,
+		&i.ReadingJobStatus,
+		&i.ReadingJobID,
 	)
 	return i, err
 }
@@ -67,7 +70,7 @@ func (q *Queries) DeletePagesByUserId(ctx context.Context, userID string) (int64
 }
 
 const readPageById = `-- name: ReadPageById :one
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated FROM pages
+SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable, reading_job_status, reading_job_id FROM pages
 WHERE id = ?
 LIMIT 1
 `
@@ -85,12 +88,62 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 		&i.PreviewState,
 		&i.Created,
 		&i.Updated,
+		&i.Readable,
+		&i.ReadingJobStatus,
+		&i.ReadingJobID,
 	)
 	return i, err
 }
 
+const readPagesByReadable = `-- name: ReadPagesByReadable :many
+SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable, reading_job_status, reading_job_id FROM pages
+WHERE readable = ?
+AND user_id = ?
+`
+
+type ReadPagesByReadableParams struct {
+	Readable bool
+	UserID   string
+}
+
+func (q *Queries) ReadPagesByReadable(ctx context.Context, arg ReadPagesByReadableParams) ([]Page, error) {
+	rows, err := q.db.QueryContext(ctx, readPagesByReadable, arg.Readable, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Page
+	for rows.Next() {
+		var i Page
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.Title,
+			&i.Description,
+			&i.ImageUrl,
+			&i.PreviewState,
+			&i.Created,
+			&i.Updated,
+			&i.Readable,
+			&i.ReadingJobStatus,
+			&i.ReadingJobID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated FROM pages 
+SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable, reading_job_status, reading_job_id FROM pages 
 WHERE created BETWEEN ?1 AND ?2
 AND user_id = ?3
 ORDER BY created DESC
@@ -121,6 +174,9 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 			&i.PreviewState,
 			&i.Created,
 			&i.Updated,
+			&i.Readable,
+			&i.ReadingJobStatus,
+			&i.ReadingJobID,
 		); err != nil {
 			return nil, err
 		}
@@ -136,7 +192,7 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 }
 
 const readPagesByUserId = `-- name: ReadPagesByUserId :many
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated FROM pages
+SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable, reading_job_status, reading_job_id FROM pages
 WHERE user_id = ?
 ORDER BY created DESC
 LIMIT ? OFFSET ?
@@ -167,6 +223,9 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, arg ReadPagesByUserIdPa
 			&i.PreviewState,
 			&i.Created,
 			&i.Updated,
+			&i.Readable,
+			&i.ReadingJobStatus,
+			&i.ReadingJobID,
 		); err != nil {
 			return nil, err
 		}
