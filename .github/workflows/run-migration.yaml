@@ -12,13 +12,16 @@ on:
         type: string
         description: Environment to migrate
         required: true
+  push:
+    branches:
+      - main
+    paths:
+      - "db/migrations/*"
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    env:
-      DOCKER_HOST: ${{ vars.DOCKER_HOST }}
     permissions:
       contents: read
       id-token: write
@@ -33,18 +36,24 @@ jobs:
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
 
-      - name: Build image locally
-        run: |
-          docker build \
-          -t pagemail-migrations:latest \
-          -f Dockerfile.migrations .
+      - name: docker-context-create
+        uses: ArwynFr/actions-docker-context@v2
+        with:
+          docker_host: ${{ vars.DOCKER_HOST }}
+          context_name: remote
+          ssh_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          use_context: true
 
-      - name: Run migration on the server
+      - name: Build
+        id: build
         run: |
-          docker run \
+          docker build -t pagemail-migrations:latest -f Dockerfile.migrations .
+
+      - name: Deploy to server
+        run: |
+          docker run --rm \
           -v /home/ubuntu/pagemail/${{ vars.ENV_NAME }}/db:/db \
-          -e DATABASE_URL=sqlite3:./db/pagemail.sqlite3 \
+          -e DATABASE_URL=sqlite3:/db/pagemail.sqlite3 \
           -e DBMATE_MIGRATIONS_DIR=/migrations \
           -e DBMATE_NO_DUMP_SCHEMA=1 \
-          --rm \
           pagemail-migrations:latest migrate
