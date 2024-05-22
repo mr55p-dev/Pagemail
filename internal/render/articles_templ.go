@@ -31,34 +31,48 @@ func Articles(user *queries.User, ready, pending, unknown []queries.Page) templ.
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Pending</h4>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			for _, page := range pending {
-				templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+			if len(pending) != 0 {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Pending</h4>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
+				for _, page := range pending {
+					templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h4>Ready to read</h4>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, page := range ready {
-				templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+			if len(ready) != 0 {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Ready to read</h4>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
+				for _, page := range ready {
+					templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h4>Readable</h4>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, page := range unknown {
-				templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+			if len(unknown) != 0 {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h4>Readable</h4>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
+				}
+				for _, page := range unknown {
+					templ_7745c5c3_Err = PageCard(&page).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
 			if !templ_7745c5c3_IsBuffer {
