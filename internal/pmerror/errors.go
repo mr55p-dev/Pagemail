@@ -18,6 +18,10 @@ var (
 		Status:  http.StatusBadRequest,
 		Message: "Please include all marked fields",
 	}
+	ErrCSRF = &PMError{
+		Status:  http.StatusForbidden,
+		Message: "CSRF token mismatch",
+	}
 	ErrBadEmail = &PMError{
 		Status:  http.StatusNotFound,
 		Message: "Incorrect email address",

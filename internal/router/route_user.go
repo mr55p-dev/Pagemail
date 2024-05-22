@@ -72,27 +72,15 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	logger.InfoCtx(r.Context(), "Received google login request")
 	sess, _ := router.Sessions.Get(r, auth.SessionKey)
-	// validate credential
 	req := request.BindRequest[PostLoginGoogleParams](w, r)
 	if req == nil {
 		return
 	}
 
 	// validate CSRF token
-	tkn, err := r.Cookie("g_csrf_token")
-	if err != nil {
-		logger.WithError(err).InfoCtx(r.Context(), "failed to load CSRF token")
-		response.Error(w, r, pmerror.ErrUnspecified)
-		return
-	}
-	if tkn.Value == "" {
-		logger.InfoCtx(r.Context(), "No body in CSRF token")
-		response.Error(w, r, pmerror.ErrUnspecified)
-		return
-	}
-	if tkn.Value != req.CRSFToken {
-		logger.InfoCtx(r.Context(), "Invalid CSRF token")
-		response.Error(w, r, pmerror.ErrUnspecified)
+	if ok := auth.CSRFCheck(r, "g_csrf_token"); !ok {
+		logger.ErrorCtx(r.Context(), "Failed to validate CSRF token")
+		response.Error(w, r, pmerror.ErrCSRF)
 		return
 	}
 
@@ -105,12 +93,8 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := auth.HandleIdpRequest(
-		r.Context(),
-		router.db,
-		token.Email,
-		[]byte(token.Subject),
-	)
+	// try to load the user. If not allowed, redirect to link account
+	user, err := auth.HandleIdpRequest(r.Context(), router.db, token.Email, []byte(token.Subject))
 	if err != nil {
 		if errors.Is(err, pmerror.ErrMismatchAcc) {
 			logger.InfoCtx(r.Context(), "User has not linked google account")

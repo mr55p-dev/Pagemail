@@ -4,10 +4,37 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 )
+
+func CSRFCheck(r *http.Request, name string) bool {
+	cookie, err := r.Cookie(name)
+	if err != nil {
+		logger.WithError(err).InfoCtx(r.Context(), "failed to load CSRF cookie")
+		return false
+	}
+	if cookie.Value == "" {
+		logger.InfoCtx(r.Context(), "No body in CSRF cookie")
+		return false
+	}
+	param := r.FormValue(name)
+	if param == "" {
+		logger.InfoCtx(r.Context(), "No body in CRSF form")
+		return false
+	}
+	ok := param == cookie.Value
+	if !ok {
+		logger.WarnCtx(r.Context(), "CRSF token check failed")
+	}
+	return ok
+}
+
+func LoginIdp(ctx context.Context, db *sql.DB) {
+	
+}
 
 func LoginPm(ctx context.Context, db *sql.DB, email string, password []byte) (queries.User, error) {
 	var user queries.User
