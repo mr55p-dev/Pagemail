@@ -12,6 +12,11 @@ on:
         type: string
         description: Environment to migrate
         required: true
+  push:
+    branches:
+      - main
+    paths:
+      - "db/migrations/*"
 
 jobs:
   migrate:
