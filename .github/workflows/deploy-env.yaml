@@ -18,7 +18,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  server-login:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Disable host verification
+        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Log into docker via server
+        env:
+          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+        run: |
+          docker login \
+          --username ${{ steps.login-ecr.outputs.docker_username_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          --password ${{ steps.login-ecr.outputs.docker_password_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          ${{ steps.login-ecr.outputs.registry }}
+
   build-pagemail:
+    needs:
+      - server-login
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
@@ -27,13 +62,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Disable host verification
-        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -54,16 +82,9 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Log into docker via server
-        env:
-          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
-        run: |
-          docker login \
-          --username ${{ steps.login-ecr.outputs.docker_username_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
-          --password ${{ steps.login-ecr.outputs.docker_password_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
-          ${{ steps.login-ecr.outputs.registry }}
-
   build-readability:
+    needs:
+      - server-login
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     permissions:
