@@ -11,6 +11,8 @@ func getLoginMux(router *Router) http.Handler {
 	loginMux.HandleFunc("GET /", router.GetLogin)
 	loginMux.HandleFunc("POST /", router.PostLogin)
 	loginMux.HandleFunc("POST /google", router.PostLoginGoogle)
+	loginMux.HandleFunc("GET /link", router.GetLinkAccount)
+	loginMux.HandleFunc("POST /link", router.PostLinkAccount)
 	return http.StripPrefix("/login", loginMux)
 }
 

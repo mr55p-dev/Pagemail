@@ -16,7 +16,9 @@ import (
 var logger = logging.NewLogger("router")
 
 const (
-	DASHBOARD_URI = "/pages/dashboard"
+	URI_DASH     = "/pages/dashboard"
+	URI_LINK     = "/login/link"
+	SESS_G_TOKEN = "google-token"
 )
 
 type Router struct {

@@ -26,6 +26,7 @@ var (
 
 func init() {
 	gob.Register(uid)
+	gob.Register(G_Token{})
 }
 
 func GetId(sess *sessions.Session) string {

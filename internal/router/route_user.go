@@ -18,7 +18,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
-	"google.golang.org/api/idtoken"
 )
 
 func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +59,7 @@ func (router *Router) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.InfoCtx(r.Context(), "Written session")
-	response.Redirect(w, r, DASHBOARD_URI)
+	response.Redirect(w, r, URI_DASH)
 	return
 }
 
@@ -72,6 +71,7 @@ type PostLoginGoogleParams struct {
 func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 	logger := logger.WithRequest(r)
 	logger.InfoCtx(r.Context(), "Received google login request")
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	// validate credential
 	req := request.BindRequest[PostLoginGoogleParams](w, r)
 	if req == nil {
@@ -98,46 +98,38 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 
 	// decode the JWT
 	logger.InfoCtx(r.Context(), "Got id token")
-	valToken, err := idtoken.Validate(
-		r.Context(),
-		req.Credential,
-		router.googleClientId,
-	)
+	token, err := auth.ValidateIdToken(r.Context(), req.Credential, router.googleClientId)
 	if err != nil {
-		logger.WithError(err).Error("Could not validate token")
-		response.Error(w, r, pmerror.ErrUnspecified)
-		return
-	}
-
-	logger.InfoCtx(r.Context(), "Id token is valid")
-	logger.InfoCtx(r.Context(), "Id token values", valToken.Claims)
-	email, ok := valToken.Claims["email"].(string)
-	if !ok {
-		logger.ErrorCtx(r.Context(), "Could not extract email from id token")
-		response.Error(w, r, pmerror.ErrUnspecified)
-		return
-	}
-	uid, ok := valToken.Claims["sub"].(string)
-	if !ok {
-		logger.ErrorCtx(r.Context(), "Could not extract user id from id token")
-		response.Error(w, r, pmerror.ErrUnspecified)
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to validate id token")
+		response.Error(w, r, err)
 		return
 	}
 
 	user, err := auth.HandleIdpRequest(
 		r.Context(),
 		router.db,
-		email,
-		[]byte(uid),
+		token.Email,
+		[]byte(token.Subject),
 	)
 	if err != nil {
+		if errors.Is(err, pmerror.ErrMismatchAcc) {
+			logger.InfoCtx(r.Context(), "User has not linked google account")
+			sess.Values[SESS_G_TOKEN] = token
+			err = sess.Save(r, w)
+			if err != nil {
+				logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
+				response.Error(w, r, pmerror.ErrUnspecified)
+				return
+			}
+			response.Redirect(w, r, "/login/link")
+			return
+		}
 		logger.WithError(err).ErrorCtx(r.Context(), "Failed to auth with google")
 		response.Error(w, r, err)
 		return
 	}
 
 	// set the session
-	sess, _ := router.Sessions.Get(r, auth.SessionKey)
 	auth.SetId(sess, user.ID)
 	err = sess.Save(r, w)
 	if err != nil {
@@ -145,7 +137,76 @@ func (router *Router) PostLoginGoogle(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrUnspecified)
 		return
 	}
-	response.Redirect(w, r, DASHBOARD_URI)
+	response.Redirect(w, r, URI_DASH)
+}
+
+func (router *Router) GetLinkAccount(w http.ResponseWriter, r *http.Request) {
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
+	token, ok := sess.Values[SESS_G_TOKEN].(auth.G_Token)
+	if !ok {
+		logger.ErrorCtx(r.Context(), "Could not load google cred from sesion")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+	logger.InfoCtx(r.Context(), "Loaded google cred from session", "linking-to", token.Email)
+	response.Component(render.LinkAccount(token.Email), w, r)
+	return
+}
+
+type PostLinkAccountParams struct {
+	Password string `form:"password"`
+}
+
+func (router *Router) PostLinkAccount(w http.ResponseWriter, r *http.Request) {
+	logger := logger.WithRequest(r)
+	req := request.BindRequest[PostLoginRequest](w, r)
+	if req == nil {
+		return
+	}
+	logger.InfoCtx(r.Context(), "Received link account request")
+
+	// Load the session
+	sess, _ := router.Sessions.Get(r, auth.SessionKey)
+	token, ok := sess.Values[SESS_G_TOKEN].(auth.G_Token)
+	if !ok {
+		logger.InfoCtx(r.Context(), "No google credential in session")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+
+	// Login flow for pagemail platform
+	user, err := auth.LoginPm(r.Context(), router.db, token.Email, []byte(req.Password))
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to authenticate user")
+		response.Error(w, r, err)
+		return
+	}
+	logger.InfoCtx(r.Context(), "user auth succesfully when linking google account")
+
+	// Link the google account
+	err = auth.LinkGoogleAccount(
+		r.Context(),
+		router.db,
+		user,
+		[]byte(token.Subject),
+	)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to link google account")
+		response.Error(w, r, err)
+		return
+	}
+	logger.InfoCtx(r.Context(), "Linked google account")
+
+	// set the session
+	auth.SetId(sess, user.ID)
+	delete(sess.Values, "google_subject")
+	err = sess.Save(r, w)
+	if err != nil {
+		logger.WithError(err).ErrorCtx(r.Context(), "Failed to save session")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+	response.Redirect(w, r, URI_DASH)
 }
 
 type PostSignupRequest struct {

@@ -9,6 +9,7 @@ import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/tools"
+	"google.golang.org/api/idtoken"
 )
 
 func commitOrRollback(ctx context.Context, tx *sql.Tx, err error) {
@@ -104,9 +105,59 @@ func HandleIdpRequest(ctx context.Context, db *sql.DB, email string, cred []byte
 	}
 	if !hasGoogleLink {
 		// They do not have google linked
-		// TODO: implement account linking
-		logger.ErrorCtx(ctx, "requested to auth with google to a standard account")
+		logger.InfoCtx(ctx, "requested to auth with google to a standard account")
 		return nil, pmerror.ErrMismatchAcc
 	}
 	return &user, nil
+}
+
+type G_Token struct {
+	Email   string
+	Name    string
+	Subject string
+}
+
+func ValidateIdToken(ctx context.Context, token, clientId string) (*G_Token, error) {
+	valToken, err := idtoken.Validate(
+		ctx,
+		token,
+		clientId,
+	)
+	if err != nil {
+		logger.WithError(err).Error("Could not validate token")
+
+		return nil, pmerror.ErrUnspecified
+	}
+
+	logger.InfoCtx(ctx, "Id token is valid")
+	logger.InfoCtx(ctx, "Id token values", valToken.Claims)
+	email, ok := valToken.Claims["email"].(string)
+	if !ok {
+		logger.ErrorCtx(ctx, "Could not extract email from id token")
+		return nil, pmerror.ErrUnspecified
+	}
+	uid, ok := valToken.Claims["sub"].(string)
+	if !ok {
+		logger.ErrorCtx(ctx, "Could not extract user id from id token")
+		return nil, pmerror.ErrUnspecified
+	}
+	name, ok := valToken.Claims["name"].(string)
+	if !ok {
+		logger.ErrorCtx(ctx, "Could not extract name from id token")
+		return nil, pmerror.ErrUnspecified
+	}
+	return &G_Token{
+		Subject: uid,
+		Email:   email,
+		Name:    name,
+	}, nil
+}
+
+func LinkGoogleAccount(ctx context.Context, db *sql.DB, user queries.User, cred []byte) error {
+	q := queries.New(db)
+	return q.CreateIdpAuth(ctx, queries.CreateIdpAuthParams{
+		UserID:     user.ID,
+		Platform:   "google",
+		Credential: cred,
+	})
 }

@@ -131,3 +131,25 @@ templ PasswordReset() {
 		</div>
 	}
 }
+
+templ LinkAccount(email string) {
+	@Wrapper(nil, "Link accounts") {
+		<div class="center box">
+			<p>Please log into your existing account to link to google.</p>
+			<p>For email: { email }</p>
+			<form
+				class="table rows"
+				hx-post="/login/link"
+				hx-swap="innerHTML"
+				hx-target="#msg"
+				hx-target-error="#err"
+			>
+				<p>
+					<label for="password">Current password</label>
+					<input type="password" name="password" autocomplete="password"/>
+				</p>
+				<button type="submit">Submit</button>
+			</form>
+		</div>
+	}
+}
