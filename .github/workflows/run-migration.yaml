@@ -56,4 +56,4 @@ jobs:
           -e DATABASE_URL=sqlite3:/db/pagemail.sqlite3 \
           -e DBMATE_MIGRATIONS_DIR=/migrations \
           -e DBMATE_NO_DUMP_SCHEMA=1 \
-          pagemail-migrations:latest
+          pagemail-migrations:latest migrate
