@@ -9,22 +9,25 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/logging"
 
 	"io"
 	"net/http"
 )
 
+var logger = logging.NewLogger("preview")
+
 type Client struct {
-	jobs    chan string
-	queries *queries.Queries
+	jobs chan string
+	db   *sql.DB
 }
 
 // New returns a new [Client] and starts waiting for jobs
 func New(ctx context.Context, db *sql.DB) *Client {
 	queries := queries.New(db)
 	client := &Client{
-		jobs:    make(chan string, 1),
-		queries: queries,
+		jobs: make(chan string, 1),
+		db:   db,
 	}
 	go func() {
 		for {
@@ -52,23 +55,37 @@ func (c *Client) Queue(pageID string) {
 func (c *Client) fetch(ctx context.Context, page *queries.Page) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	err := fetchPreview(ctx, page)
-	pageUpdate := queries.UpdatePagePreviewParams{
-		Title:       page.Title,
-		Description: page.Description,
-		ImageUrl:    page.ImageUrl,
-		ID:          page.ID,
+
+	q := queries.New(c.db)
+	state := "success"
+	if err := fetchPreview(ctx, page); err != nil {
+		state = "error"
 	}
-	if err == nil {
-		pageUpdate.PreviewState = "success"
-	} else {
-		pageUpdate.PreviewState = "error"
+	err := q.UpdatePagePreview(ctx, queries.UpdatePagePreviewParams{
+		Title:        page.Title,
+		Description:  page.Description,
+		ImageUrl:     page.ImageUrl,
+		ID:           page.ID,
+		PreviewState: state,
+	})
+	if err != nil {
+		logger.WithError(err).ErrorCtx(ctx, "Failed to update page preview")
 	}
 
-	err = c.queries.UpdatePagePreview(ctx, pageUpdate)
+	isReadable := isPageReadable(page)
+	err = q.UpdatePageReadability(ctx, queries.UpdatePageReadabilityParams{
+		Readable: isReadable,
+		ID:       page.ID,
+	})
 	if err != nil {
-		return
+		logger.WithError(err).ErrorCtx(ctx, "Failed to update page readability")
 	}
+	return
+}
+
+func isPageReadable(page *queries.Page) bool {
+	// TODO: implement
+	return true
 }
 
 func fetchUrl(url string) ([]byte, error) {

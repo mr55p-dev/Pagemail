@@ -268,3 +268,20 @@ func (q *Queries) UpdatePagePreview(ctx context.Context, arg UpdatePagePreviewPa
 	)
 	return err
 }
+
+const updatePageReadability = `-- name: UpdatePageReadability :exec
+UPDATE pages SET
+    readable = ?,
+	updated = CURRENT_TIMESTAMP
+WHERE id = ?
+`
+
+type UpdatePageReadabilityParams struct {
+	Readable bool
+	ID       string
+}
+
+func (q *Queries) UpdatePageReadability(ctx context.Context, arg UpdatePageReadabilityParams) error {
+	_, err := q.db.ExecContext(ctx, updatePageReadability, arg.Readable, arg.ID)
+	return err
+}

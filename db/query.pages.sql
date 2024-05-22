@@ -22,6 +22,12 @@ UPDATE pages SET
     updated = CURRENT_TIMESTAMP
 WHERE id = ?;
 
+-- name: UpdatePageReadability :exec
+UPDATE pages SET
+    readable = ?,
+	updated = CURRENT_TIMESTAMP
+WHERE id = ?;
+
 -- name: DeletePageById :execrows
 DELETE FROM pages 
 WHERE id = ?;

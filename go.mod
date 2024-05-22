@@ -15,6 +15,7 @@ require (
 	github.com/mr55p-dev/htmx-utils v0.0.0-20240312083008-2d3534dd85bc
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.23.0
+	golang.org/x/sync v0.7.0
 	google.golang.org/api v0.181.0
 )
 
