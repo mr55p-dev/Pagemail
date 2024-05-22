@@ -11,6 +11,7 @@ services:
     environment:
       PM_ENVIRONMENT: prd
       PM_LOG_LEVEL: INFO
+      PM_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/prd/

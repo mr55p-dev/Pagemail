@@ -2,12 +2,12 @@ package router
 
 import (
 	"context"
+	"database/sql"
 	"io"
 	"io/fs"
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
@@ -15,12 +15,20 @@ import (
 
 var logger = logging.NewLogger("router")
 
+const (
+	URI_DASH     = "/pages/dashboard"
+	URI_LINK     = "/login/link"
+	SESS_G_TOKEN = "google-token"
+)
+
 type Router struct {
-	DBClient  *dbqueries.Queries
+	db        *sql.DB
 	Previewer Previewer
 	Sender    mail.Sender
 	Sessions  sessions.Store
 	Mux       http.Handler
+
+	googleClientId string
 }
 
 type Previewer interface {
@@ -29,34 +37,25 @@ type Previewer interface {
 
 func New(
 	ctx context.Context,
-	conn *dbqueries.Queries,
+	conn *sql.DB,
 	assets fs.FS,
 	mailClient mail.Sender,
 	previewClient Previewer,
 	cookieKey io.Reader,
+	googleClientId string,
 ) (*Router, error) {
 	router := &Router{}
-	router.DBClient = conn
+	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
+	router.googleClientId = googleClientId
 
 	// Load the cookie encryption key
-	key, err := io.ReadAll(cookieKey)
-	if err != nil {
-		return nil, err
-	}
-	router.Sessions = sessions.NewCookieStore(key)
-	if err != nil {
-		return nil, err
-	}
+	router.Sessions = sessions.NewCookieStore(mustReadKey(cookieKey))
 
 	// Serve root
 	rootMux := http.NewServeMux()
 	rootMux.HandleFunc("/", router.GetRoot)
-	rootMux.Handle("/login", HandleMethods(map[string]http.Handler{
-		http.MethodGet:  http.HandlerFunc(router.GetLogin),
-		http.MethodPost: http.HandlerFunc(router.PostLogin),
-	}))
 	rootMux.Handle("/signup", HandleMethods(map[string]http.Handler{
 		http.MethodGet:  http.HandlerFunc(router.GetSignup),
 		http.MethodPost: http.HandlerFunc(router.PostSignup),
@@ -64,9 +63,10 @@ func New(
 	rootMux.Handle("/shortcut/page", HandleMethod(http.MethodPost,
 		middlewares.WithMiddleware(
 			http.HandlerFunc(router.PostPage),
-			middlewares.GetShortcutLoader(router.Sessions, router.DBClient),
+			middlewares.GetShortcutLoader(router.Sessions, router.db),
 		),
 	))
+	rootMux.Handle("/login/", getLoginMux(router))
 	rootMux.Handle("/user/", getUserMux(router))
 	rootMux.Handle("/pages/", getPagesMux(router))
 	rootMux.Handle("/password-reset/", getPasswordResetMux(router))
@@ -77,8 +77,19 @@ func New(
 		middlewares.Recover,
 		middlewares.Tracer,
 		middlewares.RequestLogger,
-		middlewares.GetUserLoader(router.Sessions, router.DBClient),
+		middlewares.GetUserLoader(router.Sessions, router.db),
 	))
 	router.Mux = mux
 	return router, nil
+}
+
+func mustReadKey(reader io.Reader) []byte {
+	if reader == nil {
+		return []byte{}
+	}
+	key, err := io.ReadAll(reader)
+	if err != nil {
+		panic(err)
+	}
+	return key
 }

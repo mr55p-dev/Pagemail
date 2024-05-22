@@ -2,10 +2,10 @@ package render
 
 import (
 	"time"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
+	"github.com/mr55p-dev/pagemail/db/queries"
 )
 
-templ MailDigest(date time.Time, name string, pages []dbqueries.Page) {
+templ MailDigest(date time.Time, name string, pages []queries.Page) {
 	<!DOCTYPE html>
 	<html>
 		<head>

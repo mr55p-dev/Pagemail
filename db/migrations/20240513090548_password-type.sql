@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE IF NOT EXISTS "users_new" (
+CREATE TABLE users_new (
 	id TEXT UNIQUE NOT NULL PRIMARY KEY,
 	username TEXT UNIQUE NOT NULL,
 	email TEXT UNIQUE NOT NULL ,
@@ -27,7 +27,7 @@ DROP TABLE users;
 ALTER TABLE users_new RENAME TO users;
 
 -- migrate:down
-CREATE TABLE "users_new" (
+CREATE TABLE users_new (
 	id TEXT UNIQUE NOT NULL PRIMARY KEY,
 	username TEXT UNIQUE NOT NULL,
 	email TEXT UNIQUE NOT NULL ,

@@ -30,6 +30,10 @@ func GenerateNewId(length int) string {
 	return out.String()[:length]
 }
 
-func GenerateNewShortcutToken() string {
-	return GenerateNewId(20)
+func NewUserId() string {
+	return GenerateNewId(16)
+}
+
+func NewPageId() string {
+	return GenerateNewId(16)
 }

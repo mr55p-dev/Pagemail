@@ -7,11 +7,12 @@ import (
 )
 
 type AppConfig struct {
-	Environment   string `config:"app.environment"`
-	LogLevel      string `config:"app.log-level" log:"logLevel"`
-	Host          string `config:"app.host" log:"host"`
-	DBPath        string `config:"db.path" log:"db-path"`
-	CookieKeyFile string `config:"app.cookie-key-file" log:"cookie-key-file"`
+	Environment    string `config:"app.environment"`
+	LogLevel       string `config:"app.log-level" log:"logLevel"`
+	Host           string `config:"app.host" log:"host"`
+	DBPath         string `config:"db.path" log:"db-path"`
+	CookieKeyFile  string `config:"app.cookie-key-file" log:"cookie-key-file"`
+	GoogleClientId string `config:"app.google-client-id" log:"google-client-id"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {

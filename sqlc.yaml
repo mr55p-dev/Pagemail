@@ -1,9 +1,13 @@
+---
 version: "2"
 sql:
   - engine: "sqlite"
-    queries: "db/query.sql"
+    queries:
+      - "db/query.pages.sql"
+      - "db/query.users.sql"
+      - "db/query.auth.sql"
     schema: "db/schema.sql"
     gen:
       go:
-        package: "dbqueries"
-        out: "internal/dbqueries"
+        package: "queries"
+        out: "db/queries"

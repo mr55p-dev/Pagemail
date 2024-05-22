@@ -18,6 +18,10 @@ var (
 		Status:  http.StatusBadRequest,
 		Message: "Please include all marked fields",
 	}
+	ErrCSRF = &PMError{
+		Status:  http.StatusForbidden,
+		Message: "CSRF token mismatch",
+	}
 	ErrBadEmail = &PMError{
 		Status:  http.StatusNotFound,
 		Message: "Incorrect email address",
@@ -33,6 +37,14 @@ var (
 	ErrDuplicateEmail = &PMError{
 		Status:  http.StatusBadRequest,
 		Message: "Looks like that email address is already taken. If you can't remember your password please reach out to help@pagemail.io for assistence.",
+	}
+	ErrNoAuth = &PMError{
+		Status:  http.StatusForbidden,
+		Message: "Looks like your account was created with a different provider.",
+	}
+	ErrMismatchAcc = &PMError{
+		Status:  http.StatusUnauthorized,
+		Message: "Sorry, we currently don't support linking regular accounts with external providers. Please sign in using your email and password.",
 	}
 	ErrUnspecified = &PMError{
 		Status:  http.StatusInternalServerError,

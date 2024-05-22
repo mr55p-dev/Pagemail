@@ -14,7 +14,6 @@ import (
 
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 	"github.com/stretchr/testify/assert"
@@ -35,12 +34,20 @@ func init() {
 	conn := db.MustConnect(ctx, ":memory:")
 	db.MustLoadSchema(ctx, conn)
 
-	router, err := New(ctx, dbqueries.New(conn), nil, nil, &NilPreviewer{}, strings.NewReader("passwordpassword"))
+	router, err := New(
+		ctx,
+		conn,
+		nil,
+		nil,
+		&NilPreviewer{},
+		strings.NewReader("passwordpassword"),
+		"google_client",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	fn := middlewares.GetUserLoader(router.Sessions, router.DBClient)
+	fn := middlewares.GetUserLoader(router.Sessions, router.db)
 	mux = fn(router.Mux)
 }
 
@@ -90,7 +97,7 @@ func TestLogin(t *testing.T) {
 		"email":    {"test@mail.com"},
 		"password": {"password"},
 	}).Encode())
-	r := httptest.NewRequest(http.MethodPost, "/login", form)
+	r := httptest.NewRequest(http.MethodPost, "/login/", form)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, WithHtmx(r))

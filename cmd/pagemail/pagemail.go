@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -15,7 +14,6 @@ import (
 	"github.com/mr55p-dev/gonk"
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/assets"
-	"github.com/mr55p-dev/pagemail/internal/dbqueries"
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/preview"
@@ -41,23 +39,21 @@ func main() {
 	client = mail.NewAwsSender(ctx, awsCfg)
 
 	assets := getAssets(cfg.Environment)
-	cookieKey, err := getCookieKey(cfg.CookieKeyFile)
-	if err != nil {
-		panic(err)
-	}
+
+	// Load config files
+	cookieKey := MustReadFile(cfg.CookieKeyFile)
 
 	// Create the previewer and check for any "unknown" entries
-	queries := dbqueries.New(conn)
-	previewer := preview.New(ctx, queries)
-	go previewer.Sweep(ctx)
+	previewer := preview.New(ctx, conn)
 
 	router, err := router.New(
 		ctx,
-		queries,
+		conn,
 		assets,
 		client,
 		previewer,
 		cookieKey,
+		cfg.GoogleClientId,
 	)
 	if err != nil {
 		panic(err)
@@ -66,7 +62,7 @@ func main() {
 	// Load the mail client
 	if cfg.Environment == "prd" {
 		logger.Info("Starting mail client")
-		go mail.MailGo(ctx, router.DBClient, router.Sender)
+		go mail.MailGo(ctx, conn, router.Sender)
 	} else {
 		logger.Warn("Environment is not production, not starting mailGo")
 	}
@@ -79,11 +75,16 @@ func main() {
 
 func getConfig() *AppConfig {
 	cfg := new(AppConfig)
-	err := gonk.LoadConfig(
-		cfg,
-		gonk.FileLoader("pagemail.yaml", true),
-		gonk.EnvironmentLoader("pm"),
-	)
+
+	sources := make([]gonk.Loader, 0)
+	yamlSource, err := gonk.NewYamlLoader("pagemail.yaml")
+	if err == nil {
+		sources = append(sources, yamlSource)
+	} else {
+		logger.WithError(err).Warn("Could not load local pagemail.yaml file")
+	}
+	sources = append(sources, gonk.EnvLoader("pm"))
+	err = gonk.LoadConfig(cfg, sources...)
 	if err != nil {
 		panic(err)
 	}
@@ -123,15 +124,15 @@ func getAssets(env string) fs.FS {
 	}
 }
 
-func getCookieKey(path string) (io.Reader, error) {
+func MustReadFile(path string) io.Reader {
 	if path == "-" {
-		return io.LimitReader(rand.Reader, 32), nil
+		return io.LimitReader(rand.Reader, 32)
 	} else {
 		logger.Debug("Using cookie key from file", "file", path)
 		cookieDataFile, err := os.Open(path)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to open cookie key file at %s: %w", path, err)
+			panic(err)
 		}
-		return cookieDataFile, nil
+		return cookieDataFile
 	}
 }
