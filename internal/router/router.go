@@ -28,6 +28,8 @@ type Router struct {
 	Sessions  sessions.Store
 	Mux       http.Handler
 
+	host           string
+	proto          string
 	googleClientId string
 }
 
@@ -43,12 +45,16 @@ func New(
 	previewClient Previewer,
 	cookieKey io.Reader,
 	googleClientId string,
+	externalHost string,
+	externalProto string,
 ) (*Router, error) {
 	router := &Router{}
 	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
 	router.googleClientId = googleClientId
+	router.host = externalHost
+	router.proto = externalProto
 
 	// Load the cookie encryption key
 	router.Sessions = sessions.NewCookieStore(mustReadKey(cookieKey))

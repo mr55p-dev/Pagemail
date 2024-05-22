@@ -21,7 +21,13 @@ import (
 )
 
 func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
-	response.Component(render.Login(router.googleClientId), w, r)
+	// generate the reset url
+	urlAddr := url.URL{
+		Scheme: router.proto,
+		Host:   router.host,
+		Path:   "login/google",
+	}
+	response.Component(render.Login(router.googleClientId, urlAddr.String()), w, r)
 }
 
 type PostLoginRequest struct {
@@ -300,8 +306,8 @@ func (router *Router) PostPassResetReq(w http.ResponseWriter, r *http.Request) {
 
 	// generate the reset url
 	urlAddr := url.URL{
-		Scheme: "https",
-		Host:   "pagemail.io",
+		Scheme: router.proto,
+		Host:   router.host,
 		Path:   "password-reset/redeem",
 	}
 	q := urlAddr.Query()

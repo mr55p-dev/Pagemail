@@ -11,7 +11,9 @@ services:
     environment:
       PM_APP_ENVIRONMENT: prd
       PM_APP_LOG_LEVEL: INFO
-      PM_APP_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
+      PM_APP_GOOGLE_CLIENT_ID: "556909502728-88okrlq3elmg013h5p20hhs53ls46d3s.apps.googleusercontent.com"
+      PM_EXTERN_HOST: pagemail.io
+      PM_EXTERN_PROTO: https
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/prd/
