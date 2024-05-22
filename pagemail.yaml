@@ -7,3 +7,6 @@ app:
   google-client-id: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
 db:
   path: ./db/pagemail.sqlite3
+extern:
+  host: localhost:8080
+  proto: http

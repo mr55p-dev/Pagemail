@@ -54,6 +54,8 @@ func main() {
 		previewer,
 		cookieKey,
 		cfg.GoogleClientId,
+		cfg.External.Host,
+		cfg.External.Proto,
 	)
 	if err != nil {
 		panic(err)

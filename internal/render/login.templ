@@ -1,6 +1,6 @@
 package render
 
-templ Login(clientId string) {
+templ Login(clientId, redirectUrl string) {
 	@Wrapper(nil, "Login") {
 		<div class="center box" hx-ext="response-targets">
 			<form
@@ -23,7 +23,7 @@ templ Login(clientId string) {
 			<div
 				id="g_id_onload"
 				data-client_id={ clientId }
-				data-login_uri="http://localhost:8080/login/google"
+				data-login_uri={ redirectUrl }
 				data-auto_prompt="false"
 			></div>
 			<div
