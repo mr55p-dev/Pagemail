@@ -29,9 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # - uses: webfactory/ssh-agent@v0.9.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
@@ -40,6 +40,8 @@ jobs:
         uses: ArwynFr/actions-docker-context@v2
         with:
           docker_host: ${{ vars.DOCKER_HOST }}
+          context_name: remote
+          ssh_key: ${{ secrets.SSH_PRIVATE_KEY }}
           use_context: true
 
       - name: Build
@@ -54,4 +56,4 @@ jobs:
           -e DATABASE_URL=sqlite3:/db/pagemail.sqlite3 \
           -e DBMATE_MIGRATIONS_DIR=/migrations \
           -e DBMATE_NO_DUMP_SCHEMA=1 \
-          pagemail-migrations:latest 
+          pagemail-migrations:latest
