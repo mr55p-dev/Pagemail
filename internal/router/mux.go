@@ -30,6 +30,7 @@ func getUserMux(router *Router) http.Handler {
 
 func getPagesMux(router *Router) http.Handler {
 	pagesMux := http.NewServeMux()
+	pagesMux.HandleFunc("GET /", router.GetPages)
 	pagesMux.HandleFunc("GET /{page_id}", router.GetPage)
 	pagesMux.HandleFunc("GET /dashboard", router.GetDashboard)
 	pagesMux.HandleFunc("POST /", router.PostPage)

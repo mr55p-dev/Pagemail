@@ -28,7 +28,8 @@ WHERE user_id = ?;
 -- name: ReadPagesByUserId :many
 SELECT * FROM pages
 WHERE user_id = ?
-ORDER BY created DESC;
+ORDER BY created DESC
+LIMIT ? OFFSET ?;
 
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
