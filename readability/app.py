@@ -10,9 +10,12 @@ import os
 session = Session(region_name="eu-west-1")
 polly = session.client("polly")
 
-bucket_name = os.getenv("BUCKET_NAME")
+bucket_name = os.getenv("RDR_BUCKET_NAME")
 if not bucket_name:
-    raise ValueError("BUCKET_NAME environment variable is not set")
+    raise ValueError("RDR_BUCKET_NAME environment variable is not set")
+prefix_name = os.getenv("RDR_PREFIX_NAME")
+if not prefix_name:
+    raise ValueError("RDR_PREFIX_NAME environment variable is not set")
 
 def polly_synthesize(text: str) -> dict: 
     try:
@@ -57,4 +60,4 @@ def synthesize():
     return res
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host=os.getenv("RDR_HOST"), port=os.getenv("RDR_PORT"))
