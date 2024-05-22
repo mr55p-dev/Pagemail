@@ -33,18 +33,43 @@ jobs:
       - name: Disable host verification
         run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
 
-      - name: Build image locally
-        run: |
-          docker build \
-          -t pagemail-migrations:latest \
-          -f Dockerfile.migrations .
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Run migration on the server
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        id: build
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: pagemail-migrations
+          IMAGE_TAG: latest
         run: |
-          docker run \
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f Dockerfile.migrations .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo "image=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Log into docker via server
+        env:
+          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+        run: |
+          docker login \
+          --username ${{ steps.login-ecr.outputs.docker_username_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          --password ${{ steps.login-ecr.outputs.docker_password_168938868801_dkr_ecr_eu_west_2_amazonaws_com }} \
+          ${{ steps.login-ecr.outputs.registry }}
+
+      - name: Deploy to server
+        env:
+          DOCKER_HOST: ${{ vars.DOCKER_HOST }}
+        run: |
+          docker run --rm \
           -v /home/ubuntu/pagemail/${{ vars.ENV_NAME }}/db:/db \
-          -e DATABASE_URL=sqlite3:./db/pagemail.sqlite3 \
+          -e DATABASE_URL=sqlite3:/db/pagemail.sqlite3 \
           -e DBMATE_MIGRATIONS_DIR=/migrations \
           -e DBMATE_NO_DUMP_SCHEMA=1 \
-          --rm \
-          pagemail-migrations:latest migrate
+          ${{ steps.build.outputs.image }}
