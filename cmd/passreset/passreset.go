@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	cfg := new(Config)
-	err := gonk.LoadConfig(cfg, gonk.EnvironmentLoader(""))
+	err := gonk.LoadConfig(cfg, gonk.EnvLoader(""))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading configuration: %v", err)
 		os.Exit(1)
