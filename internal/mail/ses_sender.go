@@ -27,7 +27,7 @@ func NewAwsSender(ctx context.Context, awsConfig aws.Config) *AwsSender {
 
 // Send will produce an email to the given address with the given body
 func (c *AwsSender) Send(ctx context.Context, msg Message) error {
-	logger := logger.With("recipient", msg.Body)
+	logger := logger.With("recipient", msg.To)
 	logger.DebugCtx(ctx, "Sending mail", "recipient")
 	bodyTextBuilder := strings.Builder{}
 	_, err := io.Copy(&bodyTextBuilder, msg.Body)

@@ -133,7 +133,7 @@ func SendUserDigest(ctx context.Context, user *queries.ReadUsersWithMailRow, db 
 		user.Email,
 		WithSubject(SUBJ_DIGEST),
 		WithBody(&buf),
-		WithTags(map[string]string{"puropse:": "digest"}),
+		// WithTags(map[string]string{"puropse:": "digest"}),
 	)
 	err = sender.Send(ctx, msg)
 	if err != nil {
