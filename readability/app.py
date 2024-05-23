@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from readability import Document
 from boto3 import Session
 from botocore.exceptions import BotoCoreError, ClientError, ParamValidationError
-from contextlib import closing
 import os
 
 
@@ -43,12 +42,15 @@ def extract_text_from_html(html_content):
     soup = BeautifulSoup(doc.summary(), 'html.parser')
     return soup.get_text()
 
+@app.route('/check', methods=['POST'])
+def check():
+    return "ok"
+
 @app.route('/extract', methods=['POST'])
 def extract():
     html_content = request.data.decode('utf-8')
     article_text = extract_text_from_html(html_content)
     print(article_text)
-    
     return article_text
 
 @app.route("/synthesize", methods=["POST"])
@@ -59,5 +61,20 @@ def synthesize():
         return res, 500
     return res
 
+@app.route("/status", methods=['GET'])
+def status():
+    job_id = request.args.get("job_id")
+    try:
+        task = polly.get_speech_synthesis_task(TaskId=job_id)
+    except (BotoCoreError, ClientError, ParamValidationError) as error:
+        return {"error": str(error)}, 500
+    return { "status": task.status, "reason": task.status_reason }
+    
+
 if __name__ == '__main__':
-    app.run(debug=True, host=os.getenv("RDR_HOST"), port=os.getenv("RDR_PORT"))
+    env = os.getenv("RDR_ENV", "dev")
+    app.run(
+        debug=(env == "dev"),
+        host=os.getenv("RDR_HOST", "127.0.0.1"),
+        port=int(os.getenv("RDR_PORT", 80)),
+    )
