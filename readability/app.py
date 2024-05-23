@@ -42,6 +42,10 @@ def extract_text_from_html(html_content):
     soup = BeautifulSoup(doc.summary(), 'html.parser')
     return soup.get_text()
 
+@app.route('/health', methods=['GET'])
+def health():
+    return "ok", 200
+
 @app.route('/check', methods=['POST'])
 def check():
     return "ok"
