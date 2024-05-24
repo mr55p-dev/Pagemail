@@ -45,6 +45,7 @@ services:
     expose:
       - 5000
     networks:
+      - traefik
       - readability
     logging:
       driver: awslogs
