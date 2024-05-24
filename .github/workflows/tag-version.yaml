@@ -32,5 +32,3 @@ jobs:
     if: needs.tag.outputs.bumped != 'none'
     uses: ./.github/workflows/deploy-prd.yaml
     secrets: inherit
-    with:
-      environment: Production
