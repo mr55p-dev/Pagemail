@@ -44,7 +44,7 @@ func main() {
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
 	previewer := preview.New(ctx, conn)
 
-	readabilityUrl, _ := url.Parse("http://readability:5000")
+	readabilityUrl, _ := url.Parse("http://pagemail-readability-dev:5000")
 	reader, err := readability.New(ctx, readabilityUrl)
 	if err != nil {
 		panic(err)
