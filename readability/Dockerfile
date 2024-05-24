@@ -1,5 +1,7 @@
 FROM python:3.8-slim
 
+RUN apt-get -qq -y install curl
+
 WORKDIR /app
 COPY requirements.txt .
 
