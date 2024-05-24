@@ -1,3 +1,4 @@
-venv
-contents.html
-**/__pycache__/
+node_modules/
+venv/
+dist/
+__pycache__/
