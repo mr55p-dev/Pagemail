@@ -7,7 +7,6 @@ services:
       file: docker-compose.base.yml
       service: pagemail
     image: 168938868801.dkr.ecr.eu-west-2.amazonaws.com/pagemail:prd
-    container_name: pagemail-prd
     environment:
       PM_APP_ENVIRONMENT: prd
       PM_APP_LOG_LEVEL: INFO
