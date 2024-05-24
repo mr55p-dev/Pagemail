@@ -14,7 +14,5 @@ services:
       options:
         awslogs-region: eu-west-2
     platform: linux/amd64
-    networks:
-      - traefik
     labels:
       - "traefik.enable=true"

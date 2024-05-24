@@ -19,6 +19,7 @@ services:
       PM_EXTERN_PROTO: https
     networks:
       - readability
+      - traefik
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/dev/
