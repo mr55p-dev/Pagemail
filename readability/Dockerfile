@@ -1,15 +1,16 @@
-FROM python:3.8-slim
+FROM oven/bun:latest
+
+WORKDIR /app
 
 RUN <<EOF
 apt-get update
 apt-get -y install curl
 EOF
 
-WORKDIR /app
-COPY requirements.txt .
+COPY package.json ./
+COPY bun.lockb ./
+COPY src ./
 
-RUN pip install -r requirements.txt
+RUN bun install
 
-COPY . .
-
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["bun", "run", "main.ts"]

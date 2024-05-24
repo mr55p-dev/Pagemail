@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import parseArgs from "minimist";
+import express from "express";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
 
 function parseDoc(docstring: Buffer | string, url: string): any {
@@ -10,121 +10,60 @@ function parseDoc(docstring: Buffer | string, url: string): any {
   return reader.parse();
 }
 
-async function fetchQuick(data: Buffer, url: URL) {
+function checkReadability(data: Buffer, url: URL): boolean {
   const parsed = new JSDOM(data, { url: url.toString() });
-  const isReadable = isProbablyReaderable(parsed.window.document);
-  if (isReadable) {
-    console.log("checks passed");
-    process.exit(0);
-  } else {
-    console.error("checks failed");
-    process.exit(1);
-  }
+  return isProbablyReaderable(parsed.window.document);
 }
 
-async function fetchReadableArticle(data: Buffer, url: URL) {
+function fetchReadableArticle(data: Buffer, url: URL): string | undefined {
   const parsed = parseDoc(data, url.toString());
   if (!parsed?.textContent) {
-    process.exit(3);
+    return;
   }
-
-  const out = JSON.stringify(parsed);
-  process.stdout.write(out);
+  return parsed.textContent;
 }
 
-class Message {
-  ready = false;
-  clHeaderSz = 4;
-  cl = 0;
-  buf: Buffer | undefined;
-  bufIdx = 0;
-  done = false;
-  onExit: VoidFunction | undefined;
-  frIdx = 0;
-
-  initialize(headerBytes: Buffer): number {
-    if (this.ready) {
-      return 0;
-    }
-
-    // Set the content length and buffer
-    this.cl = headerBytes.readUIntBE(0, this.clHeaderSz);
-    this.buf = Buffer.allocUnsafe(this.cl);
-    this.ready = true;
-    return this.clHeaderSz;
+function geturl(req: express.Request): URL | undefined {
+  const url = req.query.url;
+  if (!url || typeof url !== "string") {
+    return;
   }
-
-  processFrame(data: Buffer, offset?: number) {
-    let bufOffset = offset || 0;
-
-    if (!this.buf) {
-      throw new Error("initialized and no buffer present");
-    }
-
-    for (; bufOffset < data.length; bufOffset++) {
-      const char = data.at(bufOffset);
-      if (char === undefined) {
-        throw new Error(`Undefined character of data at index ${bufOffset}`);
-      }
-
-      this.buf.writeUInt8(char, this.bufIdx);
-      this.bufIdx++;
-      if (this.bufIdx === this.cl) {
-        this.done = true;
-        // console.log("overspill data", data.slice(bufOffset + 1, data.length).toString());
-        return true;
-      }
-    }
-    this.frIdx++;
-  }
-
-  async attachStream(callback: (buf: Buffer) => void) {
-    for await (const data of process.stdin) {
-      if (!data || this.done) {
-        // console.log("overspill frame before pipe EOF", data.toString());
-        process.stdin.destroy();
-        return;
-      }
-
-      let offset;
-      if (!this.ready) {
-        offset = this.initialize(data.subarray(0, this.clHeaderSz));
-      }
-
-      this.processFrame(data, offset);
-      if (this.done) {
-        callback(this.buf!);
-      }
-    }
-  }
+  return new URL(url);
 }
 
-function main() {
-  const argv = parseArgs(process.argv.slice(2), {
-    string: ["url"],
-    boolean: ["check"],
-  });
+const app = express();
 
-  if (!argv.url) {
-    console.error("Did not provide a site URI");
-    process.exit(1);
+app.get("/health", (_, res) => {
+  res.status(200).send("ok");
+});
+
+app.use(express.raw({ type: "text/html" })).post("/check", (req, res) => {
+  const url = geturl(req);
+  if (!url) {
+    res.status(400).send("missing url");
+    return;
   }
+  const isReadable = checkReadability(req.body, new URL(url));
+  res
+    .status(200)
+    .setHeader("Content-Type", "application/json")
+    .send({ is_readable: isReadable });
+});
 
-  try {
-    var url = new URL(argv.url || "");
-  } catch (_) {
-    console.error("URL is invalid");
-    process.exit(1);
+app.post("/extract", (req, res) => {
+  const url = geturl(req);
+  if (!url) {
+    res.status(400).send("missing url");
+    return;
   }
+  const parsed = fetchReadableArticle(req.body, new URL(url));
+  if (!parsed) {
+    res.status(400).send("failed to parse");
+    return;
+  }
+  return res.status(200).setHeader("Content-Type", "text/html").send(parsed);
+});
 
-  const msg = new Message();
-  msg.attachStream((buf) => {
-    if (argv.check) {
-      fetchQuick(buf, url);
-    } else {
-      fetchReadableArticle(buf, url);
-    }
-  });
-}
-
-main();
+app.listen(5000, () => {
+  console.log("Server is running on port 5000");
+});
