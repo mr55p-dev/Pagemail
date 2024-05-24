@@ -30,9 +30,8 @@ resource "aws_ecr_lifecycle_policy" "pagemail" {
 EOF
 }
 
-
-resource "aws_ecr_repository" "pagemail_migrations" {
-  name                 = "pagemail-migrations"
+resource "aws_ecr_repository" "pagemail_readability" {
+  name                 = "pagemail-readability"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -40,8 +39,8 @@ resource "aws_ecr_repository" "pagemail_migrations" {
   }
 }
 
-resource "aws_ecr_lifecycle_policy" "pagemail_migrations" {
-  repository = aws_ecr_repository.pagemail_migrations.name
+resource "aws_ecr_lifecycle_policy" "pagemail_readability" {
+  repository = aws_ecr_repository.pagemail_readability.name
   policy     = <<EOF
 {
   "rules": [

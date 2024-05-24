@@ -22,15 +22,18 @@ type Auth struct {
 }
 
 type Page struct {
-	ID           string
-	UserID       string
-	Url          string
-	Title        sql.NullString
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	PreviewState string
-	Created      time.Time
-	Updated      time.Time
+	ID               string
+	UserID           string
+	Url              string
+	Title            sql.NullString
+	Description      sql.NullString
+	ImageUrl         sql.NullString
+	PreviewState     string
+	Created          time.Time
+	Updated          time.Time
+	Readable         bool
+	ReadingJobStatus interface{}
+	ReadingJobID     interface{}
 }
 
 type SchemaMigration struct {

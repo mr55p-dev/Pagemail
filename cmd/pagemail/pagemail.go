@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/preview"
+	"github.com/mr55p-dev/pagemail/internal/readability"
 	"github.com/mr55p-dev/pagemail/internal/router"
 )
 
@@ -37,14 +39,17 @@ func main() {
 	}
 	logger.InfoCtx(ctx, "Starting mail job")
 	client = mail.NewAwsSender(ctx, awsCfg)
-
 	assets := getAssets(cfg.Environment)
 
-	// Load config files
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-
-	// Create the previewer and check for any "unknown" entries
 	previewer := preview.New(ctx, conn)
+
+	readabilityUrl, _ := url.Parse("http://readability:5000")
+	reader, err := readability.New(ctx, readabilityUrl)
+	if err != nil {
+		panic(err)
+	}
+	_ = reader
 
 	router, err := router.New(
 		ctx,

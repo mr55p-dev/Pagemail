@@ -2,6 +2,9 @@
 version: v3
 services:
   pagemail:
+    depends_on:
+      readability:
+        condition: service_healthy
     restart: always
     expose:
       - 80
@@ -13,8 +16,29 @@ services:
       driver: awslogs
       options:
         awslogs-region: eu-west-2
-    platform: linux/amd64
     networks:
+      - readability
       - traefik
+    platform: linux/amd64
     labels:
       - "traefik.enable=true"
+
+  readability:
+    environment:
+      RDR_HOST: 0.0.0.0
+      RDR_PORT: 80
+      RDR_BUCKET_NAME: pagemail-readability
+    expose:
+      - 5000
+    networks:
+      - readability
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-2
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 0
+      start_period: 10s

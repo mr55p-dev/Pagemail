@@ -8,6 +8,11 @@ SELECT * FROM pages
 WHERE id = ?
 LIMIT 1;
 
+-- name: ReadPagesByReadable :many
+SELECT * FROM pages
+WHERE readable = ?
+AND user_id = ?;
+
 -- name: UpdatePagePreview :exec
 UPDATE pages SET
     title = ?,
@@ -15,6 +20,12 @@ UPDATE pages SET
     image_url = ?,
     preview_state = ?,
     updated = CURRENT_TIMESTAMP
+WHERE id = ?;
+
+-- name: UpdatePageReadability :exec
+UPDATE pages SET
+    readable = ?,
+	updated = CURRENT_TIMESTAMP
 WHERE id = ?;
 
 -- name: DeletePageById :execrows
