@@ -6,9 +6,6 @@ services:
     extends:
       file: docker-compose.base.yml
       service: pagemail
-    depends_on:
-      readability:
-        condition: service_healthy
     image: 168938868801.dkr.ecr.eu-west-2.amazonaws.com/pagemail:prd
     container_name: pagemail-prd
     environment:
@@ -17,9 +14,6 @@ services:
       PM_APP_GOOGLE_CLIENT_ID: "556909502728-88okrlq3elmg013h5p20hhs53ls46d3s.apps.googleusercontent.com"
       PM_EXTERN_HOST: pagemail.io
       PM_EXTERN_PROTO: https
-    networks:
-      - readability
-      - traefik
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/prd/
@@ -35,29 +29,15 @@ services:
       - "traefik.http.routers.pagemail-prd.tls.certresolver=letsencrypt"
 
   readability:
+    extends:
+      file: docker-compose.base.yml
+      service: readability
     image: 168938868801.dkr.ecr.eu-west-2.amazonaws.com/pagemail-readability:prd
-    container_name: pagemail-readability
     environment:
-      RDR_HOST: 0.0.0.0
-      RDR_PORT: 80
-      RDR_BUCKET_NAME: pagemail-readability
       RDR_PREFIX_NAME: prd/
-    expose:
-      - 5000
-    networks:
-      - traefik
-      - readability
     logging:
-      driver: awslogs
       options:
         awslogs-group: /splat/pagemail-readability
-        awslogs-region: eu-west-2
-    healthcheck:
-      test: ["CMD", "curl", "http://localhost:5000/health"]
-      interval: 10s
-      timeout: 2s
-      retries: 0
-      start_period: 10s
 
 networks:
   readability:
