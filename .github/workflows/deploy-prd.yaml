@@ -7,7 +7,6 @@ on:
 jobs:
   deploy-prd:
     name: Deploy production
-    needs: tag
     uses: ./.github/workflows/deploy-env.yaml
     secrets: inherit
     with:
@@ -15,7 +14,6 @@ jobs:
 
   migrate:
     name: Run migrations
-    needs: tag
     uses: ./.github/workflows/run-migration.yaml
     secrets: inherit
     with:
