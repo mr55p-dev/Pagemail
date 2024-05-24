@@ -17,6 +17,8 @@ services:
       PM_APP_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
       PM_EXTERN_HOST: dev.pagemail.io
       PM_EXTERN_PROTO: https
+    networks:
+      - readability
     volumes:
       - type: bind
         source: /home/ubuntu/pagemail/dev/
@@ -39,8 +41,10 @@ services:
       RDR_PORT: 5000
       RDR_BUCKET_NAME: pagemail-readability
       RDR_PREFIX_NAME: dev/
-    ports:
-      - 5000:5000
+    expose:
+      - 5000
+    networks:
+      - readability
     logging:
       driver: awslogs
       options:
@@ -54,6 +58,7 @@ services:
       start_period: 10s
 
 networks:
+  readability:
   traefik:
     name: traefik_proxy
     external: true
