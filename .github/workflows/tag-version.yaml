@@ -1,5 +1,5 @@
 ---
-name: Deploy production
+name: On merge main
 on:
   workflow_dispatch:
   push:
@@ -30,16 +30,7 @@ jobs:
     name: Deploy production
     needs: tag
     if: needs.tag.outputs.bumped != 'none'
-    uses: ./.github/workflows/deploy-env.yaml
-    secrets: inherit
-    with:
-      environment: Production
-
-  migrate:
-    name: Run migrations
-    needs: tag
-    if: needs.tag.outputs.bumped != 'none'
-    uses: ./.github/workflows/run-migration.yaml
+    uses: ./.github/workflows/deploy-prd.yaml
     secrets: inherit
     with:
       environment: Production

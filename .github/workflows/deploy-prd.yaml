@@ -1,0 +1,22 @@
+---
+name: Deploy production
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  deploy-prd:
+    name: Deploy production
+    needs: tag
+    uses: ./.github/workflows/deploy-env.yaml
+    secrets: inherit
+    with:
+      environment: Production
+
+  migrate:
+    name: Run migrations
+    needs: tag
+    uses: ./.github/workflows/run-migration.yaml
+    secrets: inherit
+    with:
+      environment: Production
