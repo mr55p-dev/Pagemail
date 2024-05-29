@@ -15,9 +15,14 @@ type AppConfig struct {
 	GoogleClientId string `config:"app.google-client-id" log:"google-client-id"`
 
 	External struct {
-		Host  string `config:"host" log:"extern-host"`
-		Proto string `config:"proto" log:"extern-proto"`
+		Scheme string `config:"scheme" log:"extern-scheme"`
+		Host   string `config:"host" log:"extern-host"`
 	} `config:"extern"`
+
+	Readability struct {
+		Scheme string `config:"scheme" log:"readability-scheme"`
+		Host   string `config:"host" log:"readability-host"`
+	} `config:"readability"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {

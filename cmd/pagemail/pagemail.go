@@ -44,8 +44,10 @@ func main() {
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
 	previewer := preview.New(ctx, conn)
 
-	readabilityUrl, _ := url.Parse("http://readability:5000")
-	reader, err := readability.New(ctx, readabilityUrl)
+	reader, err := readability.New(ctx, &url.URL{
+		Scheme: cfg.Readability.Scheme,
+		Host:   cfg.Readability.Host,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +62,7 @@ func main() {
 		cookieKey,
 		cfg.GoogleClientId,
 		cfg.External.Host,
-		cfg.External.Proto,
+		cfg.External.Scheme,
 	)
 	if err != nil {
 		panic(err)

@@ -2,6 +2,10 @@ import { JSDOM } from "jsdom";
 import express from "express";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
 
+process.on("SIGINT", () => {
+  process.exit(1);
+});
+
 function parseDoc(docstring: Buffer | string, url: string): any {
   const parser = new JSDOM(docstring, {
     url,
@@ -35,6 +39,11 @@ const app = express();
 
 app.get("/health", (_, res) => {
   res.status(200).send("ok");
+});
+
+app.use((req, _, next) => {
+  console.log(req.method, decodeURI(req.url));
+  next();
 });
 
 app.use(express.raw({ type: "text/html" })).post("/check", (req, res) => {

@@ -9,4 +9,7 @@ db:
   path: ./db/pagemail.sqlite3
 extern:
   host: localhost:8080
-  proto: http
+  scheme: http
+readability:
+  scheme: http
+  host: localhost:5000
