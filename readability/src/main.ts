@@ -37,10 +37,6 @@ function geturl(req: express.Request): URL | undefined {
 
 const app = express();
 
-app.get("/health", (_, res) => {
-  res.status(200).send("ok");
-});
-
 app.use((req, _, next) => {
   console.log(req.method, decodeURI(req.url));
   next();
@@ -53,6 +49,24 @@ app.use(express.raw({ type: "text/html" })).post("/check", (req, res) => {
     return;
   }
   const isReadable = checkReadability(req.body, new URL(url));
+  res
+    .status(200)
+    .setHeader("Content-Type", "application/json")
+    .send({ is_readable: isReadable });
+});
+
+app.get("/health", (_, res) => {
+  res.status(200).send("ok");
+});
+
+app.post("/check", (req, res) => {
+  const url = geturl(req);
+  if (!url) {
+    res.status(400).send("missing url");
+    return;
+  }
+  const isReadable = checkReadability(req.body, new URL(url));
+  console.log("is readable: ", isReadable);
   res
     .status(200)
     .setHeader("Content-Type", "application/json")

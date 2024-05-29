@@ -40,18 +40,16 @@ func main() {
 	logger.InfoCtx(ctx, "Starting mail job")
 	client = mail.NewAwsSender(ctx, awsCfg)
 	assets := getAssets(cfg.Environment)
-
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-	previewer := preview.New(ctx, conn)
 
-	reader, err := readability.New(ctx, &url.URL{
+	reader := readability.New(ctx, &url.URL{
 		Scheme: cfg.Readability.Scheme,
 		Host:   cfg.Readability.Host,
 	})
 	if err != nil {
 		panic(err)
 	}
-	_ = reader
+	previewer := preview.New(ctx, conn, reader)
 
 	router, err := router.New(
 		ctx,
