@@ -17,6 +17,12 @@ import (
 
 var logger = logging.NewLogger("preview")
 
+const (
+	STATE_SUCCESS = "success"
+	STATE_ERROR   = "error"
+	STATE_UNKNOWN = "unknown"
+)
+
 type Client struct {
 	jobs      chan string
 	db        *sql.DB
@@ -65,9 +71,9 @@ func (c *Client) fetch(ctx context.Context, page *queries.Page) {
 	}
 
 	q := queries.New(c.db)
-	state := "success"
+	state := STATE_SUCCESS
 	if err := createPreview(ctx, page, bytes.NewReader(content)); err != nil {
-		state = "error"
+		state = STATE_ERROR
 	}
 	err = q.UpdatePagePreview(ctx, queries.UpdatePagePreviewParams{
 		Title:        page.Title,
