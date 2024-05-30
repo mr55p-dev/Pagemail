@@ -89,6 +89,6 @@ app.post("/extract", (req, res) => {
   return res.status(200).setHeader("Content-Type", "text/html").send(parsed);
 });
 
-app.listen(5000, () => {
-  console.log("Server is running on port 5000");
+app.listen(process.env.RDR_HOST, () => {
+  console.log(`Server is running on ${process.env.RDR_HOST}`);
 });
