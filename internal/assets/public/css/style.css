@@ -11,3 +11,7 @@ script {
   display: none;
   visibility: hidden;
 }
+
+.navbar {
+  margin-top: 0;
+}
