@@ -57,6 +57,7 @@ func (s *Client) Check(ctx context.Context, url string, content io.Reader) (bool
 	if err != nil {
 		return false, err
 	}
+	req.Header.Add("Content-Type", "text/html")
 	res, err := s.client.Do(req)
 	if err != nil {
 		return false, err
