@@ -5,22 +5,21 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"runtime"
 	"runtime/debug"
 
 	"github.com/mr55p-dev/htmx-utils/pkg/trace"
 )
 
-var logger *Logger = &Logger{slog.Default()}
+var Level = new(slog.LevelVar)
+var Handler slog.Handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	Level: Level,
+})
+var logger *Logger = &Logger{slog.New(Handler)}
 
 // Callee stack depth to get out of when deferring a panic recover
 const PANIC_STACK_DEPTH = 5 // tested on one function, might be different for different go versions
-
-func SetHandler(h slog.Handler) {
-	logger = &Logger{
-		out: slog.New(h),
-	}
-}
 
 type Logger struct {
 	out *slog.Logger

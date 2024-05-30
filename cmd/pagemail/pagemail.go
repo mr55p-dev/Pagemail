@@ -110,11 +110,8 @@ func getLogger(level string) *logging.Logger {
 	case "INFO":
 		lvl = slog.LevelInfo
 	}
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: lvl,
-	})
+	logging.Level.Set(lvl)
 	logger := logging.NewLogger("main")
-	logging.SetHandler(handler)
 	return logger
 }
 

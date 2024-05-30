@@ -4,8 +4,6 @@ package router
 
 import (
 	"context"
-	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,7 +12,6 @@ import (
 
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +24,6 @@ var mux http.Handler
 var session_cookie *http.Cookie
 
 func init() {
-	logging.SetHandler(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{}))
 	ctx := context.TODO()
 
 	// setup the database
