@@ -6,7 +6,7 @@ process.on("SIGINT", () => {
   process.exit(1);
 });
 
-function parseDoc(docstring: Buffer | string, url: string): any {
+function parseDoc(docstring: Buffer | string, url: string) {
   const parser = new JSDOM(docstring, {
     url,
   });
@@ -21,7 +21,7 @@ function checkReadability(data: Buffer, url: URL): boolean {
 
 function fetchReadableArticle(data: Buffer, url: URL): string | undefined {
   const parsed = parseDoc(data, url.toString());
-  if (!parsed?.textContent) {
+  if (!parsed) {
     return;
   }
   return parsed.textContent;
@@ -41,8 +41,9 @@ app.use((req, _, next) => {
   console.log(req.method, decodeURI(req.url));
   next();
 });
+app.use(express.raw({ type: "text/html", limit: "2mb" }));
 
-app.use(express.raw({ type: "text/html" })).post("/check", (req, res) => {
+app.post("/check", (req, res) => {
   const url = geturl(req);
   if (!url) {
     res.status(400).send("missing url");
@@ -80,6 +81,7 @@ app.post("/extract", (req, res) => {
     return;
   }
   const parsed = fetchReadableArticle(req.body, new URL(url));
+  console.log("parsed", parsed);
   if (!parsed) {
     res.status(400).send("failed to parse");
     return;
