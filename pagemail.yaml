@@ -1,7 +1,7 @@
 ---
 app:
   environment: dev
-  log-level: DEBUG
+  log-level: INFO
   host: 127.0.0.1:8080
   cookie-key-file: "password.txt"
   google-client-id: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
@@ -9,4 +9,7 @@ db:
   path: ./db/pagemail.sqlite3
 extern:
   host: localhost:8080
-  proto: http
+  scheme: http
+readability:
+  scheme: http
+  host: localhost:5000

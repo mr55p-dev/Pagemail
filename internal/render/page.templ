@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/preview"
 )
 
 const PAGE_SIZE = 10
@@ -24,7 +25,7 @@ templ PageCard(page *queries.Page) {
 	<article
 		class="box"
 		id={ fmt.Sprintf("page-%s", page.ID) }
-		if page.PreviewState == "unknown" {
+		if page.PreviewState == preview.STATE_UNKNOWN {
 			hx-swap="outerHTML"
 			hx-trigger="load delay:0.5s"
 			hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
@@ -43,7 +44,7 @@ templ PageCard(page *queries.Page) {
 		if page.Description.Valid {
 			<p>{ page.Description.String }</p>
 		} else {
-			if page.PreviewState == "unknown" {
+			if page.PreviewState == preview.STATE_UNKNOWN {
 				<p>Fetching preview</p>
 			} else {
 				<p>No description</p>

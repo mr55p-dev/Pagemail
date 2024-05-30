@@ -1,5 +1,0 @@
-Flask
-BeautifulSoup4
-readability-lxml
-lxml[html_clean]
-boto3

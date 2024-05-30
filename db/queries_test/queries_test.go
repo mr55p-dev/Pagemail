@@ -8,6 +8,7 @@ import (
 
 	"github.com/mr55p-dev/pagemail/db"
 	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/stretchr/testify/assert"
 )
@@ -82,7 +83,7 @@ func TestUpdatePagePreview(t *testing.T) {
 		Title:        sql.NullString{},
 		Description:  sql.NullString{},
 		ImageUrl:     sql.NullString{},
-		PreviewState: "failed",
+		PreviewState: preview.STATE_ERROR,
 		ID:           pid,
 	})
 	assert.NoError(err)

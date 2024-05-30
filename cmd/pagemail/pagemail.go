@@ -40,16 +40,16 @@ func main() {
 	logger.InfoCtx(ctx, "Starting mail job")
 	client = mail.NewAwsSender(ctx, awsCfg)
 	assets := getAssets(cfg.Environment)
-
 	cookieKey := MustReadFile(cfg.CookieKeyFile)
-	previewer := preview.New(ctx, conn)
 
-	readabilityUrl, _ := url.Parse("http://readability:5000")
-	reader, err := readability.New(ctx, readabilityUrl)
+	reader := readability.New(ctx, &url.URL{
+		Scheme: cfg.Readability.Scheme,
+		Host:   cfg.Readability.Host,
+	})
 	if err != nil {
 		panic(err)
 	}
-	_ = reader
+	previewer := preview.New(ctx, conn, reader)
 
 	router, err := router.New(
 		ctx,
@@ -60,7 +60,7 @@ func main() {
 		cookieKey,
 		cfg.GoogleClientId,
 		cfg.External.Host,
-		cfg.External.Proto,
+		cfg.External.Scheme,
 	)
 	if err != nil {
 		panic(err)
@@ -110,11 +110,8 @@ func getLogger(level string) *logging.Logger {
 	case "INFO":
 		lvl = slog.LevelInfo
 	}
-	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: lvl,
-	})
+	logging.Level.Set(lvl)
 	logger := logging.NewLogger("main")
-	logging.SetHandler(handler)
 	return logger
 }
 

@@ -1,14 +1,11 @@
 package request
 
 import (
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,10 +19,6 @@ type BindTestStruct struct {
 }
 
 func TestBind(t *testing.T) {
-	logging.SetHandler(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: false,
-		Level:     slog.LevelDebug,
-	}))
 	assert := assert.New(t)
 	req := httptest.NewRequest(
 		http.MethodPost,

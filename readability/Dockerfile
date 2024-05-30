@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM public.ecr.aws/docker/library/node:lts-slim
 
 RUN <<EOF
 apt-get update
@@ -6,10 +6,11 @@ apt-get -y install curl
 EOF
 
 WORKDIR /app
-COPY requirements.txt .
+COPY package.json package-lock.json tsconfig.json .
 
-RUN pip install -r requirements.txt
+RUN npm install
 
-COPY . .
+COPY ./src ./src
+RUN npx tsc
 
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["node", "dist/main.js"]
