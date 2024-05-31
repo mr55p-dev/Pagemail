@@ -2,7 +2,7 @@
 	"name": "pagemail-readability",
 	"module": "src/main.ts",
 	"scripts": {
-		"dev": "npx tsc && node dist/main.js"
+		"dev": "npx tsc && RDR_BUCKET_NAME=pagemail-readability RDR_PREFIX_NAME=local node dist/main.js"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",
