@@ -38,7 +38,7 @@ func init() {
 		&NilPreviewer{},
 		strings.NewReader("passwordpassword"),
 		"google_client",
-		"", "",
+		"", "", nil,
 	)
 	if err != nil {
 		panic(err)

@@ -11,6 +11,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/middlewares"
+	"github.com/mr55p-dev/pagemail/internal/readability"
 )
 
 var logger = logging.NewLogger("router")
@@ -26,6 +27,7 @@ type Router struct {
 	Previewer Previewer
 	Sender    mail.Sender
 	Sessions  sessions.Store
+	Reader    *readability.Client
 	Mux       http.Handler
 
 	host           string
@@ -47,11 +49,13 @@ func New(
 	googleClientId string,
 	externalHost string,
 	externalProto string,
+	readabilityClient *readability.Client,
 ) (*Router, error) {
 	router := &Router{}
 	router.db = conn
 	router.Previewer = previewClient
 	router.Sender = mailClient
+	router.Reader = readabilityClient
 	router.googleClientId = googleClientId
 	router.host = externalHost
 	router.proto = externalProto
