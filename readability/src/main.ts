@@ -1,10 +1,23 @@
 import { JSDOM } from "jsdom";
+import { Polly } from "aws-sdk";
 import express from "express";
 import { Readability, isProbablyReaderable } from "@mozilla/readability";
 
-process.on("SIGINT", () => {
+interface error {
+  msg: string;
+  detail?: string;
+}
+
+const bucket = process.env.RDR_BUCKET_NAME;
+const prefix = process.env.RDR_PREFIX_NAME;
+if (!bucket) {
+  console.error("missing bucket name");
   process.exit(1);
-});
+}
+if (!prefix) {
+  console.error("missing prefix name");
+  process.exit(1);
+}
 
 function parseDoc(docstring: Buffer | string, url: string) {
   const parser = new JSDOM(docstring, {
@@ -36,6 +49,7 @@ function geturl(req: express.Request): URL | undefined {
 }
 
 const app = express();
+const p = new Polly();
 
 app.use((req, _, next) => {
   console.log(req.method, decodeURI(req.url));
@@ -87,6 +101,52 @@ app.post("/extract", (req, res) => {
     return;
   }
   return res.status(200).setHeader("Content-Type", "text/html").send(parsed);
+});
+
+app.post("/synthesize", async (req, res) => {
+  const errors: error[] = [];
+  if (!Buffer.isBuffer(req.body)) {
+    errors.push({ msg: "invalid body" });
+    res.status(400).send({ errors });
+    return;
+  }
+  const text = req.body.toString();
+
+  const task = p.startSpeechSynthesisTask({
+    OutputS3BucketName: bucket,
+    OutputS3KeyPrefix: prefix,
+    OutputFormat: "mp3",
+    VoiceId: "Joanna",
+    Engine: "standard",
+    Text: text,
+  });
+  const output = (await task.promise()).SynthesisTask;
+  if (!output) {
+    errors.push({
+      msg: "failed to synthesize",
+      detail: "no output",
+    });
+    res.status(500).send({ errors });
+    return;
+  }
+  switch (output.TaskStatus) {
+    case "scheduled":
+    case "inProgress":
+    case "completed":
+      res.status(202).send({ taskId: output.TaskId, errors });
+      return;
+    default:
+      errors.push({
+        msg: "failed to synthesize",
+        detail: output.TaskStatus,
+      });
+      res.status(500).send({ errors });
+      return;
+  }
+});
+
+process.on("SIGINT", () => {
+  process.exit(1);
 });
 
 app.listen(process.env.RDR_PORT || 5000, () => {
