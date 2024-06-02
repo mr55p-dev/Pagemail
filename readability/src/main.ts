@@ -49,7 +49,7 @@ function getQuery(req: express.Request, prop: string): string | undefined {
 }
 
 const app = express();
-AWS.config.update({ region: "eu-west-1" });
+AWS.config.update({ region: "eu-west-2" });
 const p = new Polly();
 
 app.use((req, _, next) => {
