@@ -69,6 +69,11 @@ var (
 		Status:  http.StatusInternalServerError,
 		Message: "Failed to generate reset email",
 	}
+
+	ErrReaderDuplicatePage = &PMError{
+		Status:  http.StatusBadRequest,
+		Message: "Page already has a reading",
+	}
 )
 
 func NewInternalError(msg string) *PMError {

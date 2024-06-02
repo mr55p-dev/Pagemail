@@ -61,6 +61,7 @@ func main() {
 		cfg.GoogleClientId,
 		cfg.External.Host,
 		cfg.External.Scheme,
+		reader,
 	)
 	if err != nil {
 		panic(err)
