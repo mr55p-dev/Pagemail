@@ -7,7 +7,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
-	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
@@ -77,5 +76,12 @@ func (router *Router) PostReading(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: fetch and extract page content... need to refactor to a service I think
-	router.Reader.Extract(r.Context(), page.Url)
+	docText, err := router.Reader.Extract(r.Context(), page.Url, nil)
+	if err != nil {
+		logger.WithError(err).InfoCtx(r.Context(), "failed to extract doucment text")
+		response.Error(w, r, pmerror.ErrUnspecified)
+		return
+	}
+
+	_ = docText
 }
