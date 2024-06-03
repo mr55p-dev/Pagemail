@@ -4,8 +4,7 @@ CREATE TABLE IF NOT EXISTS articles (
     page_id TEXT NOT NULL,
     state TEXT NOT NULL DEFAULT 'unknown',
     reason TEXT,
-    html BLOB NOT NULL,
-    content BLOB NOT NULL,
+    content BLOB,
     created DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
