@@ -1,14 +1,14 @@
 -- name: NewArticle :exec
 INSERT INTO articles (page_id) VALUES (?);
 
--- name: UpdateSuccess :exec
+-- name: UpdateArticleSuccess :exec
 UPDATE articles
 SET state = 'success',
 	content = ?,
 	updated = CURRENT_TIMESTAMP
 WHERE page_id = ?;
 
--- name: UpdateFailure :exec
+-- name: UpdateArticleFailure :exec
 UPDATE articles
 SET state = 'failed',
 	reason = ?,
