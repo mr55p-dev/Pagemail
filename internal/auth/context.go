@@ -8,13 +8,24 @@ import (
 
 type contextKey string
 
-var UserKey contextKey = "user"
+var userKey contextKey = "user"
+var authenticatedKey = "authenticated"
 
 func SetUser(ctx context.Context, user *queries.User) context.Context {
-	return context.WithValue(ctx, UserKey, user)
+	ctx = context.WithValue(ctx, userKey, user)
+	ctx = context.WithValue(ctx, authenticatedKey, true)
+	return ctx
+}
+
+func IsAuthenticated(ctx context.Context) bool {
+	val, ok := ctx.Value(authenticatedKey).(bool)
+	if !ok {
+		return false
+	}
+	return val
 }
 
 func GetUser(ctx context.Context) *queries.User {
-	val, _ := ctx.Value(UserKey).(*queries.User)
+	val, _ := ctx.Value(userKey).(*queries.User)
 	return val
 }

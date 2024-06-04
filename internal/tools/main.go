@@ -30,10 +30,7 @@ func GenerateNewId(length int) string {
 	return out.String()[:length]
 }
 
-func NewUserId() string {
-	return GenerateNewId(16)
-}
-
-func NewPageId() string {
-	return GenerateNewId(16)
-}
+func NewUserId() string    { return GenerateNewId(16) }
+func NewPageId() string    { return GenerateNewId(16) }
+func NewArticleId() string { return GenerateNewId(16) }
+func NewReadingId() string { return GenerateNewId(16) }

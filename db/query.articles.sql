@@ -1,5 +1,8 @@
 -- name: NewArticle :exec
-INSERT INTO articles (page_id) VALUES (?);
+INSERT INTO articles (id, user_id, page_id) VALUES (?, ?, ?);
+
+-- name: GetArticle :one
+SELECT * FROM articles WHERE id = ?;
 
 -- name: UpdateArticleSuccess :exec
 UPDATE articles
