@@ -10,6 +10,72 @@ import (
 	"database/sql"
 )
 
+const getAllReadingInfo = `-- name: GetAllReadingInfo :many
+SELECT pages.id, pages.user_id, pages.url, pages.title, pages.description, pages.image_url, pages.preview_state, pages.created, pages.updated, pages.readable, articles.id, articles.user_id, articles.page_id, articles.state, articles.reason, articles.content, articles.created, articles.updated, readings.id, readings.user_id, readings.article_id, readings.job_id, readings.state, readings.reason, readings.created, readings.updated
+FROM pages
+INNER JOIN articles
+ON page.id = article.page_id
+LEFT JOIN readings
+ON article.id = reading.article_id
+WHERE pages.user_id = ?
+`
+
+type GetAllReadingInfoRow struct {
+	Page    Page
+	Article Article
+	Reading Reading
+}
+
+func (q *Queries) GetAllReadingInfo(ctx context.Context, userID string) ([]GetAllReadingInfoRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllReadingInfo, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllReadingInfoRow
+	for rows.Next() {
+		var i GetAllReadingInfoRow
+		if err := rows.Scan(
+			&i.Page.ID,
+			&i.Page.UserID,
+			&i.Page.Url,
+			&i.Page.Title,
+			&i.Page.Description,
+			&i.Page.ImageUrl,
+			&i.Page.PreviewState,
+			&i.Page.Created,
+			&i.Page.Updated,
+			&i.Page.Readable,
+			&i.Article.ID,
+			&i.Article.UserID,
+			&i.Article.PageID,
+			&i.Article.State,
+			&i.Article.Reason,
+			&i.Article.Content,
+			&i.Article.Created,
+			&i.Article.Updated,
+			&i.Reading.ID,
+			&i.Reading.UserID,
+			&i.Reading.ArticleID,
+			&i.Reading.JobID,
+			&i.Reading.State,
+			&i.Reading.Reason,
+			&i.Reading.Created,
+			&i.Reading.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getReadingsByUser = `-- name: GetReadingsByUser :many
 SELECT id, user_id, article_id, job_id, state, reason, created, updated FROM readings
 WHERE user_id = ?

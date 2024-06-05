@@ -1,11 +1,8 @@
 package readings
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/mr55p-dev/pagemail/db/queries"
@@ -14,7 +11,6 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/readability"
 	"github.com/mr55p-dev/pagemail/internal/render"
-	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
@@ -50,47 +46,16 @@ func NewListReadings(db *sql.DB, rbl *readability.Client) CreateReading {
 			return errNoReadabilityOnAcc
 		}
 
-		article, err := q.GetArticle(ctx, articleID)
+		articleData, err := q.GetAllReadingInfo(ctx, user.ID)
+		_ = articleData
 		if err != nil {
 			logger.WithError(err).ErrorCtx(ctx, "Failed to read article")
 			return err
 		}
 
-		if article.UserID != user.ID {
-			logger.DebugCtx(ctx, "access violation for article",
-				"article_id", article.ID,
-				"owner_id", article.UserID,
-				"user_id", user.ID,
-			)
-			return errArticleNotFound
-		}
-
-		logger.InfoCtx(ctx, "Requesting new reading for article", "article_id", articleID)
-		res, err := rbl.Synthesize(ctx, bytes.NewReader(article.Content))
-		if err != nil {
-			logger.WithError(err).ErrorCtx(ctx, "Failed to create reading job")
-			return err
-		}
-		if res.JobId != "" {
-			_, err = q.NewReading(ctx, queries.NewReadingParams{
-				ID:        tools.NewReadingId(),
-				UserID:    user.ID,
-				ArticleID: articleID,
-				JobID:     res.JobId,
-				State:     res.Status,
-			})
-		}
-		if len(res.Errors) > 0 {
-			errs := make([]error, len(res.Errors))
-			for i, e := range res.Errors {
-				errs[i] = fmt.Errorf("Readability client error: %s (%s)", e.Message, e.Detail)
-			}
-			return errors.Join(errs...)
-		}
-		if err != nil {
-			return err
-		}
-
+		// for _, article := range articleData {
+		//
+		// }
 		return nil
 	}
 }

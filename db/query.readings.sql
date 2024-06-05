@@ -13,4 +13,13 @@ WHERE user_id = ?;
 UPDATE readings
 SET state = ?,
 	reason = ?,
-	updated = CURRENT_TIMESTAMP
+	updated = CURRENT_TIMESTAMP;
+
+-- name: GetAllReadingInfo :many
+SELECT sqlc.embed(pages), sqlc.embed(articles), sqlc.embed(readings)
+FROM pages
+INNER JOIN articles
+ON page.id = article.page_id
+LEFT JOIN readings
+ON article.id = reading.article_id
+WHERE pages.user_id = ?;
