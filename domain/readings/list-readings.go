@@ -13,24 +13,14 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/logging"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/readability"
+	"github.com/mr55p-dev/pagemail/internal/render"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
 
-var (
-	errArticleNotFound = &pmerror.PMError{
-		Message: "Article not found",
-		Status:  http.StatusNotFound,
-	}
-	errNoReadabilityOnAcc = &pmerror.PMError{
-		Message: "You do not have the correct access rights to create readings",
-		Status:  http.StatusForbidden,
-	}
-)
+type ListReadings func(ctx context.Context, user *queries.User) error
 
-type CreateReading func(ctx context.Context, user *queries.User, articleID string) error
-
-func (fn CreateReading) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (fn ListReadings) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logger := logging.Get(r.Context())
 	if !auth.IsAuthenticated(r.Context()) {
 		response.Error(w, r, pmerror.ErrNoAuth)
@@ -38,20 +28,19 @@ func (fn CreateReading) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := auth.GetUser(r.Context())
-	articleID := r.PathValue("article_id")
-	err := fn(r.Context(), user, articleID)
+	err := fn(r.Context(), user)
 	if err != nil {
-		logger.WithError(err).InfoCtx(r.Context(), "Failed to create reading")
+		logger.WithError(err).InfoCtx(r.Context(), "Failed to list readings")
 		response.Error(w, r, err)
 		return
 	}
 
-	logger.InfoCtx(r.Context(), "Created reading job")
-	response.Success("Requested reading", w, r)
+	logger.DebugCtx(r.Context(), "Listed readings")
+	response.Component(render.Readings(user), w, r)
 	return
 }
 
-func NewCreateReading(db *sql.DB, rbl *readability.Client) CreateReading {
+func NewListReadings(db *sql.DB, rbl *readability.Client) CreateReading {
 	q := queries.New(db)
 	return func(ctx context.Context, user *queries.User, articleID string) error {
 		logger := logging.Get(ctx)

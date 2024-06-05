@@ -18,3 +18,10 @@ SET state = 'failed',
 	content = NULL,
 	updated = CURRENT_TIMESTAMP
 WHERE page_id = ?;
+
+-- name: GetPagesAndArticles :many
+SELECT sqlc.embed(pages), sqlc.embed(articles)
+FROM pages
+INNER JOIN articles
+ON pages.id = articles.page_id
+WHERE pages.user_id = ?;
