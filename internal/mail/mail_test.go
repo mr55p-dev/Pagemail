@@ -2,7 +2,6 @@ package mail
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
@@ -41,8 +40,6 @@ func TestSendMailToUser(t *testing.T) {
 				"created",
 				"updated",
 				"readable",
-				"reading_job_status",
-				"reading_job_id",
 			}).
 				AddRow(
 					"aaa",
@@ -55,8 +52,6 @@ func TestSendMailToUser(t *testing.T) {
 					time.Now(),
 					time.Now(),
 					false,
-					"unknown",
-					sql.NullString{},
 				),
 		)
 
@@ -95,8 +90,6 @@ func TestDoMailJob(t *testing.T) {
 				"created",
 				"updated",
 				"readable",
-				"reading_job_status",
-				"reading_job_id",
 			}).
 				AddRow(
 					"aaa",
@@ -109,8 +102,6 @@ func TestDoMailJob(t *testing.T) {
 					time.Now(),
 					time.Now(),
 					false,
-					"unknown",
-					sql.NullString{},
 				),
 		)
 
