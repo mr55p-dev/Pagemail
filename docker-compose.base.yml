@@ -16,7 +16,6 @@ services:
       options:
         awslogs-region: eu-west-2
     networks:
-      - readability
       - traefik
     platform: linux/amd64
     labels:
