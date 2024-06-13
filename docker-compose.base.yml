@@ -20,6 +20,7 @@ services:
     platform: linux/amd64
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
 
   readability:
     restart: always
