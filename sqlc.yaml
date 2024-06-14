@@ -6,6 +6,8 @@ sql:
       - "db/query.pages.sql"
       - "db/query.users.sql"
       - "db/query.auth.sql"
+      - "db/query.articles.sql"
+      - "db/query.readings.sql"
     schema: "db/schema.sql"
     gen:
       go:

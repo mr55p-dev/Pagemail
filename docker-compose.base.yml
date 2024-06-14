@@ -16,11 +16,11 @@ services:
       options:
         awslogs-region: eu-west-2
     networks:
-      - readability
       - traefik
     platform: linux/amd64
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
 
   readability:
     restart: always
