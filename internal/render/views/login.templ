@@ -1,0 +1,66 @@
+package views
+
+import "github.com/mr55p-dev/pagemail/internal/render/components"
+
+templ Login(clientID, redirectUrl string) {
+	@components.Wrapper("Login", nil) {
+		<div class="max-w-lg mx-auto">
+			@components.Card() {
+				<form
+					hx-post="/login/"
+					hx-swap="innerHTML"
+					hx-target-error="#msg"
+					class="flex flex-col gap-8"
+				>
+					<input
+						type="email"
+						name="email"
+						placeholder="E-mail"
+					/>
+					<input
+						type="password"
+						autofill="current-password"
+						name="password"
+						placeholder="Password"
+					/>
+					<button type="submit" class="btn-cta fill-primary">Log in</button>
+				</form>
+				<a
+					href="/password-reset"
+					class="text-center text-secondary-500"
+				>Reset password</a>
+				@separator()
+				<div
+					class="g_id_signin mx-auto"
+					data-type="standard"
+					data-shape="pill"
+					data-theme="outline"
+					data-text="signin_with"
+					data-size="large"
+					data-logo_alignment="left"
+				></div>
+			}
+		</div>
+		<div
+			id="g_id_onload"
+			data-client_id={ clientID }
+			data-context="signin"
+			data-ux_mode="popup"
+			data-login_uri={ redirectUrl }
+			data-auto_prompt="false"
+		></div>
+	}
+}
+
+templ separator() {
+	<div
+		class="
+				flex justify-stretch align-middle gap-4
+				w-full
+				"
+	>
+		<hr class="self-stretch w-full mt-[0.75rem]"/>
+		<p>or</p>
+		<hr class="self-stretch w-full mt-[0.75rem]"/>
+	</div>
+}

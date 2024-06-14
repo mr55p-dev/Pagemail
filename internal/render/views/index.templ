@@ -1,0 +1,64 @@
+package views
+
+import (
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/render/components"
+)
+
+templ Index(user *queries.User, clientId, redirectUrl string) {
+	@components.Wrapper("", nil) {
+		if user == nil {
+			<div
+				id="g_id_onload"
+				data-client_id={ clientId }
+				data-context="signin"
+				data-login_uri={ redirectUrl }
+				data-itp_support="true"
+			></div>
+		}
+		<div class="flex flex-col justify-between gap-8">
+			<h1 class="text-center text-3xl w-64 mx-auto">
+				Want a <u class="text-secondary-500">simple</u> read-it-later service?
+			</h1>
+			<h2 class="text-2xl text-center">Try <u class="text-primary-500">Pagemail</u></h2>
+			<div class="flex flex-col md:flex-row align-middle justify-center px-8 gap-6">
+				<a href="/signup" class="w-[150px] mx-auto md:mx-0 ">
+					<div class="btn-cta fill-primary">
+						<span>Sign up</span>
+					</div>
+				</a>
+				<a class="w-[150px] mx-auto md:mx-0" href="/login">
+					<div class="btn-cta fill-secondary">
+						<span>Log in</span>
+					</div>
+				</a>
+			</div>
+			<div
+				class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[700px] mx-auto"
+			>
+				@components.Card() {
+					<h3 class="text-xl text-center">
+						<span class="text-primary-500">Quick save</span> with shortcuts on iOS
+					</h3>
+					<p>Use the simple to install shortcut, add your API token, and start saving links with just a tap from anywhere in your device!</p>
+					<img src="/assets/img/landing-shortcuts.png" alt="iOS shortcuts screenshot showing Pagemail" width="70%" class="mx-auto"/>
+				}
+				@components.Card() {
+					<h3 class="text-xl text-center">
+						Get a <span class="text-primary-500">daily email digest</span>
+					</h3>
+					<p>Each morning, get a reminder of the pages you saved yesterday.</p>
+				}
+				@components.Card() {
+					<div class="mx-auto">
+						@components.Badge("Coming soon")
+					</div>
+					<h3 class="text-xl text-center">
+						<span class="text-secondary-500">Listen</span> to your articles
+					</h3>
+					<p>Use the simple to install shortcut, add your API token, and start saving links with just a tap from anywhere in your device!</p>
+				}
+			</div>
+		</div>
+	}
+}

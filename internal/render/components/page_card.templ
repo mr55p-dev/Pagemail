@@ -1,0 +1,75 @@
+package components
+
+import (
+	"fmt"
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/preview"
+)
+
+templ PageCard(page *queries.Page) {
+	<article
+		if page.PreviewState == preview.STATE_UNKNOWN {
+			hx-swap="outerHTML"
+			hx-trigger="load delay:0.5s"
+			hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
+			hx-target="this"
+			hx-target-error="this"
+		}
+	>
+		@Card() {
+			<div class="grid grid-cols-4 gap-8 size-full">
+				<img
+					if page.ImageUrl.Valid {
+						src={ page.ImageUrl.String }
+						alt={ page.Title.String }
+					} else {
+						src="/assets/img/heroicons-outline/question-mark-circle.svg"
+						alt="Placeholder image"
+					}
+					width="100px"
+					height="100px"
+					class=" col-span-1 place-self-center rounded-lg"
+				/>
+				<div class="col-span-3">
+					<h3
+						class="
+						text-left text-xl underline
+						overflow-ellipsis overflow-hidden
+						line-clamp-2
+					"
+					>
+						<a href={ templ.SafeURL(page.Url) }>
+							if page.Title.Valid {
+								{ page.Title.String }
+							} else {
+								{ page.Url }
+							}
+						</a>
+					</h3>
+				</div>
+				<div class="col-span-4">
+					<p class="overflow-ellipsis overflow-hidden line-clamp-4">
+						if page.Description.Valid {
+							<p>{ page.Description.String }</p>
+						} else {
+							if page.PreviewState == preview.STATE_UNKNOWN {
+								<p>Fetching preview</p>
+							} else {
+								<p>No description</p>
+							}
+						}
+					</p>
+				</div>
+			</div>
+			<footer class="col-span-4 grid grid-cols-2 gap-4">
+				<a href={ templ.SafeURL(page.Url) } class="btn-slim hollow-primary">Open</a>
+				<button
+					class="btn-slim hollow-bad"
+					hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
+					hx-swap="outerHTML"
+					hx-target="closest article"
+				>Delete</button>
+			</footer>
+		}
+	</article>
+}

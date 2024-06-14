@@ -1,0 +1,64 @@
+package views
+
+import "github.com/mr55p-dev/pagemail/internal/render/components"
+
+templ Signup(clientID, redirectUrl string ) {
+	@components.Wrapper("Sign up", nil) {
+		<div class="max-w-lg mx-auto">
+			@components.Card() {
+				<form
+					hx-post="/login/"
+					hx-swap="innerHTML"
+					hx-target-error="#msg"
+					class="flex flex-col gap-8"
+				>
+					<input
+						placeholder="User name"
+						name="username"
+						type="username"
+					/>
+					<input
+						placeholder="E-mail"
+						name="email"
+						type="email"
+					/>
+					<input
+						placeholder="Password"
+						name="password"
+						type="password"
+						autofill="new-password"
+					/>
+					<input
+						placeholder="Repeat password"
+						name="password-repeat"
+						type="password"
+						autofill="new-password"
+					/>
+					<button type="submit" class="btn-cta fill-primary">Sign up</button>
+				</form>
+				<a
+					href="/password-reset"
+					class="text-center text-secondary-500"
+				>Reset password</a>
+				@separator()
+				<div
+					class="g_id_signin mx-auto"
+					data-type="standard"
+					data-shape="pill"
+					data-theme="outline"
+					data-text="signin_with"
+					data-size="large"
+					data-logo_alignment="left"
+				></div>
+			}
+		</div>
+		<div
+			id="g_id_onload"
+			data-client_id={ clientID }
+			data-context="signin"
+			data-ux_mode="popup"
+			data-login_uri={ redirectUrl }
+			data-auto_prompt="false"
+		></div>
+	}
+}

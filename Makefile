@@ -1,22 +1,36 @@
-server := ./tmp/main
+server := pagemail
 ifndef PM_ENV
 	PM_ENV := dev
 endif
 
-$(server):
-	mkdir -p ./tmp
-	templ generate
-	GOARCH=amd64 GOOS=linux go build -o ./tmp/main .
+css:
+	npx tailwindcss -i ./input.css -o ./internal/assets/public/css/main.css
 
-.PHONY = build clean run
+css-watch:
+	npx tailwindcss --watch -i ./input.css -o ./internal/assets/public/css/main.css
+
+sqlc:
+	sqlc generate
+
+templ:
+	templ generate
+
+templ-watch:
+	templ generate -watch
+
+$(server): templ css
+	go build -v ./cmd/$(server)
+
+clean:
+	rm -f $(server)
+
+.PHONY = build clean run templ css
 
 install:
 	go install github.com/a-h/templ/cmd/templ@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 build: $(server)
-clean: $(server)
-	rm -rf ./tmp/
 
-run: $(server)
-	./tmp/main
+run: paegemail
+	./$(server)

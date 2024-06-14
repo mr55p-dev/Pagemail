@@ -1,8 +1,8 @@
-package render
+package components 
 
 import "github.com/mr55p-dev/pagemail/db/queries"
 
-templ Wrapper(user *queries.User, title string) {
+templ Wrapper(title string, user *queries.User) {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -17,15 +17,15 @@ templ Wrapper(user *queries.User, title string) {
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
 			<link rel="stylesheet" type="text/css" href="/assets/css/main.css"/>
 		</head>
-		<body hx-boost="true" hx-ext="response-targets">
+		<body hx-boost="true" hx-ext="response-targets" class="bg-grey-900">
 			<script src="https://accounts.google.com/gsi/client" async></script>
-			@Header(user)
-			<main class="wrapper pt-16" hx-target-error="error">
-				{ children... }
-				<div id="err"></div>
-				<div id="msg"></div>
+			<main class="bg-white text-grey-100" hx-target-error="#msg">
+				<div class="absolute top-0 left-0 w-full flex align-middle justify-around gap-4" id="msg"></div>
+				<div class="max-w-screen-lg mx-auto p-8">
+					@Header(title, user)
+					{ children... }
+				</div>
 			</main>
-			@Footer()
 			<script src="/assets/js/htmx.min.js"></script>
 			<script src="/assets/js/sse.js"></script>
 			<script src="/assets/js/response-targets.js"></script>
@@ -33,16 +33,4 @@ templ Wrapper(user *queries.User, title string) {
 			<script data-goatcounter="https://pagemail.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 		</body>
 	</html>
-}
-
-templ Header(user *queries.User) {
-	<div></div>
-}
-
-templ Footer() {
-	<footer>
-		<p>Made with <a href="https://htmx.org">htmx</a> and <a href="https://templ.guide">templ</a>.</p>
-		<p>Check out this project on <a href="https://github.com/mr55p-dev/pagemail">Github</a>.</p>
-		<p>For help, reach out to <a href="mailto:ellislunnon@gmail.com">ellislunnon@gmail.com</a></p>
-	</footer>
 }

@@ -92,7 +92,7 @@ func Signup(clientId, redirectUrl string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-context=\"signin\" data-ux_mode=\"popup\" data-login_uri=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-context=\"signin\" data-ux_mode=\"redirect\" data-login_uri=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -100,7 +100,7 @@ func Signup(clientId, redirectUrl string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-itp_support=\"true\"></div><div class=\"g_id_signin\" data-type=\"icon\" data-shape=\"square\" data-theme=\"outline\" data-text=\"signup_with\" data-size=\"large\"></div><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" data-itp_support=\"true\"></div><div class=\"g_id_signin mx-auto\" data-type=\"icon\" data-shape=\"square\" data-theme=\"outline\" data-text=\"signup_with\" data-size=\"large\"></div><p>Already have an account? <a href=\"/login\">Log in</a></p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

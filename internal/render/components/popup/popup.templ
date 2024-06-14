@@ -1,0 +1,60 @@
+package popup
+
+import "github.com/mr55p-dev/pagemail/internal/tools"
+import "time"
+
+type Popup struct {
+	id      string
+	Title   string
+	Body    *string
+	Style   string
+	Message string
+	Timeout time.Duration
+}
+
+type With func(*Popup)
+
+func WithBody(body string) With {
+	return func(p *Popup) {
+		p.Body = &body
+	}
+}
+
+func WithTimeout(timeout time.Duration) With {
+	return func(p *Popup) {
+		p.Timeout = timeout
+	}
+}
+
+func WithStyle(style string) With {
+	return func(p *Popup) {
+		p.Style = style
+	}
+}
+
+func New(message string, opts ...With) templ.Component {
+	out := &Popup{
+		id:      tools.GenerateNewId(8),
+		Title:   message,
+		Style:   "",
+		Timeout: time.Second * 10,
+	}
+	for _, fn := range opts {
+		fn(out)
+	}
+	return out.do()
+}
+
+templ (popup *Popup) do() {
+	<div id={ popup.id }>
+		<strong>{ popup.Title }</strong>
+		if popup.Body != nil {
+			<p>{ *popup.Body }</p>
+		}
+		<button onClick={ RemoveElement(popup.id) } class="rounded-lg border-green-500 border text-green-500 bg-white-500">Dismiss</button>
+	</div>
+}
+
+script RemoveElement(id string) {
+	document.getElementById(id).remove();
+}

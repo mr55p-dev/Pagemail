@@ -1,0 +1,57 @@
+package components
+
+templ Toolbar(target string)	 {
+	<form
+		hx-trigger="submit"
+		hx-post="/pages/"
+		hx-target={ target }
+		hx-swap="afterbegin"
+		hx-on::afterRequest="this.reset()"
+		class="
+			mx-auto
+			bg-grey-800 rounded-lg
+			p-8
+			grid gap-4 grid-columns-4
+			md:grid-columns-3 md:grid-rows-2
+		"
+	>
+		<input
+			id="save-page-input"
+			placeholder="URL"
+			type="url"
+			name="url"
+			class="md:col-span-3"
+		/>
+		<button
+			class="border btn-slim fill-primary hocus:hollow-primary"
+			type="submit"
+		>
+			Add page
+		</button>
+		<button
+			class="btn-slim fill-secondary hocus:hollow-secondary"
+			type="button"
+			onClick={ PasteFromClipboard("save-page-input") }
+		>
+			Paste from clipboard
+		</button>
+		<button
+			class="btn-slim fill-bad hocus:hollow-bad"
+			type="button"
+			hx-delete="/pages"
+			hx-confirm="Are you sure you want to delete all saved pages?"
+			hx-target="#msg"
+			hx-target-error="#err"
+			hx-swap="innerHTML"
+		>
+			Delete all
+		</button>
+	</form>
+}
+
+script PasteFromClipboard(toId string) {
+	const elem = document.getElementById(toId)
+	navigator.clipboard.readText().then(txt => {
+		elem.value = txt
+	}).catch(err => console.error("Failed to paste", error))
+}

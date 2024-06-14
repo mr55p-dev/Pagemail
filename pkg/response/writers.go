@@ -6,14 +6,18 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
-	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/render/components/popup"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 )
 
 type MessageFn = func(string, string) templ.Component
 
-var ErrorComponent MessageFn = render.ErrorBox
-var OkComponent MessageFn = render.MessageBox
+var ErrorComponent MessageFn = func(s1, s2 string) templ.Component {
+	return popup.New(s1, popup.WithBody(s2))
+}
+var OkComponent MessageFn = func(s1, s2 string) templ.Component {
+	return popup.New(s1, popup.WithBody(s2))
+}
 
 func Component(component templ.Component, w http.ResponseWriter, r *http.Request) {
 	err := component.Render(r.Context(), w)

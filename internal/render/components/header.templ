@@ -1,0 +1,50 @@
+package components
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ Header(title string, user *queries.User) {
+	<nav
+		class="
+	w-full
+	grid grid-cols-3 align-middle
+	mb-8
+	"
+	>
+		<a
+			if user == nil {
+				href="/"
+			} else {
+				href="/pages/dashboard"
+			}
+			class="w-fit h-10 p-1 grid grid-flow-col items-center gap-4"
+		>
+			@IconBrand()
+			<div class="grid items-center">
+				<span
+					class="italic text-left text-xl text-primary-300"
+				>Pagemail</span>
+			</div>
+		</a>
+		<div class="place-self-center">
+			<span class="text-center text-2xl">{ title }</span>
+		</div>
+		if user != nil {
+			<div class="h-12 flex justify-end">
+				@IconUser()
+				<div
+					id="user-nav"
+					class="
+						border rounded-lg border-grey-200
+						absolute top-[6rem]
+						bg-grey-800 
+						flex flex-col gap-2
+						p-4
+				 "
+				>
+					<a class="text-xl" href="/user/account">Account</a>
+					<a class="text-xl" href="/user/logout">Log out</a>
+				</div>
+			</div>
+		}
+	</nav>
+}
