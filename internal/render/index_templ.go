@@ -53,29 +53,9 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <h1>Pagemail</h1><p>pagemail is a simple read-it-later client for the web</p>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"mb-8\"><h1 class=\"text-4xl text-center mx-auto pb-4\">Pagemail</h1><p class=\"text-xl text-center mx-auto\">A simple read-it-later</p></div><div class=\"p-4 w-fit bg-grey-900 mx-auto mb-8 flex flex-col gap-2 align-middle\"><a href=\"/signup\" class=\"p-4 bg-primary-500 rounded-none min-w-48 w-full text-center\">Sign up</a> <a href=\"/signup\" class=\"p-4 bg-secondary-500 rounded-none min-w-48 w-full text-center\">Log in</a></div><div class=\"bg-grey-900 w-full p-4 mb-8\"><p class=\"text-center\">Save articles from across the web.</p><p class=\"text-center\">Get an email reminder the next day.</p><p class=\"text-center font-bold text-primary-600 text-xl\">It's that simple</p></div><div class=\"mb-8 flex flex-col gap-4 justify-between\"><h3 class=\"text-center text-xl\">Features</h3><div class=\"w-full bg-primary-900 px-4 py-2\"><p>Daily email digest</p></div><div class=\"w-full bg-primary-900 px-4 py-2\"><p>Sign in with Google</p></div><div class=\"w-full bg-primary-900 px-4 py-2\"><p>iOS shortcut</p></div><div class=\"w-full bg-secondary-900 px-4 py-2 flex justify-between\"><p>Listen to your articles</p><div class=\"bg-secondary-400 text-center text-white text-sm px-1\"><p>Coming soon</p></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
-			}
-			if user != nil {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var3 templ.SafeURL = templ.URL("/pages/dashboard")
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">View dashboard</a>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			} else {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/signup\">Sign up</a> <a href=\"/login\">Log in</a>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
 			}
 			if !templ_7745c5c3_IsBuffer {
 				_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)

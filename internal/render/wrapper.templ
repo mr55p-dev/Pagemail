@@ -14,17 +14,16 @@ templ Wrapper(user *queries.User, title string) {
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<link rel="stylesheet" href="/assets/css/missing.css"/>
 			<link rel="stylesheet" type="text/css" href="/assets/css/style.css"/>
+			<link rel="stylesheet" type="text/css" href="/assets/css/main.css"/>
 		</head>
 		<body hx-boost="true" hx-ext="response-targets">
 			<script src="https://accounts.google.com/gsi/client" async></script>
 			@Header(user)
-			<main class="wrapper" hx-target-error="error">
-				<h2>{ title }</h2>
+			<main class="wrapper pt-16" hx-target-error="error">
+				{ children... }
 				<div id="err"></div>
 				<div id="msg"></div>
-				{ children... }
 			</main>
 			@Footer()
 			<script src="/assets/js/htmx.min.js"></script>
@@ -37,28 +36,7 @@ templ Wrapper(user *queries.User, title string) {
 }
 
 templ Header(user *queries.User) {
-	<header
-		class="navbar"
-		data-overflow-nav
-	>
-		<button class="iconbutton" id="nav-icon" data-nav-expander aria-hidden>
-			&#x2630; 
-		</button>
-		<nav aria-label="Site sections">
-			<ul role="list" class="align-items:center">
-				<li><a href="/"><img alt="pagemail" class="brand-icon" src="/assets/img/default-icon.svg"/></a></li>
-				if user != nil {
-					<li><a href={ templ.URL("/pages/dashboard") }>Pages</a></li>
-					<li><a href={ templ.URL("/user/account") }>Account</a></li>
-					<li>
-						<a hx-get="/user/logout" hx-swap="none">Logout</a>
-					</li>
-				} else {
-					<li><a href="/login">Login</a></li>
-				}
-			</ul>
-		</nav>
-	</header>
+	<div></div>
 }
 
 templ Footer() {
