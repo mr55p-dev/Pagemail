@@ -8,6 +8,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/render/views"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
 )
@@ -15,7 +16,7 @@ import (
 func (router *Router) GetRoot(w http.ResponseWriter, r *http.Request) {
 	user := auth.GetUser(r.Context())
 	urlAddr := loginRedirectUrl(router)
-	response.Component(render.Index(user, router.googleClientId, urlAddr), w, r)
+	response.Component(views.Index(user, router.googleClientId, urlAddr), w, r)
 }
 
 func (router *Router) GetAccountPage(w http.ResponseWriter, r *http.Request) {
