@@ -1,9 +1,12 @@
-package render
+package views
 
-import "github.com/mr55p-dev/pagemail/db/queries"
+import (
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/render/common"
+)
 
 templ Index(user *queries.User, clientId, redirectUrl string) {
-	@Wrapper(user, "") {
+	@common.Wrapper(user, "") {
 		if user == nil {
 			<div
 				id="g_id_onload"
@@ -14,7 +17,7 @@ templ Index(user *queries.User, clientId, redirectUrl string) {
 			></div>
 		}
 		<div class="mb-8">
-			<h1 class="text-4xl text-center mx-auto pb-4">Pagemail</h1>
+			<h1 class="text-4xl text-center mx-auto pb-2">Pagemail</h1>
 			<p class="text-xl text-center mx-auto">A simple read-it-later</p>
 		</div>
 		<div class="p-4 w-fit bg-grey-900 mx-auto mb-8 flex flex-col gap-2 align-middle">
