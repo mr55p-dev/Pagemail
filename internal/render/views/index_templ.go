@@ -9,11 +9,26 @@ import "github.com/a-h/templ"
 import "context"
 import "io"
 import "bytes"
+import "strings"
 
 import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/render/components"
+	"github.com/mr55p-dev/pagemail/internal/render/components/accordion"
 )
+
+func gradientText() templ.CSSClass {
+	var templ_7745c5c3_CSSBuilder strings.Builder
+	templ_7745c5c3_CSSBuilder.WriteString(`background-color:#f98820;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background-image:linear-gradient(90deg, #f98820, #f28787);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`-webkit-background-clip:text;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`-webkit-text-fill-color:transparent;`)
+	templ_7745c5c3_CSSID := templ.CSSID(`gradientText`, templ_7745c5c3_CSSBuilder.String())
+	return templ.ComponentCSSClass{
+		ID:    templ_7745c5c3_CSSID,
+		Class: templ.SafeCSS(`.` + templ_7745c5c3_CSSID + `{` + templ_7745c5c3_CSSBuilder.String() + `}`),
+	}
+}
 
 func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -56,7 +71,24 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"flex flex-col justify-between py-8 gap-6 text-grey-100\"><h1 class=\"text-center underline text-3xl w-64 mx-auto\">A simple read it later</h1><div class=\"bg-grey-800 text-center py-6\"><p>Save articles from across the web.</p><p>Get an email reminder the next day.</p><p class=\"text-xl\"><b>It's that simple</b></p></div><div class=\"flex flex-col align-middle px-8 gap-6\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"flex flex-col justify-between py-8 gap-6 text-grey-100\"><h1 class=\"text-center underline text-3xl w-64 mx-auto\">A simple read it later</h1><div class=\"bg-grey-800 text-center py-6\"><p>Save articles from across the web.</p><p>Get an email reminder the next day.</p><p class=\"text-xl\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 = []any{gradientText()}
+			templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<b class=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ.CSSClasses(templ_7745c5c3_Var3).String()))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">It's that simple</b></p></div><div class=\"flex flex-col align-middle px-8 gap-6\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -72,22 +104,21 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.NewAccordion("Daily email digest").Do().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.New("Daily email digest").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.NewAccordion("Sign up with Google").Do().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.New("Sign up with Google").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.NewAccordion("iOS Shortcut").Do().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.New("iOS Shortcut").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.NewAccordion(
-				"Listen to your articles",
-				components.WithBadge(components.Badge("Coming soon")),
-			).Do().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = accordion.New("Listen to your articles",
+				accordion.WithBadge(components.Badge("Coming soon")),
+			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

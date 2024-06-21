@@ -1,28 +1,30 @@
-package components
+package accordion
+
+import "github.com/mr55p-dev/pagemail/internal/render/components"
 
 type Accordion struct {
 	Title string
 	Badge templ.Component
 }
 
-type AccordionBuilder func(*Accordion)
+type With func(*Accordion)
 
-func WithBadge(badge templ.Component) AccordionBuilder {
+func WithBadge(badge templ.Component) With {
 	return func(a *Accordion) {
 		a.Badge = badge
 	}
 }
 
-func NewAccordion(title string, builderArgs ...AccordionBuilder) *Accordion {
+func New(title string, builderArgs ...With) templ.Component {
 	out := new(Accordion)
 	out.Title = title
 	for _, fn := range builderArgs {
 		fn(out)
 	}
-	return out
+	return out.done()
 }
 
-templ (acc *Accordion) Do() {
+templ (acc *Accordion) done() {
 	<div class="w-full bg-grey-800 border border-primary-100 px-4 py-3">
 		<div class="flex justify-between align-middle w-full">
 			<p class="">{ acc.Title }</p>
@@ -30,7 +32,7 @@ templ (acc *Accordion) Do() {
 				if acc.Badge != nil {
 					@acc.Badge
 				}
-				@IconArrow()
+				@components.IconArrow()
 			</div>
 		</div>
 		<div class="hidden">
