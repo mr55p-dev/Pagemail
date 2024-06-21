@@ -6,11 +6,17 @@ endif
 css:
 	npx tailwindcss -i ./input.css -o ./internal/assets/public/css/main.css
 
+css-watch:
+	npx tailwindcss --watch -i ./input.css -o ./internal/assets/public/css/main.css
+
 sqlc:
 	sqlc generate
 
 templ:
 	templ generate
+
+templ-watch:
+	templ generate -watch
 
 $(server): templ css
 	go build -v ./cmd/$(server)

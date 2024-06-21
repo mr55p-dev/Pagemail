@@ -1,0 +1,40 @@
+package components
+
+type Accordion struct {
+	Title string
+	Badge templ.Component
+}
+
+type AccordionBuilder func(*Accordion)
+
+func WithBadge(badge templ.Component) AccordionBuilder {
+	return func(a *Accordion) {
+		a.Badge = badge
+	}
+}
+
+func NewAccordion(title string, builderArgs ...AccordionBuilder) *Accordion {
+	out := new(Accordion)
+	out.Title = title
+	for _, fn := range builderArgs {
+		fn(out)
+	}
+	return out
+}
+
+templ (acc *Accordion) Do() {
+	<div class="w-full bg-grey-800 border border-primary-100 px-4 py-3">
+		<div class="flex justify-between align-middle w-full">
+			<p class="">{ acc.Title }</p>
+			<div class="flex justify-between gap-4">
+				if acc.Badge != nil {
+					@acc.Badge
+				}
+				@IconArrow()
+			</div>
+		</div>
+		<div class="hidden">
+			{ children... }
+		</div>
+	</div>
+}

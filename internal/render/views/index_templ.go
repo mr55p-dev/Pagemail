@@ -12,7 +12,7 @@ import "bytes"
 
 import (
 	"github.com/mr55p-dev/pagemail/db/queries"
-	"github.com/mr55p-dev/pagemail/internal/render/common"
+	"github.com/mr55p-dev/pagemail/internal/render/components"
 )
 
 func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
@@ -56,7 +56,42 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"mb-8\"><h1 class=\"text-4xl text-center mx-auto pb-2\">Pagemail</h1><p class=\"text-xl text-center mx-auto\">A simple read-it-later</p></div><div class=\"p-4 w-fit bg-grey-900 mx-auto mb-8 flex flex-col gap-2 align-middle\"><a href=\"/signup\" class=\"p-4 bg-primary-500 rounded-none min-w-48 w-full text-center\">Sign up</a> <a href=\"/signup\" class=\"p-4 bg-secondary-500 rounded-none min-w-48 w-full text-center\">Log in</a></div><div class=\"bg-grey-900 w-full p-4 mb-8\"><p class=\"text-center\">Save articles from across the web.</p><p class=\"text-center\">Get an email reminder the next day.</p><p class=\"text-center font-bold text-primary-600 text-xl\">It's that simple</p></div><div class=\"mb-8 flex flex-col gap-4 justify-between\"><h3 class=\"text-center text-xl\">Features</h3><div class=\"w-full bg-primary-900 px-4 py-2\"><p>Daily email digest</p></div><div class=\"w-full bg-primary-900 px-4 py-2\"><p>Sign in with Google</p></div><div class=\"w-full bg-primary-900 px-4 py-2\"><p>iOS shortcut</p></div><div class=\"w-full bg-secondary-900 px-4 py-2 flex justify-between\"><p>Listen to your articles</p><div class=\"bg-secondary-400 text-center text-white text-sm px-1\"><p>Coming soon</p></div></div></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"flex flex-col justify-between py-8 gap-6 text-grey-100\"><h1 class=\"text-center underline text-3xl w-64 mx-auto\">A simple read it later</h1><div class=\"bg-grey-800 text-center py-6\"><p>Save articles from across the web.</p><p>Get an email reminder the next day.</p><p class=\"text-xl\"><b>It's that simple</b></p></div><div class=\"flex flex-col align-middle px-8 gap-6\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.ButtonPrimary("Sign up").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.ButtonSecondary("Log in").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"bg-gradient-to-r from-primary-500 to-secondary-500 w-full px-8 py-6 flex flex-col gap-6 justify-between\"><h2 class=\"text-2xl text-center underline\">Features</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.NewAccordion("Daily email digest").Do().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.NewAccordion("Sign up with Google").Do().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.NewAccordion("iOS Shortcut").Do().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.NewAccordion(
+				"Listen to your articles",
+				components.WithBadge(components.Badge("Coming soon")),
+			).Do().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -65,7 +100,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = common.Wrapper(user, "").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Wrapper("").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
