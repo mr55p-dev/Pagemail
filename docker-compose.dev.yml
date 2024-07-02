@@ -10,20 +10,22 @@ services:
     environment:
       PM_APP_ENVIRONMENT: dev
       PM_APP_LOG_LEVEL: DEBUG
-      PM_APP_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
-      PM_EXTERN_HOST: dev.pagemail.io
+      PM_APP_GOOGLE_CLIENT_ID: >
+        556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com
+      PM_EXTERN_HOST: new.pagemail.io
       PM_EXTERN_SCHEME: https
     volumes:
       - type: bind
-        source: /home/ubuntu/pagemail/dev/
+        source: /home/pagemail/dev/
         target: /data/
     secrets:
       - cookie-key
+      - aws-credentials
     logging:
       options:
         awslogs-group: /splat/pagemail-dev
     labels:
-      - "traefik.http.routers.pagemail-dev.rule=Host(`dev.pagemail.io`)"
+      - "traefik.http.routers.pagemail-dev.rule=Host(`new.pagemail.io`)"
       - "traefik.http.routers.pagemail-dev.entrypoints=websecure"
       - "traefik.http.routers.pagemail-dev.tls.certresolver=letsencrypt"
 
@@ -46,4 +48,6 @@ networks:
 
 secrets:
   cookie-key:
-    file: /home/ubuntu/pagemail/dev/cookie-key.txt
+    file: /home/pagemail/dev/cookie-key.txt
+  aws-credentials:
+    file: /home/pagemail/dev/aws-credentials

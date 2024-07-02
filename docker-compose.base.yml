@@ -11,6 +11,7 @@ services:
       PM_APP_COOKIE_KEY_FILE: /run/secrets/cookie-key
       PM_READABILITY_SCHEME: http
       PM_READABILITY_HOST: readability:80
+      PM_AWS_CREDENTIALS_FILE: /run/secrets/aws-credentials
     logging:
       driver: awslogs
       options:
