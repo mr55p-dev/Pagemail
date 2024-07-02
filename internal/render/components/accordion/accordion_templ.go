@@ -15,6 +15,7 @@ import "github.com/mr55p-dev/pagemail/internal/render/components"
 type Accordion struct {
 	Title string
 	Badge templ.Component
+	uid   string
 }
 
 type With func(*Accordion)
@@ -47,16 +48,33 @@ func (acc *Accordion) done() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full bg-grey-800 border border-primary-100 px-4 py-3\"><div class=\"flex justify-between align-middle w-full\"><p class=\"\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"abc\" class=\"w-full bg-grey-800 border border-primary-100 px-4 py-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(acc.Title)
+		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, openAccordion("abc"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/accordion/accordion.templ`, Line: 29, Col: 26}
+			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex justify-between align-middle w-full\" on-click=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 templ.ComponentScript = openAccordion("abc")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2.Call)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><p class=\"\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(acc.Title)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/accordion/accordion.templ`, Line: 30, Col: 26}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +92,7 @@ func (acc *Accordion) done() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"hidden\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"accordion-hide\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -91,4 +109,18 @@ func (acc *Accordion) done() templ.Component {
 		}
 		return templ_7745c5c3_Err
 	})
+}
+
+func openAccordion(id string) templ.ComponentScript {
+	return templ.ComponentScript{
+		Name: `__templ_openAccordion_0c2a`,
+		Function: `function __templ_openAccordion_0c2a(id){const elem = document.getElementById(id);
+	if (elem == null) {
+		console.error("Failed to grab element with id", id)
+	}
+	elem.querySelector(".accordion-content").classList.toggle("accordion-hide")
+}`,
+		Call:       templ.SafeScript(`__templ_openAccordion_0c2a`, id),
+		CallInline: templ.SafeScriptInline(`__templ_openAccordion_0c2a`, id),
+	}
 }

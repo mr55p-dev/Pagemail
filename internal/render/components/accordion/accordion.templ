@@ -5,6 +5,7 @@ import "github.com/mr55p-dev/pagemail/internal/render/components"
 type Accordion struct {
 	Title string
 	Badge templ.Component
+	uid   string
 }
 
 type With func(*Accordion)
@@ -25,8 +26,8 @@ func New(title string, builderArgs ...With) templ.Component {
 }
 
 templ (acc *Accordion) done() {
-	<div class="w-full bg-grey-800 border border-primary-100 px-4 py-3">
-		<div class="flex justify-between align-middle w-full">
+	<div id="abc" class="w-full bg-grey-800 border border-primary-100 px-4 py-3">
+		<div class="flex justify-between align-middle w-full" on-click={ openAccordion("abc") }>
 			<p class="">{ acc.Title }</p>
 			<div class="flex justify-between gap-4">
 				if acc.Badge != nil {
@@ -35,8 +36,16 @@ templ (acc *Accordion) done() {
 				@components.IconArrow()
 			</div>
 		</div>
-		<div class="hidden">
+		<div class="accordion-hide">
 			{ children... }
 		</div>
 	</div>
+}
+
+script openAccordion(id string) {
+	const elem = document.getElementById(id);
+	if (elem == null) {
+		console.error("Failed to grab element with id", id)
+	}
+	elem.querySelector(".accordion-content").classList.toggle("accordion-hide")
 }
