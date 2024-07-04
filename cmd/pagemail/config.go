@@ -23,6 +23,12 @@ type AppConfig struct {
 		Scheme string `config:"scheme" log:"readability-scheme"`
 		Host   string `config:"host" log:"readability-host"`
 	} `config:"readability"`
+
+	Aws struct {
+		Profile         string `config:"profile" log:"aws-profile"`
+		ConfigFile      string `config:"config-file"`
+		CredentialsFile string `config:"credentials-file"`
+	} `config:"aws"`
 }
 
 func (config *AppConfig) LogValue() slog.Value {

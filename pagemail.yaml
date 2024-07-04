@@ -13,3 +13,8 @@ extern:
 readability:
   scheme: http
   host: localhost:5000
+aws:
+  profile: default
+  config-file: ~/.aws/config
+  credentials-file: ~/.aws/credentials
+

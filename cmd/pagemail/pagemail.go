@@ -33,7 +33,12 @@ func main() {
 	defer conn.Close()
 
 	var client mail.Sender
-	awsCfg, err := config.LoadDefaultConfig(ctx)
+	awsCfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithSharedConfigProfile(cfg.Aws.Profile),
+		config.WithSharedConfigFiles([]string{cfg.Aws.ConfigFile}),
+		config.WithSharedCredentialsFiles([]string{cfg.Aws.CredentialsFile}),
+	)
 	if err != nil {
 		panic(err)
 	}
