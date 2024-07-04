@@ -10,8 +10,7 @@ services:
     environment:
       PM_APP_ENVIRONMENT: dev
       PM_APP_LOG_LEVEL: DEBUG
-      PM_APP_GOOGLE_CLIENT_ID: >
-        556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com
+      PM_APP_GOOGLE_CLIENT_ID: "556909502728-4s4ibjtkcpjrdq634a7se19qd86oilrk.apps.googleusercontent.com"
       PM_EXTERN_HOST: dev.pagemail.io
       PM_EXTERN_SCHEME: https
     volumes:

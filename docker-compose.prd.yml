@@ -19,6 +19,8 @@ services:
         target: /data/
     secrets:
       - cookie-key
+      - aws-config
+      - aws-credentials
     logging:
       options:
         awslogs-group: /splat/pagemail
