@@ -15,10 +15,12 @@ services:
       PM_EXTERN_SCHEME: https
     volumes:
       - type: bind
-        source: /home/ubuntu/pagemail/dev/
+        source: /home/pagemail/dev/
         target: /data/
     secrets:
       - cookie-key
+      - aws-config
+      - aws-credentials
     logging:
       options:
         awslogs-group: /splat/pagemail-dev
@@ -46,4 +48,8 @@ networks:
 
 secrets:
   cookie-key:
-    file: /home/ubuntu/pagemail/dev/cookie-key.txt
+    file: /home/pagemail/dev/cookie-key.txt
+  aws-config:
+    file: /home/pagemail/.aws/config
+  aws-credentials:
+    file: /home/pagemail/.aws/credentials
