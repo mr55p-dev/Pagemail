@@ -26,7 +26,7 @@ var logger = logging.NewLogger("routes")
 
 func main() {
 	ctx := context.Background()
-	cfg := getConfig()
+	cfg := mustGetConfig()
 	logger := getLogger(cfg.LogLevel)
 
 	conn := db.MustConnect(ctx, cfg.DBPath)
@@ -86,18 +86,15 @@ func main() {
 	}
 }
 
-func getConfig() *AppConfig {
+func mustGetConfig() *AppConfig {
 	cfg := new(AppConfig)
-
-	sources := make([]gonk.Loader, 0)
+	envSource := gonk.EnvLoader("pm")
 	yamlSource, err := gonk.NewYamlLoader("pagemail.yaml")
-	if err == nil {
-		sources = append(sources, yamlSource)
-	} else {
+	if err != nil {
 		logger.WithError(err).Warn("Could not load local pagemail.yaml file")
 	}
-	sources = append(sources, gonk.EnvLoader("pm"))
-	err = gonk.LoadConfig(cfg, sources...)
+
+	err = gonk.LoadConfig(cfg, yamlSource, envSource)
 	if err != nil {
 		panic(err)
 	}
