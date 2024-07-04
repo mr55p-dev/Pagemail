@@ -53,7 +53,9 @@ AWS.config.update({ region: "eu-west-2" });
 const p = new Polly();
 
 app.use((req, _, next) => {
-  console.log(req.method, decodeURI(req.url));
+  if (req.path !== "/health") {
+    console.log(req.method, decodeURI(req.url));
+  }
   next();
 });
 app.use(express.raw({ type: "text/html", limit: "2mb" }));
