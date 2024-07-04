@@ -25,7 +25,7 @@ type AppConfig struct {
 	} `config:"readability"`
 
 	Aws struct {
-		Profile         string `config:"profile" log:"aws-profile"`
+		Profile         string `config:"profile" log:"profile"`
 		ConfigFile      string `config:"config-file"`
 		CredentialsFile string `config:"credentials-file"`
 	} `config:"aws"`
