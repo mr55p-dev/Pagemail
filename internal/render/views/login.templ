@@ -1,0 +1,81 @@
+package views
+
+import "github.com/mr55p-dev/pagemail/internal/render/components"
+import "github.com/mr55p-dev/pagemail/internal/render/components/button"
+
+templ Login(clientId, addr string) {
+	@components.Wrapper("Login") {
+		<div class="md:container mx-auto p-8">
+			<h1 class="text-center text-grey-100 text-2xl mb-8">Log in</h1>
+			@components.Card() {
+				<form
+					hx-post="/login/"
+					hx-swap="innerHTML"
+					hx-target-error="#err"
+					class="
+					flex flex-col gap-8
+					"
+				>
+					<input
+						placeholder="Email"
+						type="email"
+						name="email"
+						autocomplete="email"
+						class="
+					w-full
+					px-4 py-2
+					rounded-lg
+					"
+					/>
+					<input
+						placeholder="Password"
+						name="password"
+						type="password"
+						autocomplete="current-password"
+						class="
+					w-full
+					px-4 py-2
+					rounded-lg
+					"
+					/>
+					@button.New("Log in", button.WithRole(button.RoleSubmit))
+				</form>
+				<a
+					href="/password-reset"
+					class="text-center text-secondary-500"
+				>Reset password</a>
+				@separator()
+				<div
+					class="g_id_signin mx-auto"
+					data-type="standard"
+					data-shape="pill"
+					data-theme="outline"
+					data-text="signin_with"
+					data-size="large"
+					data-logo_alignment="left"
+				></div>
+			}
+		</div>
+		<div
+			id="g_id_onload"
+			data-client_id={ clientId }
+			data-context="signin"
+			data-ux_mode="popup"
+			data-login_uri={ addr }
+			data-auto_prompt="false"
+		></div>
+	}
+}
+
+templ separator() {
+	<div
+		class="
+				flex justify-stretch align-middle gap-4
+				w-full
+				"
+	>
+		<hr class="self-stretch w-full mt-[0.75rem]"/>
+		<p>or</p>
+		<hr class="self-stretch w-full mt-[0.75rem]"/>
+	</div>
+}

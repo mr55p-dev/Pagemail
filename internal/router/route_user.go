@@ -15,6 +15,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/mail"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/render/views"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
@@ -32,7 +33,7 @@ func loginRedirectUrl(router *Router) string {
 
 func (router *Router) GetLogin(w http.ResponseWriter, r *http.Request) {
 	urlAddr := loginRedirectUrl(router)
-	response.Component(render.Login(router.googleClientId, urlAddr), w, r)
+	response.Component(views.Login(router.googleClientId, urlAddr), w, r)
 }
 
 type PostLoginRequest struct {

@@ -13,6 +13,7 @@ import "bytes"
 import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/render/components"
+	"github.com/mr55p-dev/pagemail/internal/render/components/button"
 )
 
 func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
@@ -56,19 +57,30 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"\nbg-white text-grey-100 \nflex flex-col justify-between gap-8 \npy-8 px-8\nmd:container mx-auto\n		\"><h1 class=\"text-center text-3xl w-64 mx-auto\">Want a <u class=\"text-secondary-500\">simple</u> read-it-later service?</h1><h2 class=\"text-2xl text-center\">Try <u class=\"text-primary-500\">Pagemail</u></h2><div class=\"flex flex-col md:flex-row align-middle justify-center px-8 gap-6\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"\nbg-white text-grey-100 \nflex flex-col justify-between gap-8 \npy-8 px-8\nmd:container mx-auto\n		\"><h1 class=\"text-center text-3xl w-64 mx-auto\">Want a <u class=\"text-secondary-500\">simple</u> read-it-later service?</h1><h2 class=\"text-2xl text-center\">Try <u class=\"text-primary-500\">Pagemail</u></h2><div class=\"flex flex-col md:flex-row align-middle justify-center px-8 gap-6\"><div class=\"w-[150px]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Button("Sign up", templ.SafeURL("/signup"), components.Btn_primary).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = button.New(
+				"Sign up",
+				button.WithLink(templ.SafeURL("/signup")),
+			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Button("Log in", templ.SafeURL("/login"), components.Btn_secondary).Render(ctx, templ_7745c5c3_Buffer)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"w-[150px]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"grid grid-cols-1 md:grid-cols-2 \n			gap-8\n			max-w-[700px] mx-auto\">")
+			templ_7745c5c3_Err = button.New(
+				"Log in",
+				button.WithLink(templ.SafeURL("/login")),
+				button.WithVariant(button.Secondary),
+			).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"grid grid-cols-1 md:grid-cols-2 \n			gap-8\n			max-w-[700px] mx-auto\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -87,7 +99,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 				}
 				return templ_7745c5c3_Err
 			})
-			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,7 +118,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 				}
 				return templ_7745c5c3_Err
 			})
-			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -133,7 +145,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 				}
 				return templ_7745c5c3_Err
 			})
-			templ_7745c5c3_Err = Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Card().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -147,38 +159,6 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 			return templ_7745c5c3_Err
 		})
 		templ_7745c5c3_Err = components.Wrapper("").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if !templ_7745c5c3_IsBuffer {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
-		}
-		return templ_7745c5c3_Err
-	})
-}
-
-func Card() templ.Component {
-	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
-		if !templ_7745c5c3_IsBuffer {
-			templ_7745c5c3_Buffer = templ.GetBuffer()
-			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var6 == nil {
-			templ_7745c5c3_Var6 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n			bg-grey-800 \n			rounded-lg\n			p-8 gap-8\n			flex flex-col justify-start align-middle\n			h-full\n			\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templ_7745c5c3_Var6.Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
