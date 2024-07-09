@@ -14,7 +14,7 @@ import "github.com/mr55p-dev/pagemail/internal/render/components"
 import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
-func Login(clientID, redirectUrl string) templ.Component {
+func Signup(clientID, redirectUrl string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -33,7 +33,7 @@ func Login(clientID, redirectUrl string) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"md:container mx-auto p-8\"><h1 class=\"text-center text-grey-100 text-2xl mb-8\">Log in</h1>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"md:container mx-auto p-8\"><h1 class=\"text-center text-grey-100 text-2xl mb-8\">Sign up</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -48,23 +48,38 @@ func Login(clientID, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = input.New(
+					"username",
+					input.TypeUsername,
+					input.WithPlaceholder("User name"),
+				).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = input.New(
 					"email",
 					input.TypeEmail,
 					input.WithPlaceholder("Email"),
-					input.WithAutofill(),
 				).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				templ_7745c5c3_Err = input.New(
 					"password",
-					input.TypeCurrentPass,
+					input.TypeNewPass,
 					input.WithPlaceholder("Password"),
 				).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = button.New("Log in", button.WithRole(button.RoleSubmit)).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = input.New(
+					"password-repeat",
+					input.TypeNewPass,
+					input.WithPlaceholder("Repeat password"),
+				).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = button.New("Sign up", button.WithRole(button.RoleSubmit)).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -114,31 +129,7 @@ func Login(clientID, redirectUrl string) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = components.Wrapper("Login").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if !templ_7745c5c3_IsBuffer {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
-		}
-		return templ_7745c5c3_Err
-	})
-}
-
-func separator() templ.Component {
-	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
-		if !templ_7745c5c3_IsBuffer {
-			templ_7745c5c3_Buffer = templ.GetBuffer()
-			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n				flex justify-stretch align-middle gap-4\n				w-full\n				\"><hr class=\"self-stretch w-full mt-[0.75rem]\"><p>or</p><hr class=\"self-stretch w-full mt-[0.75rem]\"></div>")
+		templ_7745c5c3_Err = components.Wrapper("Signup").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -4,10 +4,10 @@ import "github.com/mr55p-dev/pagemail/internal/render/components"
 import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
-templ Login(clientID, redirectUrl string) {
-	@components.Wrapper("Login") {
+templ Signup(clientID, redirectUrl string ) {
+	@components.Wrapper("Signup") {
 		<div class="md:container mx-auto p-8">
-			<h1 class="text-center text-grey-100 text-2xl mb-8">Log in</h1>
+			<h1 class="text-center text-grey-100 text-2xl mb-8">Sign up</h1>
 			@components.Card() {
 				<form
 					hx-post="/login/"
@@ -18,17 +18,26 @@ templ Login(clientID, redirectUrl string) {
 					"
 				>
 					@input.New(
+						"username",
+						input.TypeUsername,
+						input.WithPlaceholder("User name"),
+					)
+					@input.New(
 						"email",
 						input.TypeEmail,
 						input.WithPlaceholder("Email"),
-						input.WithAutofill(),
 					)
 					@input.New(
 						"password",
-						input.TypeCurrentPass,
+						input.TypeNewPass,
 						input.WithPlaceholder("Password"),
 					)
-					@button.New("Log in", button.WithRole(button.RoleSubmit))
+					@input.New(
+						"password-repeat",
+						input.TypeNewPass,
+						input.WithPlaceholder("Repeat password"),
+					)
+					@button.New("Sign up", button.WithRole(button.RoleSubmit))
 				</form>
 				<a
 					href="/password-reset"
@@ -55,17 +64,4 @@ templ Login(clientID, redirectUrl string) {
 			data-auto_prompt="false"
 		></div>
 	}
-}
-
-templ separator() {
-	<div
-		class="
-				flex justify-stretch align-middle gap-4
-				w-full
-				"
-	>
-		<hr class="self-stretch w-full mt-[0.75rem]"/>
-		<p>or</p>
-		<hr class="self-stretch w-full mt-[0.75rem]"/>
-	</div>
 }

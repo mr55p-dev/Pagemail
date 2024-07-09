@@ -267,7 +267,7 @@ func (router *Router) PostSignup(w http.ResponseWriter, r *http.Request) {
 
 func (router *Router) GetSignup(w http.ResponseWriter, r *http.Request) {
 	urlAddr := loginRedirectUrl(router)
-	response.Component(render.Signup(router.googleClientId, urlAddr), w, r)
+	response.Component(views.Signup(router.googleClientId, urlAddr), w, r)
 
 }
 
