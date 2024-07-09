@@ -60,11 +60,11 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.ButtonPrimary("Sign up", templ.SafeURL("/signup")).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Button("Sign up", templ.SafeURL("/signup"), components.Btn_primary).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.ButtonSecondary("Log in", templ.SafeURL("/login")).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Button("Log in", templ.SafeURL("/login"), components.Btn_secondary).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

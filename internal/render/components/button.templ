@@ -1,25 +1,34 @@
 package components
 
-templ ButtonPrimary(text string, destination templ.SafeURL) {
-	<div
-		class="
-bg-primary-500 text-white
-min-w-[150px]
-rounded-[32px] p-4 
-text-center content-center"
-	>
-		<a href={destination}>{ text }</a>
-	</div>
-}
+type ButtonStyle int
 
-templ ButtonSecondary(text string, destination templ.SafeURL) {
-	<div
-		class="
-bg-secondary-500 text-white
-min-w-[150px]
-rounded-[32px] p-4
-text-center content-center"
-	>
-		<a href={destination}>{ text }</a>
-	</div>
+const (
+	Btn_primary ButtonStyle = iota
+	Btn_secondary
+)
+
+templ Button(text string, destination templ.SafeURL, style ButtonStyle) {
+	<a href={ destination }>
+		<div
+			if style == Btn_primary {
+				class="
+				bg-primary-500 text-white
+				min-w-[150px]
+				rounded-[32px] p-4 
+				text-center content-center
+				"
+			}
+			else
+			if style == Btn_secondary {
+				class="
+				bg-secondary-500 text-white
+				min-w-[150px]
+				rounded-[32px] p-4
+				text-center content-center
+			"
+			}
+		>
+			<span>{ text }</span>
+		</div>
+	</a>
 }
