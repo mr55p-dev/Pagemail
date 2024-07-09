@@ -51,15 +51,7 @@ func Wrapper(title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\"><script src=\"https://accounts.google.com/gsi/client\" async></script>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"wrapper\" hx-target-error=\"error\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"wrapper text-grey-100\" hx-target-error=\"error\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
