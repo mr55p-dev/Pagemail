@@ -18,7 +18,21 @@ templ Wrapper(title string) {
 		<body hx-boost="true" hx-ext="response-targets" class="bg-grey-900">
 			<script src="https://accounts.google.com/gsi/client" async></script>
 			<main class="wrapper text-grey-100" hx-target-error="error">
-				<div class="md:container mx-auto p-8">
+				<div class="md:container mx-auto p-8 relative">
+					<div
+						class="
+							absolute top-5 right-8 
+							size-16 
+							grid place-items-center
+						"
+					>
+						<img
+							src="/assets/img/heroicons-outline/user-circle.svg"
+							height="50px"
+							width="50px"
+							alt="User profile"
+						/>
+					</div>
 					{ children... }
 				</div>
 				<div id="err"></div>

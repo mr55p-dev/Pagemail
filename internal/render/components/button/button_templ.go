@@ -53,6 +53,24 @@ const (
 		rounded-lg py-2 px-4
 		text-center content-center
 	`
+	HollowPrimary = `
+		border border-primary-500 text-primary-500
+		size-full text-nowrap 
+		rounded-lg py-2 px-4
+		text-center content-center
+	`
+	HollowSecondary = `
+		border border-secondary-500 text-secondary-500
+		size-full text-nowrap 
+		rounded-lg py-2 px-4
+		text-center content-center
+	`
+	HollowBad = `
+		border border-red-500 text-red-500
+		size-full text-nowrap 
+		rounded-lg py-2 px-4
+		text-center content-center
+	`
 	LinkPrimary Style = `
 		text-primary-500 
 		text-center content-center
@@ -137,7 +155,7 @@ func (b *Button) asButton() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 90, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 108, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -201,7 +219,7 @@ func (b *Button) asLink() templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 98, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 116, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {

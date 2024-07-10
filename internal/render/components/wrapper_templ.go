@@ -51,7 +51,7 @@ func Wrapper(title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"wrapper text-grey-100\" hx-target-error=\"error\"><div class=\"md:container mx-auto p-8\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"wrapper text-grey-100\" hx-target-error=\"error\"><div class=\"md:container mx-auto p-8 relative\"><div class=\"\n							absolute top-5 right-8 \n							size-16 \n							grid place-items-center\n						\"><img src=\"/assets/img/heroicons-outline/user-circle.svg\" height=\"50px\" width=\"50px\" alt=\"User profile\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

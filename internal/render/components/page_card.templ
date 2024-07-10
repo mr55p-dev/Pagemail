@@ -5,7 +5,7 @@ import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 
 templ PageCard(page *queries.Page) {
 	@Card() {
-		<div class="grid grid-cols-4 grid-rows-2 gap-8">
+		<div class="grid grid-cols-4 grid-rows-auto gap-8">
 			<div class="col-span-1">
 				<img
 					if page.ImageUrl.Valid {
@@ -17,6 +17,7 @@ templ PageCard(page *queries.Page) {
 					}
 					width="100px"
 					height="100px"
+					class="rounded-lg"
 				/>
 			</div>
 			<div class="col-span-3">
@@ -36,7 +37,13 @@ templ PageCard(page *queries.Page) {
 					</a>
 				</h3>
 			</div>
-			<p class="col-span-4">
+			<p
+				class="
+					col-span-4
+					overflow-ellipsis overflow-hidden
+					line-clamp-4
+				"
+			>
 				if page.Description.Valid {
 					{ page.Description.String }
 				} else {
@@ -47,11 +54,11 @@ templ PageCard(page *queries.Page) {
 				@button.New(
 					"Open",
 					button.WithLink(templ.SafeURL(page.Url)),
-					button.WithVariant(button.MinPrimary),
+					button.WithVariant(button.HollowPrimary),
 				)
 				@button.New(
 					"Delete",
-					button.WithVariant(button.MinBad),
+					button.WithVariant(button.HollowBad),
 				)
 			</div>
 		</div>
