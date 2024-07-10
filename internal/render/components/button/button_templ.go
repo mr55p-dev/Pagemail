@@ -24,17 +24,39 @@ type With func(*Button)
 
 const (
 	Primary Style = `
-	bg-primary-500 text-white
-	w-full
-	rounded-[32px] p-4 
-	text-center content-center
-`
+		bg-primary-500 text-white
+		size-full
+		rounded-[32px] p-4 
+		text-center content-center
+	`
 	Secondary Style = `
-	bg-secondary-500 text-white
-	w-full
-	rounded-[32px] p-4
-	text-center content-center
-`
+		bg-secondary-500 text-white
+		size-full
+		rounded-[32px] p-4
+		text-center content-center
+	`
+	MinPrimary = `
+		bg-primary-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	MinSecondary = `
+		bg-primary-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	MinBad = `
+		bg-red-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	LinkPrimary Style = `
+		text-primary-500 
+		text-center content-center
+	`
 
 	RoleSubmit  Role = "submit"
 	RoleDefault Role = "button"
@@ -115,7 +137,7 @@ func (b *Button) asButton() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 68, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 90, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -179,7 +201,7 @@ func (b *Button) asLink() templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 76, Col: 13}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 98, Col: 13}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {

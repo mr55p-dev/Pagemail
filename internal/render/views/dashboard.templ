@@ -1,0 +1,22 @@
+package views
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+import "github.com/mr55p-dev/pagemail/internal/render/components"
+
+templ Dashboard(user *queries.User, pages []queries.Page) {
+	@components.Wrapper("Dashboard") {
+		<h1 class="text-center text-grey-100 text-2xl mb-8">Pages</h1>
+		@components.Toolbar()
+		<div
+			class="
+			mt-8
+			grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8
+			justify-items-stretch
+		"
+		>
+			for _, page := range pages {
+				@components.PageCard(&page)
+			}
+		</div>
+	}
+}

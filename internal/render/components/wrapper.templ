@@ -18,7 +18,9 @@ templ Wrapper(title string) {
 		<body hx-boost="true" hx-ext="response-targets" class="bg-grey-900">
 			<script src="https://accounts.google.com/gsi/client" async></script>
 			<main class="wrapper text-grey-100" hx-target-error="error">
-				{ children... }
+				<div class="md:container mx-auto p-8">
+					{ children... }
+				</div>
 				<div id="err"></div>
 				<div id="msg"></div>
 			</main>

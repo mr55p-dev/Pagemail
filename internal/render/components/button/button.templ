@@ -14,17 +14,39 @@ type With func(*Button)
 
 const (
 	Primary Style = `
-	bg-primary-500 text-white
-	w-full
-	rounded-[32px] p-4 
-	text-center content-center
-`
+		bg-primary-500 text-white
+		size-full
+		rounded-[32px] p-4 
+		text-center content-center
+	`
 	Secondary Style = `
-	bg-secondary-500 text-white
-	w-full
-	rounded-[32px] p-4
-	text-center content-center
-`
+		bg-secondary-500 text-white
+		size-full
+		rounded-[32px] p-4
+		text-center content-center
+	`
+	MinPrimary = `
+		bg-primary-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	MinSecondary = `
+		bg-primary-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	MinBad = `
+		bg-red-500 text-white
+		size-full text-nowrap 
+		rounded-lg p-2
+		text-center content-center
+	`
+	LinkPrimary Style = `
+		text-primary-500 
+		text-center content-center
+	`
 
 	RoleSubmit  Role = "submit"
 	RoleDefault Role = "button"

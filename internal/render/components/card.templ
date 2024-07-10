@@ -8,10 +8,15 @@ templ Card() {
 			p-8 gap-8
 			flex flex-col justify-start align-middle
 			h-full
-			w-full max-w-sm
-			mx-auto
+			w-full 
 			"
 	>
+		{ children... }
+	</div>
+}
+
+templ Page() {
+	<div class="max-w-sm mx-auto">
 		{ children... }
 	</div>
 }

@@ -51,7 +51,7 @@ func Wrapper(title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"wrapper text-grey-100\" hx-target-error=\"error\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"wrapper text-grey-100\" hx-target-error=\"error\"><div class=\"md:container mx-auto p-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -59,7 +59,7 @@ func Wrapper(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"err\"></div><div id=\"msg\"></div></main><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script><script data-goatcounter=\"https://pagemail.goatcounter.com/count\" async src=\"//gc.zgo.at/count.js\"></script></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div id=\"err\"></div><div id=\"msg\"></div></main><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/sse.js\"></script><script src=\"/assets/js/response-targets.js\"></script><script src=\"/assets/js/overflow-nav.js\" type=\"module\"></script><script data-goatcounter=\"https://pagemail.goatcounter.com/count\" async src=\"//gc.zgo.at/count.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

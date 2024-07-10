@@ -1,0 +1,59 @@
+package components
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+import "github.com/mr55p-dev/pagemail/internal/render/components/button"
+
+templ PageCard(page *queries.Page) {
+	@Card() {
+		<div class="grid grid-cols-4 grid-rows-2 gap-8">
+			<div class="col-span-1">
+				<img
+					if page.ImageUrl.Valid {
+						src={ page.ImageUrl.String }
+						alt={ page.Title.String }
+					} else {
+						src="/assets/img/heroicons-outline/question-mark-circle.svg"
+						alt="Placeholder image"
+					}
+					width="100px"
+					height="100px"
+				/>
+			</div>
+			<div class="col-span-3">
+				<h3
+					class="
+						text-left text-xl underline
+						overflow-ellipsis overflow-hidden
+						line-clamp-2
+					"
+				>
+					<a href={ templ.SafeURL(page.Url) }>
+						if page.Title.Valid {
+							{ page.Title.String }
+						} else {
+							{ page.Url }
+						}
+					</a>
+				</h3>
+			</div>
+			<p class="col-span-4">
+				if page.Description.Valid {
+					{ page.Description.String }
+				} else {
+					No description provided			
+				}
+			</p>
+			<div class="col-span-4 grid grid-cols-2 gap-4">
+				@button.New(
+					"Open",
+					button.WithLink(templ.SafeURL(page.Url)),
+					button.WithVariant(button.MinPrimary),
+				)
+				@button.New(
+					"Delete",
+					button.WithVariant(button.MinBad),
+				)
+			</div>
+		</div>
+	}
+}
