@@ -783,6 +783,10 @@ video {
   gap: 2rem;
 }
 
+.place-self-center {
+  place-self: center;
+}
+
 .self-stretch {
   align-self: stretch;
 }
@@ -1045,5 +1049,11 @@ video {
 @media (min-width: 1280px) {
   .xl\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1536px) {
+  .\32xl\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

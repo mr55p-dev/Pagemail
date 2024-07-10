@@ -40,7 +40,7 @@ func Dashboard(user *queries.User, pages []queries.Page) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"\n			mt-8\n			grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8\n			justify-items-stretch\n		\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"\n			mt-8\n			grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8\n			justify-items-stretch\n		\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -6,20 +6,18 @@ import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 templ PageCard(page *queries.Page) {
 	@Card() {
 		<div class="grid grid-cols-4 grid-rows-auto gap-8">
-			<div class="col-span-1">
-				<img
-					if page.ImageUrl.Valid {
-						src={ page.ImageUrl.String }
-						alt={ page.Title.String }
-					} else {
-						src="/assets/img/heroicons-outline/question-mark-circle.svg"
-						alt="Placeholder image"
-					}
-					width="100px"
-					height="100px"
-					class="rounded-lg"
-				/>
-			</div>
+			<img
+				if page.ImageUrl.Valid {
+					src={ page.ImageUrl.String }
+					alt={ page.Title.String }
+				} else {
+					src="/assets/img/heroicons-outline/question-mark-circle.svg"
+					alt="Placeholder image"
+				}
+				width="100px"
+				height="100px"
+				class=" col-span-1 place-self-center rounded-lg"
+			/>
 			<div class="col-span-3">
 				<h3
 					class="

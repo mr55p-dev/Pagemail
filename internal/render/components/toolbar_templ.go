@@ -26,7 +26,7 @@ func Toolbar() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n		\"><div class=\"max-w-screen-sm mx-auto\n				grid grid-cols-2 md:grid-cols-4 gap-6\n			\"><div class=\"col-span-2\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n		\"><div class=\"max-w-screen-sm mx-auto\n				grid grid-cols-2 md:grid-cols-4 gap-8\n			\"><div class=\"col-span-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
