@@ -1,10 +1,11 @@
 package button
 
 type Button struct {
-	Variant Style
-	Link    templ.SafeURL
-	Title   string
-	Role    Role
+	Variant      Style
+	Link         templ.SafeURL
+	Title        string
+	Role         Role
+	ClickHandler *templ.ComponentScript
 }
 
 type Style string
@@ -82,6 +83,12 @@ func WithLink(destination templ.SafeURL) With {
 	}
 }
 
+func WithClickHandler(handler templ.ComponentScript) With {
+	return func(b *Button) {
+		b.ClickHandler = &handler
+	}
+}
+
 func WithRole(role Role) With {
 	return func(b *Button) {
 		b.Role = role
@@ -105,17 +112,20 @@ func New(text string, opts ...With) templ.Component {
 }
 
 templ (b *Button) asButton() {
-	<button class={ string(b.Variant) } role={ string(b.Role) }>
+	<button
+		class={ string(b.Variant) }
+		role={ string(b.Role) }
+	>
 		<span>{ b.Title }</span>
 	</button>
 }
 
 templ (b *Button) asLink() {
-	if b.Link != "" {
-		<a href={ b.Link }>
-			<div class={ string(b.Variant) }>
-				{ b.Title }
-			</div>
-		</a>
-	}
+	<a
+		href={ b.Link }
+	>
+		<div class={ string(b.Variant) }>
+			{ b.Title }
+		</div>
+	</a>
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/render/components"
 	"github.com/mr55p-dev/pagemail/internal/render/views"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
@@ -92,7 +93,7 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrNoPage)
 		return
 	}
-	response.Component(render.PageCard(&page), w, r)
+	response.Component(components.PageCard(&page), w, r)
 }
 
 type PostPageRequest struct {
