@@ -4,27 +4,48 @@ import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 templ Toolbar()	 {
-	<div
+	<form
 		class="
 			mx-auto
 			bg-grey-800 rounded-lg
 			p-8
+			grid gap-8 grid-columns-4
 		"
 	>
-		<div
-			class="max-w-screen-sm mx-auto
-				grid grid-cols-2 md:grid-cols-4 gap-8
-			"
+		<input
+			id="save-page-input"
+			class={ input.StyleDefault }
+			placeholder="URL"
+			type="url"
+			name="url"
+			hx-trigger="submit,click from:#save-page-submit"
+			hx-post="/pages/"
+			hx-target="#pages"
+			hx-swap="afterbegin"
+		/>
+		<button
+			id="add-page-button"
+			class={ button.MinPrimary }
+			type="submit"
 		>
-			<div class="col-span-2">
-				@input.New(
-					"filter",
-					input.TypeNone,
-					input.WithPlaceholder("Filter"),
-				)
-			</div>
-			@button.New("Add page", button.WithVariant(button.MinPrimary))
-			@button.New("Delete all", button.WithVariant(button.MinBad))
-		</div>
-	</div>
+			Add page
+		</button>
+		<button
+			class={ button.MinSecondary }
+			onClick={ PasteFromClipboard("save-page-input") }
+		>
+			Paste from clipboard
+		</button>
+		<button
+			class={ button.MinBad }
+		>
+			Delete all
+		</button>
+	</form>
+}
+
+script PasteFromClipboard(toId string) {
+	const elem = document.getElementById(toId)
+	console.log("Grabbed", elem)
+	navigator.clipboard.readText().then(txt => elem.setAttribute("value", txt)).catch(err => console.error("Failed to paste", error))
 }

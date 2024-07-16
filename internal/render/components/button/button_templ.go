@@ -43,7 +43,7 @@ const (
 		text-center content-center
 	`
 	MinSecondary = `
-		bg-primary-500 text-white
+		bg-secondary-500 text-white
 		size-full text-nowrap 
 		rounded-lg py-2 px-4
 		text-center content-center

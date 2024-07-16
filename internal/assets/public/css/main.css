@@ -608,10 +608,6 @@ video {
   grid-column: span 1 / span 1;
 }
 
-.col-span-2 {
-  grid-column: span 2 / span 2;
-}
-
 .col-span-3 {
   grid-column: span 3 / span 3;
 }
@@ -709,10 +705,6 @@ video {
 
 .max-w-\[700px\] {
   max-width: 700px;
-}
-
-.max-w-screen-sm {
-  max-width: 640px;
 }
 
 .max-w-sm {
@@ -990,10 +982,6 @@ video {
   outline-style: solid;
 }
 
-.filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
 :root {
   background-color: #ffffff;
 }
@@ -1035,10 +1023,6 @@ video {
 
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .md\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .md\:flex-row {
