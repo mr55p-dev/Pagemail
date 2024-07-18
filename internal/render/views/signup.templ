@@ -5,54 +5,55 @@ import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 templ Signup(clientID, redirectUrl string ) {
-	@components.Wrapper("Signup") {
-		<h1 class="text-center text-grey-100 text-2xl mb-8">Sign up</h1>
-		@components.Card() {
-			<form
-				hx-post="/login/"
-				hx-swap="innerHTML"
-				hx-target-error="#err"
-				class="
+	@components.Wrapper("Sign up") {
+		<div class="max-w-screen-sm mx-auto">
+			@components.Card() {
+				<form
+					hx-post="/login/"
+					hx-swap="innerHTML"
+					hx-target-error="#err"
+					class="
 					flex flex-col gap-8
 					"
-			>
-				@input.New(
-					"username",
-					input.TypeUsername,
-					input.WithPlaceholder("User name"),
-				)
-				@input.New(
-					"email",
-					input.TypeEmail,
-					input.WithPlaceholder("Email"),
-				)
-				@input.New(
-					"password",
-					input.TypeNewPass,
-					input.WithPlaceholder("Password"),
-				)
-				@input.New(
-					"password-repeat",
-					input.TypeNewPass,
-					input.WithPlaceholder("Repeat password"),
-				)
-				@button.New("Sign up", button.WithRole(button.RoleSubmit))
-			</form>
-			<a
-				href="/password-reset"
-				class="text-center text-secondary-500"
-			>Reset password</a>
-			@separator()
-			<div
-				class="g_id_signin mx-auto"
-				data-type="standard"
-				data-shape="pill"
-				data-theme="outline"
-				data-text="signin_with"
-				data-size="large"
-				data-logo_alignment="left"
-			></div>
-		}
+					>
+					@input.New(
+							"username",
+							input.TypeUsername,
+							input.WithPlaceholder("User name"),
+							)
+					@input.New(
+							"email",
+							input.TypeEmail,
+							input.WithPlaceholder("Email"),
+							)
+					@input.New(
+							"password",
+							input.TypeNewPass,
+							input.WithPlaceholder("Password"),
+							)
+					@input.New(
+							"password-repeat",
+							input.TypeNewPass,
+							input.WithPlaceholder("Repeat password"),
+							)
+					@button.New("Sign up", button.WithRole(button.RoleSubmit))
+					</form>
+					<a
+					href="/password-reset"
+					class="text-center text-secondary-500"
+					>Reset password</a>
+					@separator()
+					<div
+					class="g_id_signin mx-auto"
+					data-type="standard"
+					data-shape="pill"
+					data-theme="outline"
+					data-text="signin_with"
+					data-size="large"
+					data-logo_alignment="left"
+					></div>
+			}
+		</div>
 		<div
 			id="g_id_onload"
 			data-client_id={ clientID }

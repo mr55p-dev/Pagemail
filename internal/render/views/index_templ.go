@@ -57,7 +57,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"\n				bg-white text-grey-100 \n				flex flex-col justify-between gap-8 \n			\"><h1 class=\"text-center text-3xl w-64 mx-auto\">Want a <u class=\"text-secondary-500\">simple</u> read-it-later service?</h1><h2 class=\"text-2xl text-center\">Try <u class=\"text-primary-500\">Pagemail</u></h2><div class=\"flex flex-col md:flex-row align-middle justify-center px-8 gap-6\"><div class=\"w-[150px]\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div class=\"flex flex-col justify-between gap-8\"><h1 class=\"text-center text-3xl w-64 mx-auto\">Want a <u class=\"text-secondary-500\">simple</u> read-it-later service?</h1><h2 class=\"text-2xl text-center\">Try <u class=\"text-primary-500\">Pagemail</u></h2><div class=\"flex flex-col md:flex-row align-middle justify-center px-8 gap-6\"><div class=\"w-[150px]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

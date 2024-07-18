@@ -1,16 +1,29 @@
 package components
 
-
-templ Header() {
-	<div class="w-full bg-grey-800 flex justify-between px-8 py-6 align-center border-b border-b-grey-100 ">
-		<a href="/" class="text-grey-100 text-xl">Pagemail</a>
-		<div class="flex gap-6">
-			<a class="content-center" href="/">
-				@IconAdd()
-			</a>
-			<a class="content-center" href="/">
-				@IconBurger()
-			</a>
+templ Header(title string) {
+	<nav
+		class="
+	w-full
+	grid grid-cols-3 align-middle
+	mb-8
+	"
+	>
+		<a
+			href="/"
+			class="w-fit h-12 grid grid-flow-col items-center gap-4"
+		>
+			@IconBrand()
+			<div class="grid items-center">
+				<span
+					class="italic text-left text-xl text-primary-300"
+				>Pagemail</span>
+			</div>
+		</a>
+		<div class="place-self-center">
+			<span class="text-center text-2xl">{ title }</span>
 		</div>
-	</div>
+		<div class="h-12 flex justify-end">
+			@IconUser()
+		</div>
+	</nav>
 }
