@@ -6,7 +6,7 @@ import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 templ Signup(clientID, redirectUrl string ) {
 	@components.Wrapper("Sign up") {
-		<div class="max-w-screen-sm mx-auto">
+		<div class="max-w-lg mx-auto">
 			@components.Card() {
 				<form
 					hx-post="/login/"
