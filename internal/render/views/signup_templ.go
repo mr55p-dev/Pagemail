@@ -43,7 +43,7 @@ func Signup(clientID, redirectUrl string) templ.Component {
 					templ_7745c5c3_Buffer = templ.GetBuffer()
 					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#err\" class=\"\n					flex flex-col gap-8\n					\">")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

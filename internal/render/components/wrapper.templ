@@ -17,15 +17,12 @@ templ Wrapper(title string) {
 		</head>
 		<body hx-boost="true" hx-ext="response-targets" class="bg-grey-900">
 			<script src="https://accounts.google.com/gsi/client" async></script>
-			<main class="
-			bg-white text-grey-100
-			" hx-target-error="error">
+			<main class="bg-white text-grey-100" hx-target-error="#msg">
+				<div id="msg"></div>
 				<div class="max-w-screen-lg mx-auto p-8">
 					@Header(title)
 					{ children... }
 				</div>
-				<div id="err"></div>
-				<div id="msg"></div>
 			</main>
 			<script src="/assets/js/htmx.min.js"></script>
 			<script src="/assets/js/sse.js"></script>

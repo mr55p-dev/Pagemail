@@ -11,10 +11,8 @@ templ Login(clientID, redirectUrl string) {
 				<form
 					hx-post="/login/"
 					hx-swap="innerHTML"
-					hx-target-error="#err"
-					class="
-					flex flex-col gap-8
-					"
+					hx-target-error="#msg"
+					class="flex flex-col gap-8"
 				>
 					@input.New(
 						"email",

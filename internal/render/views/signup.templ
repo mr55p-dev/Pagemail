@@ -11,39 +11,37 @@ templ Signup(clientID, redirectUrl string ) {
 				<form
 					hx-post="/login/"
 					hx-swap="innerHTML"
-					hx-target-error="#err"
-					class="
-					flex flex-col gap-8
-					"
-					>
+					hx-target-error="#msg"
+					class="flex flex-col gap-8"
+				>
 					@input.New(
-							"username",
-							input.TypeUsername,
-							input.WithPlaceholder("User name"),
-							)
+						"username",
+						input.TypeUsername,
+						input.WithPlaceholder("User name"),
+					)
 					@input.New(
-							"email",
-							input.TypeEmail,
-							input.WithPlaceholder("Email"),
-							)
+						"email",
+						input.TypeEmail,
+						input.WithPlaceholder("Email"),
+					)
 					@input.New(
-							"password",
-							input.TypeNewPass,
-							input.WithPlaceholder("Password"),
-							)
+						"password",
+						input.TypeNewPass,
+						input.WithPlaceholder("Password"),
+					)
 					@input.New(
-							"password-repeat",
-							input.TypeNewPass,
-							input.WithPlaceholder("Repeat password"),
-							)
+						"password-repeat",
+						input.TypeNewPass,
+						input.WithPlaceholder("Repeat password"),
+					)
 					@button.New("Sign up", button.WithRole(button.RoleSubmit))
-					</form>
-					<a
+				</form>
+				<a
 					href="/password-reset"
 					class="text-center text-secondary-500"
-					>Reset password</a>
-					@separator()
-					<div
+				>Reset password</a>
+				@separator()
+				<div
 					class="g_id_signin mx-auto"
 					data-type="standard"
 					data-shape="pill"
@@ -51,7 +49,7 @@ templ Signup(clientID, redirectUrl string ) {
 					data-text="signin_with"
 					data-size="large"
 					data-logo_alignment="left"
-					></div>
+				></div>
 			}
 		</div>
 		<div
