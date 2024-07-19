@@ -9,6 +9,8 @@ import (
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/pmerror"
 	"github.com/mr55p-dev/pagemail/internal/render"
+	"github.com/mr55p-dev/pagemail/internal/render/components"
+	"github.com/mr55p-dev/pagemail/internal/render/views"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/pkg/request"
 	"github.com/mr55p-dev/pagemail/pkg/response"
@@ -25,7 +27,7 @@ func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response.Component(render.Dashboard(user, pages), w, r)
+	response.Component(views.Dashboard(user, pages), w, r)
 }
 
 type GetPagesRequest struct {
@@ -91,7 +93,7 @@ func (router *Router) GetPage(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, r, pmerror.ErrNoPage)
 		return
 	}
-	response.Component(render.PageCard(&page), w, r)
+	response.Component(components.PageCard(&page), w, r)
 }
 
 type PostPageRequest struct {
