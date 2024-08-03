@@ -46,7 +46,7 @@ button,
 }
 
 .fill-secondary {
-  @apply bg-primary-500 text-white;
+  @apply bg-secondary-500 text-white;
 }
 
 .fill-good {

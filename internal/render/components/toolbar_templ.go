@@ -23,7 +23,7 @@ func Toolbar() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n			grid gap-8 grid-columns-4\n		\"><input id=\"save-page-input\" placeholder=\"URL\" type=\"url\" name=\"url\" hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/pages/\" hx-target=\"#pages\" hx-swap=\"afterbegin\"> <button id=\"add-page-button\" class=\"btn-slim hollow-primary\" type=\"submit\">Add page</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n			grid gap-4 grid-columns-4\n			md:grid-columns-3 md:grid-rows-2\n		\"><input id=\"save-page-input\" placeholder=\"URL\" type=\"url\" name=\"url\" class=\"md:col-span-3\" hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/pages/\" hx-target=\"#pages\" hx-swap=\"afterbegin\"> <button id=\"add-page-button\" class=\"btn-slim hollow-primary\" type=\"submit\">Add page</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

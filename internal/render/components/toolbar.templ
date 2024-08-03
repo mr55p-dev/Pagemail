@@ -6,7 +6,8 @@ templ Toolbar()	 {
 			mx-auto
 			bg-grey-800 rounded-lg
 			p-8
-			grid gap-8 grid-columns-4
+			grid gap-4 grid-columns-4
+			md:grid-columns-3 md:grid-rows-2
 		"
 	>
 		<input
@@ -14,16 +15,13 @@ templ Toolbar()	 {
 			placeholder="URL"
 			type="url"
 			name="url"
+			class="md:col-span-3"
 			hx-trigger="submit,click from:#save-page-submit"
 			hx-post="/pages/"
 			hx-target="#pages"
 			hx-swap="afterbegin"
 		/>
-		<button
-			id="add-page-button"
-			class="btn-slim hollow-primary"
-			type="submit"
-		>
+		<button id="add-page-button" class="btn-slim hollow-primary" type="submit">
 			Add page
 		</button>
 		<button

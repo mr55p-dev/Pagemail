@@ -64,9 +64,9 @@ templ PageCard(page *queries.Page) {
 					</p>
 				</div>
 				<footer class="col-span-4 grid grid-cols-2 gap-4">
-					<a href={ templ.SafeURL(page.Url) } class="btn hollow-primary">Open</a>
+					<a href={ templ.SafeURL(page.Url) } class="btn-slim hollow-primary">Open</a>
 					<button
-						class="btn hollow-bad"
+						class="btn-slim hollow-bad"
 						hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("#page-%s", page.ID) }

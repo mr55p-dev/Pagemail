@@ -1031,14 +1031,7 @@ button,
 
 .fill-secondary {
   --tw-bg-opacity: 1;
-  background-color: rgb(249 136 32 / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
-.fill-bad {
-  --tw-bg-opacity: 1;
-  background-color: rgb(232 48 48 / var(--tw-bg-opacity));
+  background-color: rgb(242 135 135 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
@@ -1050,7 +1043,18 @@ button,
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+.fill-bad {
+  --tw-bg-opacity: 1;
+  background-color: rgb(232 48 48 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
 @media (min-width: 768px) {
+  .md\:col-span-3 {
+    grid-column: span 3 / span 3;
+  }
+
   .md\:mx-0 {
     margin-left: 0px;
     margin-right: 0px;
@@ -1058,6 +1062,10 @@ button,
 
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:grid-rows-2 {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 
   .md\:flex-row {

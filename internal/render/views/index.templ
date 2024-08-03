@@ -22,12 +22,16 @@ templ Index(user *queries.User, clientId, redirectUrl string) {
 			</h1>
 			<h2 class="text-2xl text-center">Try <u class="text-primary-500">Pagemail</u></h2>
 			<div class="flex flex-col md:flex-row align-middle justify-center px-8 gap-6">
-				<div class="w-[150px] mx-auto md:mx-0">
-					<a class="btn-cta fill-primary" href="/signup">Sign up</a>
-				</div>
-				<div class="w-[150px] mx-auto md:mx-0">
-					<a class="btn-cta fill-secondary" href="/login">Log in</a>
-				</div>
+				<a href="/signup" class="w-[150px] mx-auto md:mx-0 ">
+					<div class="btn-cta fill-primary">
+						<span>Sign up</span>
+					</div>
+				</a>
+				<a class="w-[150px] mx-auto md:mx-0" href="/login">
+					<div class="btn-cta fill-secondary">
+						<span>Log in</span>
+					</div>
+				</a>
 			</div>
 			<div
 				class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[700px] mx-auto"
