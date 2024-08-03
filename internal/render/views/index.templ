@@ -3,6 +3,7 @@ package views
 import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/render/components"
+	"github.com/mr55p-dev/pagemail/internal/render/styles"
 	"github.com/mr55p-dev/pagemail/internal/render/components/button"
 )
 
@@ -33,7 +34,7 @@ templ Index(user *queries.User, clientId, redirectUrl string) {
 					@button.New(
 						"Log in",
 						button.WithLink(templ.SafeURL("/login")),
-						button.WithVariant(button.Secondary),
+						button.WithVariant(styles.BtnSecondary),
 					)
 				</div>
 			</div>

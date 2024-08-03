@@ -14,6 +14,7 @@ import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/render/components"
 	"github.com/mr55p-dev/pagemail/internal/render/components/button"
+	"github.com/mr55p-dev/pagemail/internal/render/styles"
 )
 
 func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
@@ -75,7 +76,7 @@ func Index(user *queries.User, clientId, redirectUrl string) templ.Component {
 			templ_7745c5c3_Err = button.New(
 				"Log in",
 				button.WithLink(templ.SafeURL("/login")),
-				button.WithVariant(button.Secondary),
+				button.WithVariant(styles.BtnSecondary),
 			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

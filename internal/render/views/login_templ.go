@@ -11,7 +11,7 @@ import "io"
 import "bytes"
 
 import "github.com/mr55p-dev/pagemail/internal/render/components"
-import "github.com/mr55p-dev/pagemail/internal/render/components/button"
+import "github.com/mr55p-dev/pagemail/internal/render/styles"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 func Login(clientID, redirectUrl string) templ.Component {
@@ -64,11 +64,20 @@ func Login(clientID, redirectUrl string) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = button.New("Log in", button.WithRole(button.RoleSubmit)).Render(ctx, templ_7745c5c3_Buffer)
+				var templ_7745c5c3_Var4 = []any{styles.BtnPrimary}
+				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button role=\"submit\" class=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ.CSSClasses(templ_7745c5c3_Var4).String()))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Log in</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -133,9 +142,9 @@ func separator() templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n				flex justify-stretch align-middle gap-4\n				w-full\n				\"><hr class=\"self-stretch w-full mt-[0.75rem]\"><p>or</p><hr class=\"self-stretch w-full mt-[0.75rem]\"></div>")

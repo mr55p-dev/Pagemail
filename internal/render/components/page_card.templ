@@ -5,6 +5,7 @@ import (
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/preview"
 	"github.com/mr55p-dev/pagemail/internal/render/components/button"
+	"github.com/mr55p-dev/pagemail/internal/render/styles"
 )
 
 templ PageCard(page *queries.Page) {
@@ -68,10 +69,10 @@ templ PageCard(page *queries.Page) {
 					@button.New(
 						"Open",
 						button.WithLink(templ.SafeURL(page.Url)),
-						button.WithVariant(button.HollowPrimary),
+						button.WithVariant(styles.BtnHollowPrimary),
 					)
 					<button
-						class={ button.HollowBad }
+						class={ styles.BtnHollowBad }
 						hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
 						hx-swap="outerHTML"
 						hx-target={ fmt.Sprintf("#page-%s", page.ID) }

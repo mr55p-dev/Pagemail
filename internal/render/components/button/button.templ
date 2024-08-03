@@ -1,77 +1,17 @@
 package button
 
+import "github.com/mr55p-dev/pagemail/internal/render/styles"
+
 type Button struct {
-	Variant      Style
+	Variant      styles.Style
 	Link         templ.SafeURL
 	Title        string
-	Role         Role
 	ClickHandler *templ.ComponentScript
 }
 
-type Style string
-type Role string
-
 type With func(*Button)
 
-const (
-	Primary Style = `
-		bg-primary-500 text-white
-		size-full
-		rounded-[32px] p-4 
-		text-center content-center
-	`
-	Secondary Style = `
-		bg-secondary-500 text-white
-		size-full
-		rounded-[32px] p-4
-		text-center content-center
-	`
-	MinPrimary = `
-		bg-primary-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	MinSecondary = `
-		bg-secondary-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	MinBad = `
-		bg-red-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowPrimary = `
-		border border-primary-500 text-primary-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowSecondary = `
-		border border-secondary-500 text-secondary-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowBad = `
-		border border-red-500 text-red-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	LinkPrimary Style = `
-		text-primary-500 
-		text-center content-center
-	`
-
-	RoleSubmit  Role = "submit"
-	RoleDefault Role = "button"
-)
-
-func WithVariant(variant Style) With {
+func WithVariant(variant styles.Style) With {
 	return func(b *Button) {
 		b.Variant = variant
 	}
@@ -89,17 +29,10 @@ func WithClickHandler(handler templ.ComponentScript) With {
 	}
 }
 
-func WithRole(role Role) With {
-	return func(b *Button) {
-		b.Role = role
-	}
-}
-
 func New(text string, opts ...With) templ.Component {
 	out := &Button{
 		Title:   text,
-		Variant: Primary,
-		Role:    RoleDefault,
+		Variant: styles.BtnPrimary,
 	}
 	for _, fn := range opts {
 		fn(out)
@@ -112,10 +45,7 @@ func New(text string, opts ...With) templ.Component {
 }
 
 templ (b *Button) asButton() {
-	<button
-		class={ string(b.Variant) }
-		role={ string(b.Role) }
-	>
+	<button class={ string(b.Variant) }>
 		<span>{ b.Title }</span>
 	</button>
 }

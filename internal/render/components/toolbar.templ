@@ -1,7 +1,7 @@
 package components
 
-import "github.com/mr55p-dev/pagemail/internal/render/components/button"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
+import "github.com/mr55p-dev/pagemail/internal/render/styles"
 
 templ Toolbar()	 {
 	<form
@@ -25,19 +25,19 @@ templ Toolbar()	 {
 		/>
 		<button
 			id="add-page-button"
-			class={ button.MinPrimary }
+			class={ styles.BtnMinPrimary }
 			type="submit"
 		>
 			Add page
 		</button>
 		<button
-			class={ button.MinSecondary }
+			class={ styles.BtnMinSecondary }
 			onClick={ PasteFromClipboard("save-page-input") }
 		>
 			Paste from clipboard
 		</button>
 		<button
-			class={ button.MinBad }
+			class={ styles.BtnMinBad }
 		>
 			Delete all
 		</button>

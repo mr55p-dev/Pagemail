@@ -10,78 +10,18 @@ import "context"
 import "io"
 import "bytes"
 
+import "github.com/mr55p-dev/pagemail/internal/render/styles"
+
 type Button struct {
-	Variant      Style
+	Variant      styles.Style
 	Link         templ.SafeURL
 	Title        string
-	Role         Role
 	ClickHandler *templ.ComponentScript
 }
 
-type Style string
-type Role string
-
 type With func(*Button)
 
-const (
-	Primary Style = `
-		bg-primary-500 text-white
-		size-full
-		rounded-[32px] p-4 
-		text-center content-center
-	`
-	Secondary Style = `
-		bg-secondary-500 text-white
-		size-full
-		rounded-[32px] p-4
-		text-center content-center
-	`
-	MinPrimary = `
-		bg-primary-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	MinSecondary = `
-		bg-secondary-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	MinBad = `
-		bg-red-500 text-white
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowPrimary = `
-		border border-primary-500 text-primary-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowSecondary = `
-		border border-secondary-500 text-secondary-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	HollowBad = `
-		border border-red-500 text-red-500
-		size-full text-nowrap 
-		rounded-lg py-2 px-4
-		text-center content-center
-	`
-	LinkPrimary Style = `
-		text-primary-500 
-		text-center content-center
-	`
-
-	RoleSubmit  Role = "submit"
-	RoleDefault Role = "button"
-)
-
-func WithVariant(variant Style) With {
+func WithVariant(variant styles.Style) With {
 	return func(b *Button) {
 		b.Variant = variant
 	}
@@ -99,17 +39,10 @@ func WithClickHandler(handler templ.ComponentScript) With {
 	}
 }
 
-func WithRole(role Role) With {
-	return func(b *Button) {
-		b.Role = role
-	}
-}
-
 func New(text string, opts ...With) templ.Component {
 	out := &Button{
 		Title:   text,
-		Variant: Primary,
-		Role:    RoleDefault,
+		Variant: styles.BtnPrimary,
 	}
 	for _, fn := range opts {
 		fn(out)
@@ -147,14 +80,6 @@ func (b *Button) asButton() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" role=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(b.Role)))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -162,7 +87,7 @@ func (b *Button) asButton() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 118, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 48, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -225,7 +150,7 @@ func (b *Button) asLink() templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(b.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 127, Col: 12}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/render/components/button/button.templ`, Line: 57, Col: 12}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {

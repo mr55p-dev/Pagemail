@@ -11,7 +11,7 @@ import "io"
 import "bytes"
 
 import "github.com/mr55p-dev/pagemail/internal/render/components"
-import "github.com/mr55p-dev/pagemail/internal/render/components/button"
+import "github.com/mr55p-dev/pagemail/internal/render/styles"
 import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 func Signup(clientID, redirectUrl string) templ.Component {
@@ -79,11 +79,20 @@ func Signup(clientID, redirectUrl string) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = button.New("Sign up", button.WithRole(button.RoleSubmit)).Render(ctx, templ_7745c5c3_Buffer)
+				var templ_7745c5c3_Var4 = []any{styles.BtnPrimary}
+				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button role=\"submit\" class=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ.CSSClasses(templ_7745c5c3_Var4).String()))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Sign up</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
