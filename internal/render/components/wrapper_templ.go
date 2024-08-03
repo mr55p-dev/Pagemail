@@ -51,7 +51,7 @@ func Wrapper(title string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"bg-white text-grey-100\" hx-target-error=\"#msg\"><div id=\"msg\"></div><div class=\"max-w-screen-lg mx-auto p-8\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/style.css\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"></head><body hx-boost=\"true\" hx-ext=\"response-targets\" class=\"bg-grey-900\"><script src=\"https://accounts.google.com/gsi/client\" async></script><main class=\"bg-white text-grey-100\" hx-target-error=\"#msg\"><div class=\"absolute top-0 left-0 w-full flex align-middle justify-around gap-4\" id=\"msg\"></div><div class=\"max-w-screen-lg mx-auto p-8\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

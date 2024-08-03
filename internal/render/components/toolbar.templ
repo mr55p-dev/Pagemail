@@ -1,8 +1,5 @@
 package components
 
-import "github.com/mr55p-dev/pagemail/internal/render/components/input"
-import "github.com/mr55p-dev/pagemail/internal/render/styles"
-
 templ Toolbar()	 {
 	<form
 		class="
@@ -14,7 +11,6 @@ templ Toolbar()	 {
 	>
 		<input
 			id="save-page-input"
-			class={ input.StyleDefault }
 			placeholder="URL"
 			type="url"
 			name="url"
@@ -25,20 +21,18 @@ templ Toolbar()	 {
 		/>
 		<button
 			id="add-page-button"
-			class={ styles.BtnMinPrimary }
+			class="btn-slim hollow-primary"
 			type="submit"
 		>
 			Add page
 		</button>
 		<button
-			class={ styles.BtnMinSecondary }
+			class="btn-slim hollow-secondary"
 			onClick={ PasteFromClipboard("save-page-input") }
 		>
 			Paste from clipboard
 		</button>
-		<button
-			class={ styles.BtnMinBad }
-		>
+		<button class="btn-slim hollow-bad">
 			Delete all
 		</button>
 	</form>

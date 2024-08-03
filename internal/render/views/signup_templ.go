@@ -11,8 +11,6 @@ import "io"
 import "bytes"
 
 import "github.com/mr55p-dev/pagemail/internal/render/components"
-import "github.com/mr55p-dev/pagemail/internal/render/styles"
-import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 func Signup(clientID, redirectUrl string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -43,56 +41,7 @@ func Signup(clientID, redirectUrl string) templ.Component {
 					templ_7745c5c3_Buffer = templ.GetBuffer()
 					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"username",
-					input.TypeUsername,
-					input.WithPlaceholder("User name"),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"email",
-					input.TypeEmail,
-					input.WithPlaceholder("Email"),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"password",
-					input.TypeNewPass,
-					input.WithPlaceholder("Password"),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"password-repeat",
-					input.TypeNewPass,
-					input.WithPlaceholder("Repeat password"),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var4 = []any{styles.BtnPrimary}
-				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button role=\"submit\" class=\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ.CSSClasses(templ_7745c5c3_Var4).String()))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Sign up</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\"><input placeholder=\"User name\" name=\"username\" type=\"username\"> <input placeholder=\"E-mail\" name=\"email\" type=\"email\"> <input placeholder=\"Password\" name=\"password\" type=\"password\" autofill=\"new-password\"> <input placeholder=\"Repeat password\" name=\"password-repeat\" type=\"password\" autofill=\"new-password\"> <button role=\"submit\" class=\"btn-cta fill-primary\">Sign up</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -5,3 +5,54 @@
 :root {
   background-color: #ffffff;
 }
+
+input {
+  @apply w-full
+	px-4 py-2
+	rounded-lg;
+}
+
+button,
+.btn-slim {
+  @apply size-full text-nowrap 
+		rounded-lg py-2 px-4
+		text-center content-center;
+}
+
+.btn-cta {
+  @apply size-full
+		rounded-[32px] p-4
+		text-center content-center;
+}
+
+.hollow-primary {
+  @apply border border-primary-500 text-primary-500;
+}
+
+.hollow-secondary {
+  @apply border border-secondary-500 text-secondary-500;
+}
+
+.hollow-good {
+  @apply border border-green-500 text-green-500;
+}
+
+.hollow-bad {
+  @apply border border-red-500 text-red-500;
+}
+
+.fill-primary {
+  @apply bg-primary-500 text-white;
+}
+
+.fill-secondary {
+  @apply bg-primary-500 text-white;
+}
+
+.fill-good {
+  @apply bg-green-500 text-white;
+}
+
+.fill-bad {
+  @apply bg-red-500 text-white;
+}

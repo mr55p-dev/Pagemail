@@ -1,8 +1,6 @@
 package views
 
 import "github.com/mr55p-dev/pagemail/internal/render/components"
-import "github.com/mr55p-dev/pagemail/internal/render/styles"
-import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 templ Signup(clientID, redirectUrl string ) {
 	@components.Wrapper("Sign up") {
@@ -14,27 +12,29 @@ templ Signup(clientID, redirectUrl string ) {
 					hx-target-error="#msg"
 					class="flex flex-col gap-8"
 				>
-					@input.New(
-						"username",
-						input.TypeUsername,
-						input.WithPlaceholder("User name"),
-					)
-					@input.New(
-						"email",
-						input.TypeEmail,
-						input.WithPlaceholder("Email"),
-					)
-					@input.New(
-						"password",
-						input.TypeNewPass,
-						input.WithPlaceholder("Password"),
-					)
-					@input.New(
-						"password-repeat",
-						input.TypeNewPass,
-						input.WithPlaceholder("Repeat password"),
-					)
-					<button role="submit" class={ styles.BtnPrimary }>Sign up</button>
+					<input
+						placeholder="User name"
+						name="username"
+						type="username"
+					/>
+					<input
+						placeholder="E-mail"
+						name="email"
+						type="email"
+					/>
+					<input
+						placeholder="Password"
+						name="password"
+						type="password"
+						autofill="new-password"
+					/>
+					<input
+						placeholder="Repeat password"
+						name="password-repeat"
+						type="password"
+						autofill="new-password"
+					/>
+					<button role="submit" class="btn-cta fill-primary">Sign up</button>
 				</form>
 				<a
 					href="/password-reset"

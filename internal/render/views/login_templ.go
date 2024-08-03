@@ -11,8 +11,6 @@ import "io"
 import "bytes"
 
 import "github.com/mr55p-dev/pagemail/internal/render/components"
-import "github.com/mr55p-dev/pagemail/internal/render/styles"
-import "github.com/mr55p-dev/pagemail/internal/render/components/input"
 
 func Login(clientID, redirectUrl string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -43,41 +41,7 @@ func Login(clientID, redirectUrl string) templ.Component {
 					templ_7745c5c3_Buffer = templ.GetBuffer()
 					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"email",
-					input.TypeEmail,
-					input.WithPlaceholder("Email"),
-					input.WithAutofill(),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = input.New(
-					"password",
-					input.TypeCurrentPass,
-					input.WithPlaceholder("Password"),
-				).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var4 = []any{styles.BtnPrimary}
-				templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button role=\"submit\" class=\"")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ.CSSClasses(templ_7745c5c3_Var4).String()))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Log in</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\"><input type=\"email\" name=\"email\" placeholder=\"E-mail\"> <input type=\"password\" autofill=\"current-password\" name=\"password\" placeholder=\"Password\"> <button role=\"submit\" class=\"btn-cta fill-primary\">Log in</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -142,9 +106,9 @@ func separator() templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n				flex justify-stretch align-middle gap-4\n				w-full\n				\"><hr class=\"self-stretch w-full mt-[0.75rem]\"><p>or</p><hr class=\"self-stretch w-full mt-[0.75rem]\"></div>")

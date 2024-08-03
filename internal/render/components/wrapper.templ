@@ -18,7 +18,7 @@ templ Wrapper(title string) {
 		<body hx-boost="true" hx-ext="response-targets" class="bg-grey-900">
 			<script src="https://accounts.google.com/gsi/client" async></script>
 			<main class="bg-white text-grey-100" hx-target-error="#msg">
-				<div id="msg"></div>
+				<div class="absolute top-0 left-0 w-full flex align-middle justify-around gap-4" id="msg"></div>
 				<div class="max-w-screen-lg mx-auto p-8">
 					@Header(title)
 					{ children... }
