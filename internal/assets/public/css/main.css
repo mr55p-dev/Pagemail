@@ -668,6 +668,11 @@ video {
   display: none;
 }
 
+.size-full {
+  width: 100%;
+  height: 100%;
+}
+
 .h-12 {
   height: 3rem;
 }
@@ -954,70 +959,22 @@ video {
   outline-style: solid;
 }
 
-:root {
-  background-color: #ffffff;
-}
-
-input {
-  width: 100%;
-  border-radius: 0.5rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-button,
-.btn-slim {
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  text-wrap: nowrap;
-  border-radius: 0.5rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  text-align: center;
-}
-
-.btn-cta {
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  border-radius: 32px;
-  padding: 1rem;
-  text-align: center;
-}
-
 .hollow-primary {
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(249 136 32 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(249 136 32 / var(--tw-text-opacity));
-}
-
-.hollow-secondary {
-  border-width: 1px;
-  --tw-border-opacity: 1;
-  border-color: rgb(242 135 135 / var(--tw-border-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(242 135 135 / var(--tw-text-opacity));
-}
-
-.hollow-good {
-  border-width: 1px;
-  --tw-border-opacity: 1;
-  border-color: rgb(112 194 112 / var(--tw-border-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(112 194 112 / var(--tw-text-opacity));
 }
 
 .hollow-bad {
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(232 48 48 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(232 48 48 / var(--tw-text-opacity));
 }
@@ -1036,18 +993,112 @@ button,
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-.fill-good {
-  --tw-bg-opacity: 1;
-  background-color: rgb(112 194 112 / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity));
-}
-
 .fill-bad {
   --tw-bg-opacity: 1;
   background-color: rgb(232 48 48 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+:root {
+  background-color: #ffffff;
+}
+
+input {
+  width: 100%;
+  border-radius: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.btn-slim {
+  transition: all 0.25s ease-in-out;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-content: center;
+  text-wrap: nowrap;
+  border-radius: 0.5rem;
+  border-width: 1px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  text-align: center;
+}
+
+.btn-cta {
+  transition: all 0.25s ease-in-out;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-content: center;
+  border-radius: 32px;
+  border-width: 1px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.hocus\:hollow-primary:hover {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(249 136 32 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(249 136 32 / var(--tw-text-opacity));
+}
+
+.hocus\:hollow-secondary:hover {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(242 135 135 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(242 135 135 / var(--tw-text-opacity));
+}
+
+.hocus\:hollow-bad:hover {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(232 48 48 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(232 48 48 / var(--tw-text-opacity));
+}
+
+.hocus\:hollow-primary:focus {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(249 136 32 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(249 136 32 / var(--tw-text-opacity));
+}
+
+.hocus\:hollow-secondary:focus {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(242 135 135 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(242 135 135 / var(--tw-text-opacity));
+}
+
+.hocus\:hollow-bad:focus {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(232 48 48 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(232 48 48 / var(--tw-text-opacity));
 }
 
 @media (min-width: 768px) {

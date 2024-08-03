@@ -5,7 +5,6 @@ import "github.com/mr55p-dev/pagemail/internal/render/components"
 
 templ Dashboard(user *queries.User, pages []queries.Page) {
 	@components.Wrapper("Dashboard") {
-		<h1 class="text-center text-grey-100 text-2xl mb-8">Pages</h1>
 		@components.Toolbar()
 		<div
 			id="pages"

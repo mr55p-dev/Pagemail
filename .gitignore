@@ -10,3 +10,4 @@ pkg/render/*.go
 /pagemail
 .env
 **/.DS_Store
+**/node_modules/

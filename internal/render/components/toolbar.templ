@@ -21,16 +21,16 @@ templ Toolbar()	 {
 			hx-target="#pages"
 			hx-swap="afterbegin"
 		/>
-		<button id="add-page-button" class="btn-slim hollow-primary" type="submit">
+		<button id="add-page-button" class="border btn-slim fill-primary hocus:hollow-primary" type="submit">
 			Add page
 		</button>
 		<button
-			class="btn-slim hollow-secondary"
+			class="btn-slim fill-secondary hocus:hollow-secondary"
 			onClick={ PasteFromClipboard("save-page-input") }
 		>
 			Paste from clipboard
 		</button>
-		<button class="btn-slim hollow-bad">
+		<button class="btn-slim fill-bad hocus:hollow-bad">
 			Delete all
 		</button>
 	</form>

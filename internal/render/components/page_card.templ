@@ -19,7 +19,7 @@ templ PageCard(page *queries.Page) {
 	>
 		@Card() {
 			<div
-				class="grid grid-cols-4 grid-rows-auto gap-8"
+				class="grid grid-cols-4 gap-8 size-full"
 			>
 				<img
 					if page.ImageUrl.Valid {
@@ -63,16 +63,16 @@ templ PageCard(page *queries.Page) {
 						}
 					</p>
 				</div>
-				<footer class="col-span-4 grid grid-cols-2 gap-4">
-					<a href={ templ.SafeURL(page.Url) } class="btn-slim hollow-primary">Open</a>
-					<button
-						class="btn-slim hollow-bad"
-						hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
-						hx-swap="outerHTML"
-						hx-target={ fmt.Sprintf("#page-%s", page.ID) }
-					>Delete</button>
-				</footer>
 			</div>
+			<footer class="col-span-4 grid grid-cols-2 gap-4">
+				<a href={ templ.SafeURL(page.Url) } class="btn-slim hollow-primary">Open</a>
+				<button
+					class="btn-slim hollow-bad"
+					hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
+					hx-swap="outerHTML"
+					hx-target={ fmt.Sprintf("#page-%s", page.ID) }
+				>Delete</button>
+			</footer>
 		}
 	</article>
 }
