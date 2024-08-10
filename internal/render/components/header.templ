@@ -1,6 +1,8 @@
 package components
 
-templ Header(title string) {
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ Header(title string, user *queries.User) {
 	<nav
 		class="
 	w-full
@@ -9,8 +11,12 @@ templ Header(title string) {
 	"
 	>
 		<a
-			href="/"
-			class="w-fit h-12 grid grid-flow-col items-center gap-4"
+			if user == nil {
+				href="/"
+			} else {
+				href="/pages/dashboard"
+			}
+			class="w-fit h-10 p-1 grid grid-flow-col items-center gap-4"
 		>
 			@IconBrand()
 			<div class="grid items-center">
@@ -22,8 +28,23 @@ templ Header(title string) {
 		<div class="place-self-center">
 			<span class="text-center text-2xl">{ title }</span>
 		</div>
-		<div class="h-12 flex justify-end">
-			@IconUser()
-		</div>
+		if user != nil {
+			<div class="h-12 flex justify-end">
+				@IconUser()
+				<div
+					id="user-nav"
+					class="
+						border rounded-lg border-grey-200
+						absolute top-[6rem]
+						bg-grey-800 
+						flex flex-col gap-2
+						p-4
+				 "
+				>
+					<a class="text-xl" href="/user/account">Account</a>
+					<a class="text-xl" href="/user/logout">Log out</a>
+				</div>
+			</div>
+		}
 	</nav>
 }

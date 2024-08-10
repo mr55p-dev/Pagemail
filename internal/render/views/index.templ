@@ -6,7 +6,7 @@ import (
 )
 
 templ Index(user *queries.User, clientId, redirectUrl string) {
-	@components.Wrapper("") {
+	@components.Wrapper("", nil) {
 		if user == nil {
 			<div
 				id="g_id_onload"

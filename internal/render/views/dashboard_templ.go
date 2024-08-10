@@ -32,11 +32,11 @@ func Dashboard(user *queries.User, pages []queries.Page) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			templ_7745c5c3_Err = components.Toolbar().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Toolbar("#pages").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div id=\"pages\" class=\"\n			mt-8\n			grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8\n			justify-items-stretch\n		\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" <div id=\"pages\" class=\"mt-8\n			grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8\n			justify-items-stretch\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -55,7 +55,7 @@ func Dashboard(user *queries.User, pages []queries.Page) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = components.Wrapper("Dashboard").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Wrapper("Dashboard", user).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

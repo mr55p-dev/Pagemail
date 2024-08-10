@@ -1,7 +1,12 @@
 package components
 
-templ Toolbar()	 {
+templ Toolbar(target string)	 {
 	<form
+		hx-trigger="submit"
+		hx-post="/pages/"
+		hx-target={ target }
+		hx-swap="afterbegin"
+		hx-on::afterRequest="this.reset()"
 		class="
 			mx-auto
 			bg-grey-800 rounded-lg
@@ -16,21 +21,29 @@ templ Toolbar()	 {
 			type="url"
 			name="url"
 			class="md:col-span-3"
-			hx-trigger="submit,click from:#save-page-submit"
-			hx-post="/pages/"
-			hx-target="#pages"
-			hx-swap="afterbegin"
 		/>
-		<button id="add-page-button" class="border btn-slim fill-primary hocus:hollow-primary" type="submit">
+		<button
+			class="border btn-slim fill-primary hocus:hollow-primary"
+			type="submit"
+		>
 			Add page
 		</button>
 		<button
 			class="btn-slim fill-secondary hocus:hollow-secondary"
+			type="button"
 			onClick={ PasteFromClipboard("save-page-input") }
 		>
 			Paste from clipboard
 		</button>
-		<button class="btn-slim fill-bad hocus:hollow-bad">
+		<button
+			class="btn-slim fill-bad hocus:hollow-bad"
+			type="button"
+			hx-delete="/pages"
+			hx-confirm="Are you sure you want to delete all saved pages?"
+			hx-target="#msg"
+			hx-target-error="#err"
+			hx-swap="innerHTML"
+		>
 			Delete all
 		</button>
 	</form>
@@ -38,6 +51,7 @@ templ Toolbar()	 {
 
 script PasteFromClipboard(toId string) {
 	const elem = document.getElementById(toId)
-	console.log("Grabbed", elem)
-	navigator.clipboard.readText().then(txt => elem.setAttribute("value", txt)).catch(err => console.error("Failed to paste", error))
+	navigator.clipboard.readText().then(txt => {
+		elem.value = txt
+	}).catch(err => console.error("Failed to paste", error))
 }

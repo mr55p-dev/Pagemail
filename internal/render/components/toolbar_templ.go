@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-func Toolbar() templ.Component {
+func Toolbar(target string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -23,7 +23,15 @@ func Toolbar() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n			grid gap-4 grid-columns-4\n			md:grid-columns-3 md:grid-rows-2\n		\"><input id=\"save-page-input\" placeholder=\"URL\" type=\"url\" name=\"url\" class=\"md:col-span-3\" hx-trigger=\"submit,click from:#save-page-submit\" hx-post=\"/pages/\" hx-target=\"#pages\" hx-swap=\"afterbegin\"> <button id=\"add-page-button\" class=\"border btn-slim fill-primary hocus:hollow-primary\" type=\"submit\">Add page</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-trigger=\"submit\" hx-post=\"/pages/\" hx-target=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(target))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-swap=\"afterbegin\" hx-on::afterRequest=\"this.reset()\" class=\"\n			mx-auto\n			bg-grey-800 rounded-lg\n			p-8\n			grid gap-4 grid-columns-4\n			md:grid-columns-3 md:grid-rows-2\n		\"><input id=\"save-page-input\" placeholder=\"URL\" type=\"url\" name=\"url\" class=\"md:col-span-3\"> <button class=\"border btn-slim fill-primary hocus:hollow-primary\" type=\"submit\">Add page</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -31,7 +39,7 @@ func Toolbar() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button class=\"btn-slim fill-secondary hocus:hollow-secondary\" onClick=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button class=\"btn-slim fill-secondary hocus:hollow-secondary\" type=\"button\" onClick=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -40,7 +48,7 @@ func Toolbar() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Paste from clipboard</button> <button class=\"btn-slim fill-bad hocus:hollow-bad\">Delete all</button></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Paste from clipboard</button> <button class=\"btn-slim fill-bad hocus:hollow-bad\" type=\"button\" hx-delete=\"/pages\" hx-confirm=\"Are you sure you want to delete all saved pages?\" hx-target=\"#msg\" hx-target-error=\"#err\" hx-swap=\"innerHTML\">Delete all</button></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -53,12 +61,13 @@ func Toolbar() templ.Component {
 
 func PasteFromClipboard(toId string) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_PasteFromClipboard_5668`,
-		Function: `function __templ_PasteFromClipboard_5668(toId){const elem = document.getElementById(toId)
-	console.log("Grabbed", elem)
-	navigator.clipboard.readText().then(txt => elem.setAttribute("value", txt)).catch(err => console.error("Failed to paste", error))
+		Name: `__templ_PasteFromClipboard_30bb`,
+		Function: `function __templ_PasteFromClipboard_30bb(toId){const elem = document.getElementById(toId)
+	navigator.clipboard.readText().then(txt => {
+		elem.value = txt
+	}).catch(err => console.error("Failed to paste", error))
 }`,
-		Call:       templ.SafeScript(`__templ_PasteFromClipboard_5668`, toId),
-		CallInline: templ.SafeScriptInline(`__templ_PasteFromClipboard_5668`, toId),
+		Call:       templ.SafeScript(`__templ_PasteFromClipboard_30bb`, toId),
+		CallInline: templ.SafeScriptInline(`__templ_PasteFromClipboard_30bb`, toId),
 	}
 }

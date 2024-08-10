@@ -3,7 +3,6 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
@@ -32,34 +31,6 @@ func (router *Router) GetDashboard(w http.ResponseWriter, r *http.Request) {
 
 type GetPagesRequest struct {
 	Page string `query:"p"`
-}
-
-func (router *Router) GetPages(w http.ResponseWriter, r *http.Request) {
-	logger := logger.WithRequest(r)
-	req := request.BindRequest[GetPagesRequest](w, r)
-	if req == nil {
-		return
-	}
-
-	user := auth.GetUser(r.Context())
-	page, err := strconv.Atoi(req.Page)
-	if err != nil {
-		response.Error(w, r, pmerror.ErrBadPagination)
-		return
-	}
-	offset := (page - 1) * render.PAGE_SIZE
-
-	pages, err := queries.New(router.db).ReadPagesByUserId(r.Context(), queries.ReadPagesByUserIdParams{
-		UserID: user.ID,
-		Limit:  render.PAGE_SIZE,
-		Offset: int64(offset),
-	})
-	if err != nil {
-		logger.WithError(err).ErrorCtx(r.Context(), "Failed to load users pages")
-		response.Error(w, r, pmerror.NewInternalError("Failed to load your pages"))
-		return
-	}
-	response.Component(render.PageList(pages, page), w, r)
 }
 
 func (router *Router) DeletePages(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +100,7 @@ func (router *Router) PostPage(w http.ResponseWriter, r *http.Request) {
 	router.Previewer.Queue(page.ID)
 
 	if request.IsHtmx(r) {
-		response.Component(render.PageCard(&page), w, r)
+		response.Component(components.PageCard(&page), w, r)
 	} else {
 		response.Success("Added page successfully", w, r)
 	}

@@ -41,7 +41,7 @@ func Signup(clientID, redirectUrl string) templ.Component {
 					templ_7745c5c3_Buffer = templ.GetBuffer()
 					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\"><input placeholder=\"User name\" name=\"username\" type=\"username\"> <input placeholder=\"E-mail\" name=\"email\" type=\"email\"> <input placeholder=\"Password\" name=\"password\" type=\"password\" autofill=\"new-password\"> <input placeholder=\"Repeat password\" name=\"password-repeat\" type=\"password\" autofill=\"new-password\"> <button role=\"submit\" class=\"btn-cta fill-primary\">Sign up</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login/\" hx-swap=\"innerHTML\" hx-target-error=\"#msg\" class=\"flex flex-col gap-8\"><input placeholder=\"User name\" name=\"username\" type=\"username\"> <input placeholder=\"E-mail\" name=\"email\" type=\"email\"> <input placeholder=\"Password\" name=\"password\" type=\"password\" autofill=\"new-password\"> <input placeholder=\"Repeat password\" name=\"password-repeat\" type=\"password\" autofill=\"new-password\"> <button type=\"submit\" class=\"btn-cta fill-primary\">Sign up</button></form><a href=\"/password-reset\" class=\"text-center text-secondary-500\">Reset password</a>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -87,7 +87,7 @@ func Signup(clientID, redirectUrl string) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = components.Wrapper("Sign up").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Wrapper("Sign up", nil).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

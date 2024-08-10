@@ -1,6 +1,8 @@
 package components 
 
-templ Wrapper(title string) {
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ Wrapper(title string, user *queries.User) {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -20,7 +22,7 @@ templ Wrapper(title string) {
 			<main class="bg-white text-grey-100" hx-target-error="#msg">
 				<div class="absolute top-0 left-0 w-full flex align-middle justify-around gap-4" id="msg"></div>
 				<div class="max-w-screen-lg mx-auto p-8">
-					@Header(title)
+					@Header(title, user)
 					{ children... }
 				</div>
 			</main>

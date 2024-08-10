@@ -23,7 +23,7 @@ func Card() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"\n			bg-grey-800 \n			rounded-lg\n			p-8 gap-8\n			flex flex-col justify-start align-middle\n			h-full\n			w-full \n			\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"card\n			bg-grey-800 \n			rounded-lg\n			p-8 gap-8\n			flex flex-col justify-start align-middle\n			size-full\n			\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -8,19 +8,16 @@ import (
 
 templ PageCard(page *queries.Page) {
 	<article
-		id={ fmt.Sprintf("page-%s", page.ID) }
 		if page.PreviewState == preview.STATE_UNKNOWN {
 			hx-swap="outerHTML"
 			hx-trigger="load delay:0.5s"
 			hx-get={ fmt.Sprintf("/pages/%s", page.ID) }
-			hx-target={ fmt.Sprintf("#page-%s", page.ID) }
-			hx-target-error={ fmt.Sprintf("#page-%s", page.ID) }
+			hx-target="this"
+			hx-target-error="this"
 		}
 	>
 		@Card() {
-			<div
-				class="grid grid-cols-4 gap-8 size-full"
-			>
+			<div class="grid grid-cols-4 gap-8 size-full">
 				<img
 					if page.ImageUrl.Valid {
 						src={ page.ImageUrl.String }
@@ -70,7 +67,7 @@ templ PageCard(page *queries.Page) {
 					class="btn-slim hollow-bad"
 					hx-delete={ fmt.Sprintf("/pages/%s", page.ID) }
 					hx-swap="outerHTML"
-					hx-target={ fmt.Sprintf("#page-%s", page.ID) }
+					hx-target="closest article"
 				>Delete</button>
 			</footer>
 		}

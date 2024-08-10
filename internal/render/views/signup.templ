@@ -3,7 +3,7 @@ package views
 import "github.com/mr55p-dev/pagemail/internal/render/components"
 
 templ Signup(clientID, redirectUrl string ) {
-	@components.Wrapper("Sign up") {
+	@components.Wrapper("Sign up", nil) {
 		<div class="max-w-lg mx-auto">
 			@components.Card() {
 				<form
@@ -34,7 +34,7 @@ templ Signup(clientID, redirectUrl string ) {
 						type="password"
 						autofill="new-password"
 					/>
-					<button role="submit" class="btn-cta fill-primary">Sign up</button>
+					<button type="submit" class="btn-cta fill-primary">Sign up</button>
 				</form>
 				<a
 					href="/password-reset"
