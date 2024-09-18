@@ -9,17 +9,6 @@ import (
 	"time"
 )
 
-type Article struct {
-	ID      string
-	UserID  string
-	PageID  string
-	State   string
-	Reason  sql.NullString
-	Content []byte
-	Created time.Time
-	Updated time.Time
-}
-
 type Auth struct {
 	ID                  int64
 	UserID              string
@@ -43,17 +32,6 @@ type Page struct {
 	Created      time.Time
 	Updated      time.Time
 	Readable     bool
-}
-
-type Reading struct {
-	ID        string
-	UserID    string
-	ArticleID string
-	JobID     string
-	State     string
-	Reason    sql.NullString
-	Created   time.Time
-	Updated   time.Time
 }
 
 type SchemaMigration struct {
