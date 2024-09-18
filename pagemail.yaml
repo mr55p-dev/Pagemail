@@ -15,6 +15,5 @@ readability:
   host: localhost:5000
 aws:
   profile: default
-  config-file: ~/.aws/config
-  credentials-file: ~/.aws/credentials
-
+  config-file: /Users/ellis/.aws/config
+  credentials-file: /Users/ellis/.aws/credentials

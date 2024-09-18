@@ -42,16 +42,6 @@ func getPagesMux(router *Router) http.Handler {
 	)
 }
 
-func getArticlesMux(router *Router) http.Handler {
-	articlesMux := http.NewServeMux()
-	articlesMux.HandleFunc("GET /", router.GetArticles)
-	articlesMux.HandleFunc("POST /read/{page_id}", router.PostReading)
-	return middlewares.WithMiddleware(
-		http.StripPrefix("/articles", articlesMux),
-		middlewares.ProtectRoute,
-	)
-}
-
 func getPasswordResetMux(router *Router) http.Handler {
 	resetMux := http.NewServeMux()
 	resetMux.Handle("GET /request", http.HandlerFunc(router.GetPassResetReq))
