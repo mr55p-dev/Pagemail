@@ -34,7 +34,6 @@ func main() {
 	defer conn.Close()
 
 	var client mail.Sender
-	logger.Info("config", "profile", cfg.Aws.Profile, "credentials", cfg.Aws.CredentialsFile, "config", cfg.Aws.ConfigFile)
 	awsCfg, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithSharedConfigProfile(cfg.Aws.Profile),
