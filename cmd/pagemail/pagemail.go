@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -14,7 +15,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
-	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/mail"
 )
 
 // Global logger instance
@@ -71,7 +72,7 @@ func main() {
 	}
 
 	// create the mail pool
-	mailPool, err := openMailPool(
+	mailPool, err := mail.NewPool(
 		config.Mail.Username,
 		config.Mail.Password,
 		config.Mail.Host,
@@ -81,6 +82,22 @@ func main() {
 	if err != nil {
 		PanicError("Failed to open mail pool", err)
 	}
+	mailer := mail.New(ctx, db, mailPool, time.Second*10)
+	go func() {
+		interval := time.Second * 10
+		for {
+			timer := time.NewTimer(interval)
+			select {
+			case now := <-timer.C:
+				childCtx, _ := context.WithTimeout(ctx, interval)
+				LogError("Scheduled mail job had errors", mailer.RunScheduledSend(childCtx, now))
+			case <-ctx.Done():
+				timer.Stop()
+				return
+			}
+
+		}
+	}()
 
 	// bind everything together
 	bindRoutes(server, &Handlers{
@@ -94,12 +111,6 @@ func main() {
 		defer appCancel()
 		LogError("Failed to serve", server.Start(concatHostPort(config.App.Host, config.App.Port)))
 	}()
-
-	// run the mail job
-	err = MailJob(ctx, mailPool, queries.New(db))
-	if err != nil {
-		PanicError("Failed to do mail", err)
-	}
 
 	// wait for an exit condition
 	select {

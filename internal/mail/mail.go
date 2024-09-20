@@ -1,9 +1,10 @@
-package main
+package mail
 
 import (
 	"bytes"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/smtp"
 	"sync"
@@ -61,7 +62,7 @@ func (m *Mailer) updateSchedules(ctx context.Context) error {
 	m.schedules.Lock()
 	defer m.schedules.Unlock()
 
-	schedules, err := m.Queries().ReadSchedules(ctx)
+	schedules, err := m.queries().ReadSchedules(ctx)
 	if err != nil {
 		return err
 	}
@@ -70,39 +71,21 @@ func (m *Mailer) updateSchedules(ctx context.Context) error {
 	return nil
 }
 
-// StartMailJob will run the scheduled mailer at an interval specified, stopping once the context is cancelled
-func (m *Mailer) StartMailJob(ctx context.Context, interval time.Duration) {
-	go func() {
-		for {
-			timer := time.NewTimer(interval)
-			select {
-			case now := <-timer.C:
-				childCtx, _ := context.WithTimeout(ctx, interval)
-				m.RunScheduledSend(childCtx, now)
-			case <-ctx.Done():
-				timer.Stop()
-				return
-			}
-
-		}
-	}()
-}
-
-func openMailPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
+func NewPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
 	mailAuth := smtp.PlainAuth("", username, password, host)
-	connPool, err := email.NewPool(concatHostPort(host, port), poolSize, mailAuth)
+	connPool, err := email.NewPool(fmt.Sprintf("%s:%d", host, port), poolSize, mailAuth)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to open the connection pool: %w", err)
 	}
-	// err = connPool.Send(&email.Email{
-	// 	To:      []string{"success@simulator.amazonses.com"},
-	// 	From:    formatAddress("Test Pagemail", "mail@pagemail.io"),
-	// 	Subject: "Test",
-	// 	Text:    []byte("Hello, world!"),
-	// }, TIMEOUT)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Failed to send the test email: %w", err)
-	// }
+	err = connPool.Send(&email.Email{
+		To:      []string{"success@simulator.amazonses.com"},
+		From:    formatAddress("Test Pagemail", "mail@pagemail.io"),
+		Subject: "Test",
+		Text:    []byte("Hello, world!"),
+	}, time.Second*10)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to send the test email: %w", err)
+	}
 	return connPool, nil
 }
 
@@ -111,6 +94,7 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) error {
 	defer m.schedules.RUnlock()
 
 	// check for schedules which need to be sent
+	errList := []error{}
 	for _, schedule := range m.schedules.items {
 		loc, err := time.LoadLocation(schedule.Timezone)
 		if err != nil {
@@ -119,7 +103,6 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) error {
 		var day int = now.Day()
 		if schedule.Days != 0 && now.Weekday() != time.Weekday(schedule.Days)-1 {
 			// it's not the right day of the week (some timezone fuckery definitely happens here)
-			logger.InfoContext(ctx, "Not doing mail job - wrong day of week")
 			continue
 		}
 		sendWindow := time.Date(
@@ -129,37 +112,33 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) error {
 		)
 		if now.Before(sendWindow) {
 			// skip, we have not yet reached the cutoff window
-			logger.InfoContext(ctx, "Not doing mail job - now before sendWindow", "sendWindow", sendWindow.Format(time.RFC3339))
 			continue
 		} else if schedule.LastSent.After(sendWindow) {
 			// skip, we have sent an email corresponding to this schedule entry
-			logger.InfoContext(
-				ctx,
-				"Not doing mail job - lastSent after sendWindow",
-				"sendWindow", sendWindow.Format(time.RFC3339),
-				"last sent", schedule.LastSent.Format(time.RFC3339),
-			)
 			continue
 		}
-	}
 
-	return nil
+		if err := m.sendForSchedule(ctx, schedule, now); err != nil {
+			errList = append(errList, err)
+		}
+	}
+	return errors.Join(errList...)
 }
 
-func (m *Mailer) Queries() *queries.Queries {
+func (m *Mailer) queries() *queries.Queries {
 	return queries.New(m.conn)
 }
 
 // sendForSchedule will send the email required by a schedule
 func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule, now time.Time) error {
 	// load user
-	user, err := m.Queries().ReadUserById(ctx, schedule.UserID)
+	user, err := m.queries().ReadUserById(ctx, schedule.UserID)
 	if err != nil {
 		return fmt.Errorf("Could not find user for schedule")
 	}
 
 	// load pages
-	pages, err := m.Queries().ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
+	pages, err := m.queries().ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
 		Start:  schedule.LastSent,
 		End:    now,
 		UserID: schedule.UserID,
@@ -168,22 +147,23 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 		return fmt.Errorf("Failed to load pages for user %s: %w", schedule.UserID, err)
 	}
 
-	// if len(pages) == 0 {
-	// 	return nil
-	// }
+	if len(pages) == 0 {
+		return nil
+	}
 
 	// send the email
 	content, err := getEmailContent(ctx, &user, pages)
 	if err != nil {
 		return fmt.Errorf("Failed to get content: %w", err)
 	}
-	err = m.pool.Send(content, m.timeout)
+
+	err = m.pool.Send(content, time.Second*60)
 	if err != nil {
 		return fmt.Errorf("Failed to send email: %w", err)
 	}
 
 	// update last sent
-	err = m.Queries().UpdateScheduleLastSent(ctx, queries.UpdateScheduleLastSentParams{
+	err = m.queries().UpdateScheduleLastSent(ctx, queries.UpdateScheduleLastSentParams{
 		LastSent: now,
 		UserID:   user.ID,
 	})
