@@ -11,6 +11,9 @@ import (
 	"github.com/mr55p-dev/pagemail/render"
 )
 
+const idKey = "id"
+const sessionKey = "pm-session"
+
 // Render displays a templ component
 func Render(ctx echo.Context, statusCode int, t templ.Component) error {
 	buf := templ.GetBuffer()
@@ -65,11 +68,11 @@ func (h *Handlers) Queries() *queries.Queries {
 // User fetches a user object based on the user session cookie.
 // Errors when there is no cookie set
 func (h *Handlers) User(c echo.Context) (*queries.User, error) {
-	sess, err := session.Get("pm-session", c)
+	sess, err := session.Get(sessionKey, c)
 	if err != nil {
 		return nil, errors.New("Failed to read user session")
 	}
-	id := sess.Values["id"].(string)
+	id := sess.Values[idKey].(string)
 	user, err := h.Queries().ReadUserById(c.Request().Context(), id)
 	if err != nil {
 		return nil, errors.New("Failed to read user")

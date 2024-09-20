@@ -4,9 +4,16 @@ import "github.com/mr55p-dev/gonk"
 
 type Config struct {
 	App struct {
-		Host string `config:"host"`
+		Host          string `config:"host"`
 		CookieKeyFile string `config:"cookie-key-file"`
 	} `config:"app"`
+	Mail struct {
+		Host     string `config:"host"`
+		Port     int    `config:"port"`
+		Username string `config:"username"`
+		Password string `config:"password"`
+		PoolSize int    `config:"pool-size"`
+	} `config:"mail"`
 	DB struct {
 		Path string `config:"path"`
 	} `config:"db"`

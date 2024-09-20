@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
+	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/tools"
@@ -54,8 +55,8 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 		return RenderError(c, http.StatusInternalServerError, "User not found")
 	}
 
-	sess, err := h.store.Get(c.Request(), "pm-session")
-	sess.Values["id"] = user.ID
+	sess, err := h.store.Get(c.Request(), sessionKey)
+	sess.Values[idKey] = user.ID
 	if err != nil {
 		LogHandlerError(c, "Failed to get user session", err)
 		return RenderGenericError(c)
@@ -66,7 +67,7 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 		return RenderGenericError(c)
 	}
 
-	return Redirect(c, "/app")
+	return Redirect(c, urls.App)
 }
 
 func (h *Handlers) PostPage(c echo.Context) error {
