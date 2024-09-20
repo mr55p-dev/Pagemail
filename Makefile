@@ -7,6 +7,8 @@ endif
 
 $(server):
 	templ generate
+	sqlc generate
+	./tailwindcss -i tailwind.base.css -o assets/css/main.css
 	go build ./cmd/pagemail/
 
 install:

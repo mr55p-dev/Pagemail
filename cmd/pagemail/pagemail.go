@@ -7,6 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mr55p-dev/pagemail/assets"
 )
 
 // Global logger instance
@@ -21,6 +22,7 @@ var config = MustLoadConfig()
 // bindRoutes attaches route handlers to endpoints
 func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.GET("/", srv.GetIndex)
+	e.StaticFS("/assets", assets.FS)
 }
 
 func main() {

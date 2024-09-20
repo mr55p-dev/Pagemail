@@ -8,7 +8,7 @@ type Config struct {
 	} `config:"app"`
 	DB struct {
 		Path string `config:"path"`
-	} `config:"path"`
+	} `config:"db"`
 }
 
 func MustLoadConfig() *Config {
