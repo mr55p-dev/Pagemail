@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/jordan-wright/email"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/db/queries"
@@ -18,6 +19,7 @@ import (
 type Handlers struct {
 	conn  *sql.DB
 	store *sessions.CookieStore
+	mail  *email.Pool
 }
 
 func (s *Handlers) GetIndex(c echo.Context) error {

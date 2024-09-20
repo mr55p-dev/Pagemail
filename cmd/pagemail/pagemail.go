@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/smtp"
 	"os"
 	"os/signal"
 	"strings"
-	"time"
 
 	"github.com/gorilla/sessions"
-	"github.com/jordan-wright/email"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -49,6 +46,10 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.StaticFS(urls.Assets, assets.FS)
 }
 
+func concatHostPort(host string, port int) string {
+	return fmt.Sprintf("%s:%d", host, port)
+}
+
 func main() {
 	// configure interrupt handling
 	ctx, appCancel := context.WithCancel(context.Background())
@@ -61,34 +62,6 @@ func main() {
 		PanicError("Failed to open db connection", err)
 	}
 
-	// connect to mail server
-	mailAuth := smtp.PlainAuth(
-		"",
-		config.Mail.Username,
-		config.Mail.Password,
-		config.Mail.Host,
-	)
-	connPool, err := email.NewPool(
-		fmt.Sprintf("%s:%d", config.Mail.Host, config.Mail.Port),
-		config.Mail.PoolSize,
-		mailAuth,
-	)
-	if err != nil {
-		PanicError("Failed to start mail server", err)
-	}
-
-	testMail := &email.Email{
-		From:    "Test Pagemail <mail@pagemail.io>",
-		To:      []string{"Ellis <ellislunnon@gmail.com>"},
-		Subject: "Test email",
-		Text:    []byte("This is a test email"),
-		Sender:  "mail@pagemail.io",
-	}
-	err = connPool.Send(testMail, time.Second*30)
-	if err != nil {
-		PanicError("Failed to send test email", err)
-	}
-
 	// create the routes
 	server := echo.New()
 	cookieKey, err := os.ReadFile(config.App.CookieKeyFile)
@@ -99,15 +72,22 @@ func main() {
 	bindRoutes(server, &Handlers{
 		conn:  db,
 		store: sessions.NewCookieStore(cookieKey),
+		mail: openMailPool(
+			config.Mail.Username,
+			config.Mail.Password,
+			config.Mail.Host,
+			config.Mail.Port,
+			config.Mail.PoolSize,
+		),
 	})
 
 	// start the server
 	go func() {
 		defer appCancel()
-		if err := server.Start(config.App.Host); err != nil {
-			LogError("Failed to serve", err)
-		}
+		LogError("Failed to serve", server.Start(concatHostPort(config.App.Host, config.App.Port)))
 	}()
+
+	// wait for an exit condition
 	select {
 	case <-ctx.Done():
 		logger.Info("Closing application", "reason", "app context canclled")
