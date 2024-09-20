@@ -10,3 +10,4 @@ pkg/render/*.go
 /pagemail
 .env
 tailwindcss
+pagemail.yaml
