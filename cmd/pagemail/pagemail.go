@@ -14,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
+	"github.com/mr55p-dev/pagemail/db/queries"
 )
 
 // Global logger instance
@@ -69,16 +70,23 @@ func main() {
 		PanicError("Failed to read cookie key", err)
 	}
 
+	// create the mail pool
+	mailPool, err := openMailPool(
+		config.Mail.Username,
+		config.Mail.Password,
+		config.Mail.Host,
+		config.Mail.Port,
+		config.Mail.PoolSize,
+	)
+	if err != nil {
+		PanicError("Failed to open mail pool", err)
+	}
+
+	// bind everything together
 	bindRoutes(server, &Handlers{
 		conn:  db,
 		store: sessions.NewCookieStore(cookieKey),
-		mail: openMailPool(
-			config.Mail.Username,
-			config.Mail.Password,
-			config.Mail.Host,
-			config.Mail.Port,
-			config.Mail.PoolSize,
-		),
+		mail:  mailPool,
 	})
 
 	// start the server
@@ -86,6 +94,12 @@ func main() {
 		defer appCancel()
 		LogError("Failed to serve", server.Start(concatHostPort(config.App.Host, config.App.Port)))
 	}()
+
+	// run the mail job
+	err = MailJob2(ctx, mailPool, queries.New(db))
+	if err != nil {
+		PanicError("Failed to do mail", err)
+	}
 
 	// wait for an exit condition
 	select {

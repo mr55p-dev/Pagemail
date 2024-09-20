@@ -34,6 +34,16 @@ type Page struct {
 	Readable     bool
 }
 
+type Schedule struct {
+	ID       string
+	UserID   string
+	Timezone string
+	Days     int64
+	Hour     int64
+	Minute   int64
+	LastSent time.Time
+}
+
 type SchemaMigration struct {
 	Version string
 }
