@@ -29,12 +29,15 @@ var config = MustLoadConfig()
 
 // bindRoutes attaches route handlers to endpoints
 func bindRoutes(e *echo.Echo, srv *Handlers) {
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Skipper: func(c echo.Context) bool {
-			return strings.HasPrefix(c.Request().URL.Path, urls.Assets)
-		},
-		Output: os.Stdout,
-	}))
+	e.Use(
+		middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Skipper: func(c echo.Context) bool {
+				return strings.HasPrefix(c.Request().URL.Path, urls.Assets)
+			},
+			Output: os.Stdout,
+		}),
+	)
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.GET(urls.Root, srv.GetIndex)    // root
 	e.GET(urls.Login, srv.GetLogin)   // login

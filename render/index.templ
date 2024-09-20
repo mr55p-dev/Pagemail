@@ -1,6 +1,7 @@
 package render
 
 import "github.com/mr55p-dev/pagemail/render/wrapper"
+import "github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 
 templ Index() {
 	@wrapper.New() {
@@ -8,7 +9,7 @@ templ Index() {
 			<div class="tw-text-center tw-flex tw-flex-col tw-gap-2">
 				<h1 class="tw-text-4xl">Pagemail v6</h1>
 				<p class="tw-text-blue-300">This one's for real!</p>
-				<a class="tw-underline tw-text-orange-300" href="/login">Get started</a>
+				<a class="tw-underline tw-text-orange-300" href={urls.Login}>Get started</a>
 			</div>
 		</div>
 	}
