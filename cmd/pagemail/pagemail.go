@@ -96,7 +96,7 @@ func main() {
 	}()
 
 	// run the mail job
-	err = MailJob2(ctx, mailPool, queries.New(db))
+	err = MailJob(ctx, mailPool, queries.New(db))
 	if err != nil {
 		PanicError("Failed to do mail", err)
 	}
