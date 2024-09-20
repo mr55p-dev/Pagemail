@@ -1,12 +1,11 @@
-server := ./tmp/main
+server := pagemail
 ifndef PM_ENV
 	PM_ENV := dev
 endif
 
 $(server):
-	mkdir -p ./tmp
 	templ generate
-	GOARCH=amd64 GOOS=linux go build -o ./tmp/main .
+	GOARCH=arm64 GOOS=linux go build .
 
 .PHONY = build clean run
 
@@ -16,7 +15,7 @@ install:
 
 build: $(server)
 clean: $(server)
-	rm -rf ./tmp/
+	rm -f $(server)
 
 run: $(server)
 	./tmp/main
