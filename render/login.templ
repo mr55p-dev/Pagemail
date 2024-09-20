@@ -5,7 +5,7 @@ import "github.com/mr55p-dev/pagemail/render/wrapper"
 templ Login() {
 	@wrapper.New(wrapper.WithTitle("Login")) {
 		<div>
-			<form hx-post="/login?provider=native">
+			<form hx-post="/login?provider=native" hx-target-error="#messages">
 				<input placeholder="E-mail" type="email" autofill="email" name="email"/>
 				<input placeholder="Password" type="password" autofill="password-current" name="password"/>
 				<button type="submit">Log in</button>

@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
@@ -21,48 +19,6 @@ type Handlers struct {
 	store *sessions.CookieStore
 }
 
-func Render(ctx echo.Context, statusCode int, t templ.Component) error {
-	buf := templ.GetBuffer()
-	defer templ.ReleaseBuffer(buf)
-
-	if err := t.Render(ctx.Request().Context(), buf); err != nil {
-		return err
-	}
-
-	return ctx.HTML(statusCode, buf.String())
-}
-
-func RenderError(ctx echo.Context, statusCode int, err string) error {
-	return Render(ctx, statusCode, render.Error(err))
-}
-
-func RenderGenericError(ctx echo.Context) error {
-	return RenderError(ctx, http.StatusInternalServerError, "Something went wrong.")
-}
-
-func RenderUserError(ctx echo.Context, err error) error {
-	return RenderError(ctx, http.StatusBadRequest, err.Error())
-}
-
-func isHTMX(c echo.Context) bool {
-	return c.Request().Header.Get("Hx-Request") == "true"
-}
-
-func Redirect(c echo.Context, location string) error {
-	c.Response().Header().Set("HX-Location", location)
-	var status = http.StatusSeeOther
-	if isHTMX(c) {
-		status = http.StatusOK
-	}
-	return c.Redirect(status, location)
-}
-
-// Queries gives access to the db queries object directly
-func (h *Handlers) Queries() *queries.Queries {
-	return queries.New(h.conn)
-}
-
-// GetIndex constructs the root page
 func (s *Handlers) GetIndex(c echo.Context) error {
 	return Render(c, http.StatusOK, render.Index())
 }
@@ -88,10 +44,10 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 			Password: []byte(c.FormValue("password")),
 		})
 	default:
-		err = fmt.Errorf("Invalid provider")
+		err = errors.New("Invalid provider")
 	}
 	if err != nil {
-		return RenderError(c, http.StatusBadRequest, "Invalid provider")
+		return RenderError(c, http.StatusBadRequest, err.Error())
 	}
 	if user == nil {
 		LogHandlerError(c, "Could not find user, but no error produced", errors.New("No error"))
@@ -111,19 +67,6 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	}
 
 	return Redirect(c, "/app")
-}
-
-func (h *Handlers) User(c echo.Context) (*queries.User, error) {
-	sess, err := session.Get("pm-session", c)
-	if err != nil {
-		return nil, errors.New("Failed to read user session")
-	}
-	id := sess.Values["id"].(string)
-	user, err := h.Queries().ReadUserById(c.Request().Context(), id)
-	if err != nil {
-		return nil, errors.New("Failed to read user")
-	}
-	return &user, nil
 }
 
 func (h *Handlers) GetApp(c echo.Context) error {
