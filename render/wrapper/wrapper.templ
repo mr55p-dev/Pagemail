@@ -1,0 +1,32 @@
+package wrapper 
+
+type wrapper struct {
+	title string
+}
+
+type WithFunc func(w *wrapper)
+
+func New(with ...WithFunc) templ.Component {
+	w := new(wrapper)
+	for _, fn := range with {
+		fn(w)
+	}
+	return w.do()
+}
+
+templ (w *wrapper) do() {
+	<html>
+		<head>
+			if w.title == "" {
+				<title>Pagemail</title>
+			} else {
+				<title>Pagemail - { w.title }</title>
+			}
+		</head>
+		<body>
+			<main>
+				{ children... }
+			</main>
+		</body>
+	</html>
+}

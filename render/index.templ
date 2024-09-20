@@ -1,0 +1,10 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/render/wrapper"
+
+templ Index() {
+	@wrapper.New() {
+		<h1>Hello, pagemail!</h1>
+		<p>This is fun</p>
+	}
+}

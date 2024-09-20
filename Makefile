@@ -1,3 +1,5 @@
+.PHONY = build clean run
+
 server := pagemail
 ifndef PM_ENV
 	PM_ENV := dev
@@ -5,9 +7,7 @@ endif
 
 $(server):
 	templ generate
-	GOARCH=arm64 GOOS=linux go build .
-
-.PHONY = build clean run
+	go build .
 
 install:
 	go install github.com/a-h/templ/cmd/templ@latest
@@ -18,4 +18,4 @@ clean: $(server)
 	rm -f $(server)
 
 run: $(server)
-	./tmp/main
+	./pagemail
