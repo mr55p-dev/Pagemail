@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -70,10 +69,14 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 }
 
 func (h *Handlers) GetApp(c echo.Context) error {
-	user, err := h.User(c)
+	user := GetUser(c)
+	pages, err := h.Queries().ReadPagesByUserId(c.Request().Context(), queries.ReadPagesByUserIdParams{
+		UserID: user.ID,
+		Limit:  30,
+		Offset: 0,
+	})
 	if err != nil {
-		return RenderUserError(c, err)
+		return RenderError(c, http.StatusOK, "Failed to read pages")
 	}
-
-	return Render(c, http.StatusOK, render.App(*user))
+	return Render(c, http.StatusOK, render.App(user, pages))
 }

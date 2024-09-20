@@ -43,6 +43,10 @@ func isHTMX(c echo.Context) bool {
 	return c.Request().Header.Get("Hx-Request") == "true"
 }
 
+func GetUser(c echo.Context) queries.User {
+	return c.Get("user").(queries.User)
+}
+
 // Redirect performs a HXMX-safe redirect
 func Redirect(c echo.Context, location string) error {
 	c.Response().Header().Set("HX-Location", location)
@@ -71,4 +75,16 @@ func (h *Handlers) User(c echo.Context) (*queries.User, error) {
 		return nil, errors.New("Failed to read user")
 	}
 	return &user, nil
+}
+
+// NeedsUser is a middleware func to require a user and set it in context
+func (h *Handlers) NeedsUser(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user, err := h.User(c)
+		if err != nil {
+			return RenderUserError(c, err)
+		}
+		c.Set("user", *user)
+		return next(c)
+	}
 }

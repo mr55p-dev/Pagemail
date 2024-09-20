@@ -1,0 +1,18 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ PageCard(page queries.Page) {
+	<div>
+		if page.Title.Valid {
+			<h4>{ page.Title.String }</h4>
+		} else {
+			<h4>{ page.Url }</h4>
+		}
+		if page.Description.Valid {
+			<p>{ page.Description.String }</p>
+		} else {
+			<p>No content</p>
+		}
+	</div>
+}

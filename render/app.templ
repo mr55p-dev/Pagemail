@@ -2,10 +2,20 @@ package render
 
 import "github.com/mr55p-dev/pagemail/db/queries"
 
-templ App(user queries.User) {
+templ App(user queries.User, pages []queries.Page) {
 	<div>
 		<h1>App</h1>
-		<p>{user.ID}</p>
-		<p>{user.Email}</p>
+		<p>{ user.ID }</p>
+		<p>{ user.Email }</p>
+		<div>
+			<form hx-post="/app/page" hx-target-error="#messages">
+				<input placeholder="Page URL" type="url" name="url"/>
+				<button type="submit">Save</button>
+				<button type="reset">Clear</button>
+			</form>
+		</div>
+		for _, page := range pages {
+			@PageCard(page)
+		}
 	</div>
 }
