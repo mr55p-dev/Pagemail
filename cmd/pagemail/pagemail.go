@@ -82,15 +82,16 @@ func main() {
 	if err != nil {
 		PanicError("Failed to open mail pool", err)
 	}
-	mailer := mail.New(ctx, db, mailPool, time.Second*10)
+	mailTimeout := time.Minute
+	mailInterval := time.Minute * 30
+	mailer := mail.New(ctx, db, mailPool, mailTimeout)
 	go func() {
-		interval := time.Second * 10
 		for {
-			timer := time.NewTimer(interval)
+			timer := time.NewTimer(mailInterval)
 			select {
 			case now := <-timer.C:
-				childCtx, _ := context.WithTimeout(ctx, interval)
-				LogError("Scheduled mail job had errors", mailer.RunScheduledSend(childCtx, now))
+				count, err := mailer.RunScheduledSend(ctx, now)
+				logger.InfoContext(ctx, "Finished mail job", "count", count, "errors", err)
 			case <-ctx.Done():
 				timer.Stop()
 				return

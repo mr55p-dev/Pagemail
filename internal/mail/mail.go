@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/smtp"
-	"sync"
 	"time"
 
 	"github.com/jordan-wright/email"
@@ -15,60 +14,19 @@ import (
 	"github.com/mr55p-dev/pagemail/render"
 )
 
-type sch struct {
-	sync.RWMutex
-	items []queries.Schedule
-}
-
 type Mailer struct {
-	schedules *sch
-	timeout   time.Duration
-	pool      *email.Pool
-	conn      *sql.DB
+	timeout time.Duration
+	pool    *email.Pool
+	conn    *sql.DB
 }
 
 // New will create a new mailer and populate it's schedules list. The self populatio ends when the context is cancelled
 func New(ctx context.Context, db *sql.DB, pool *email.Pool, timeout time.Duration) *Mailer {
-
-	m := &Mailer{
-		schedules: &sch{
-			RWMutex: sync.RWMutex{},
-			items:   []queries.Schedule{},
-		},
+	return &Mailer{
 		timeout: timeout,
 		pool:    pool,
 		conn:    db,
 	}
-	m.updateSchedules(ctx)
-
-	go func() {
-		for {
-			timer := time.NewTimer(time.Minute * 10)
-			select {
-			case <-timer.C:
-				m.updateSchedules(ctx)
-			case <-ctx.Done():
-				timer.Stop()
-				return
-			}
-		}
-	}()
-
-	return m
-}
-
-// updateSchedules updates the in memory schedule representation
-func (m *Mailer) updateSchedules(ctx context.Context) error {
-	m.schedules.Lock()
-	defer m.schedules.Unlock()
-
-	schedules, err := m.queries().ReadSchedules(ctx)
-	if err != nil {
-		return err
-	}
-
-	m.schedules.items = schedules
-	return nil
 }
 
 func NewPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
@@ -89,16 +47,19 @@ func NewPool(username, password, host string, port, poolSize int) (*email.Pool, 
 	return connPool, nil
 }
 
-func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) error {
-	m.schedules.RLock()
-	defer m.schedules.RUnlock()
+func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) (int, error) {
+	schedules, err := m.queries().ReadSchedules(ctx)
+	count := 0
+	if err != nil {
+		return count, fmt.Errorf("Failed to get schedules: %w", err)
+	}
 
 	// check for schedules which need to be sent
 	errList := []error{}
-	for _, schedule := range m.schedules.items {
+	for _, schedule := range schedules {
 		loc, err := time.LoadLocation(schedule.Timezone)
 		if err != nil {
-			return err
+			return count, err
 		}
 		var day int = now.Day()
 		if schedule.Days != 0 && now.Weekday() != time.Weekday(schedule.Days)-1 {
@@ -120,9 +81,11 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) error {
 
 		if err := m.sendForSchedule(ctx, schedule, now); err != nil {
 			errList = append(errList, err)
+		} else {
+			count++
 		}
 	}
-	return errors.Join(errList...)
+	return count, errors.Join(errList...)
 }
 
 func (m *Mailer) queries() *queries.Queries {
@@ -157,7 +120,7 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 		return fmt.Errorf("Failed to get content: %w", err)
 	}
 
-	err = m.pool.Send(content, time.Second*60)
+	err = m.pool.Send(content, m.timeout)
 	if err != nil {
 		return fmt.Errorf("Failed to send email: %w", err)
 	}
