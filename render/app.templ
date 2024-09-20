@@ -1,0 +1,11 @@
+package render
+
+import "github.com/mr55p-dev/pagemail/db/queries"
+
+templ App(user queries.User) {
+	<div>
+		<h1>App</h1>
+		<p>{user.ID}</p>
+		<p>{user.Email}</p>
+	</div>
+}

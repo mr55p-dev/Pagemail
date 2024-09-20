@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
@@ -33,6 +34,7 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.GET("/", srv.GetIndex)
 	e.GET("/login/", srv.GetLogin)
 	e.POST("/login", srv.PostLogin)
+	e.GET("/app", srv.GetApp, session.Middleware(srv.store))
 	e.StaticFS("/assets", assets.FS)
 }
 
