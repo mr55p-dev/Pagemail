@@ -22,6 +22,12 @@ func New(with ...WithFunc) templ.Component {
 	return w.do()
 }
 
+func WithTitle(title string) WithFunc {
+	return func(w *wrapper) {
+		w.title = title
+	}
+}
+
 func (w *wrapper) do() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -60,7 +66,7 @@ func (w *wrapper) do() templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(w.title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/wrapper/wrapper.templ`, Line: 23, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/wrapper/wrapper.templ`, Line: 29, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -79,7 +85,7 @@ func (w *wrapper) do() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main><script src=\"/assets/js/htmx-2.0.0.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

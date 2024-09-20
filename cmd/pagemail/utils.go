@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,13 +19,9 @@ func LogError(msg string, err error) {
 	logger.Error(msg, "error", err.Error())
 }
 
-func Render(ctx echo.Context, statusCode int, t templ.Component) error {
-	buf := templ.GetBuffer()
-	defer templ.ReleaseBuffer(buf)
-
-	if err := t.Render(ctx.Request().Context(), buf); err != nil {
-		return err
+func LogHandlerError(c echo.Context, msg string, err error) {
+	if err == nil {
+		return
 	}
-
-	return ctx.HTML(statusCode, buf.String())
+	logger.InfoContext(c.Request().Context(), msg, "error", err.Error())
 }

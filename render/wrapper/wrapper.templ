@@ -14,6 +14,12 @@ func New(with ...WithFunc) templ.Component {
 	return w.do()
 }
 
+func WithTitle(title string) WithFunc {
+	return func(w *wrapper) {
+		w.title = title
+	}
+}
+
 templ (w *wrapper) do() {
 	<html>
 		<head>
@@ -22,12 +28,13 @@ templ (w *wrapper) do() {
 			} else {
 				<title>Pagemail - { w.title }</title>
 			}
-			<link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+			<link rel="stylesheet" type="text/css" href="/assets/css/main.css"/>
 		</head>
 		<body>
 			<main>
 				{ children... }
 			</main>
+			<script src="/assets/js/htmx-2.0.0.js"></script>
 		</body>
 	</html>
 }

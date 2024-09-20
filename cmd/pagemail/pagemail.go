@@ -5,8 +5,11 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strings"
 
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
 )
 
@@ -21,7 +24,15 @@ var config = MustLoadConfig()
 
 // bindRoutes attaches route handlers to endpoints
 func bindRoutes(e *echo.Echo, srv *Handlers) {
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Request().URL.Path, "/assets")
+		},
+		Output: os.Stdout,
+	}))
 	e.GET("/", srv.GetIndex)
+	e.GET("/login/", srv.GetLogin)
+	e.POST("/login", srv.PostLogin)
 	e.StaticFS("/assets", assets.FS)
 }
 
@@ -39,8 +50,15 @@ func main() {
 
 	// create the routes
 	server := echo.New()
-	handlers := &Handlers{conn: db}
-	bindRoutes(server, handlers)
+	cookieKey, err := os.ReadFile(config.App.CookieKeyFile)
+	if err != nil {
+		PanicError("Failed to read cookie key", err)
+	}
+
+	bindRoutes(server, &Handlers{
+		conn:  db,
+		store: sessions.NewCookieStore(cookieKey),
+	})
 
 	// start the server
 	go func() {
