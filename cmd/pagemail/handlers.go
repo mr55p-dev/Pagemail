@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/internal/auth"
+	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/render"
 )
 
@@ -66,6 +67,20 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	}
 
 	return Redirect(c, "/app")
+}
+
+func (h *Handlers) PostPage(c echo.Context) error {
+	user := GetUser(c)
+	err := c.Request().ParseForm()
+	if err != nil {
+		return RenderError(c, http.StatusBadRequest, "Failed to parse form")
+	}
+	page, err := h.Queries().CreatePage(c.Request().Context(), queries.CreatePageParams{
+		ID:     tools.NewPageId(),
+		UserID: user.ID,
+		Url:    c.FormValue("url"),
+	})
+	return Render(c, http.StatusCreated, render.PageCard(page))
 }
 
 func (h *Handlers) GetApp(c echo.Context) error {

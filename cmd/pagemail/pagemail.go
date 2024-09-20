@@ -31,12 +31,16 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 		},
 		Output: os.Stdout,
 	}))
-	needsAuth := []echo.MiddlewareFunc{session.Middleware(srv.store), srv.NeedsUser}
 
 	e.GET("/", srv.GetIndex)
-	e.GET("/login/", srv.GetLogin)
+	e.GET("/login", srv.GetLogin)
 	e.POST("/login", srv.PostLogin)
-	e.GET("/app", srv.GetApp, needsAuth...)
+
+	app := e.Group("/app")
+	app.Use(session.Middleware(srv.store), srv.NeedsUser)
+	app.GET("", srv.GetApp)
+	app.POST("/page", srv.PostPage)
+
 	e.StaticFS("/assets", assets.FS)
 }
 

@@ -1,21 +1,33 @@
 package render
 
-import "github.com/mr55p-dev/pagemail/db/queries"
+import (
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/render/wrapper"
+)
 
 templ App(user queries.User, pages []queries.Page) {
-	<div>
-		<h1>App</h1>
-		<p>{ user.ID }</p>
-		<p>{ user.Email }</p>
+	@wrapper.New(wrapper.WithTitle("Pages")) {
 		<div>
-			<form hx-post="/app/page" hx-target-error="#messages">
-				<input placeholder="Page URL" type="url" name="url"/>
-				<button type="submit">Save</button>
-				<button type="reset">Clear</button>
-			</form>
+			<h1>App</h1>
+			<p>{ user.ID }</p>
+			<p>{ user.Email }</p>
+			<div>
+				<form
+					hx-post="/app/page"
+					hx-target="#pages-list"
+					hx-swap="afterbegin"
+					hx-target-error="#messages"
+				>
+					<input placeholder="Page URL" type="url" name="url"/>
+					<button type="submit">Save</button>
+					<button type="reset">Clear</button>
+				</form>
+			</div>
+			<div id="pages-list">
+				for _, page := range pages {
+					@PageCard(page)
+				}
+			</div>
 		</div>
-		for _, page := range pages {
-			@PageCard(page)
-		}
-	</div>
+	}
 }
