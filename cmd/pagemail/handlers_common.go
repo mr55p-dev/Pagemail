@@ -76,7 +76,10 @@ func (h *Handlers) User(c echo.Context) (*queries.User, error) {
 	if err != nil {
 		return nil, errors.New("Failed to read user session")
 	}
-	id := sess.Values[idKey].(string)
+	id, ok := sess.Values[idKey].(string)
+	if !ok {
+		return nil, errors.New("Invalid id key")
+	}
 	user, err := h.Queries().ReadUserById(c.Request().Context(), id)
 	if err != nil {
 		return nil, errors.New("Failed to read user")

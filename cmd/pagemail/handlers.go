@@ -85,24 +85,32 @@ func (h *Handlers) PostPage(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
 	}
-
-	// Load the preview
-	pageData, err := GetPreview(url)
-	previewState := PREVIEW_SUCCESS
-	if err != nil {
-		LogHandlerError(c, "Could not get preview", err)
-		previewState = PREVIEW_FAILURE
-	}
-
-	// Create the page
-	page, err := h.Queries().CreatePageWithPreview(c.Request().Context(), queries.CreatePageWithPreviewParams{
+	pageArg := queries.CreatePageWithPreviewParams{
 		ID:           tools.NewPageId(),
 		UserID:       user.ID,
 		Url:          c.FormValue("url"),
-		Title:        sql.NullString{String: pageData.Title, Valid: pageData.Title != ""},
-		Description:  sql.NullString{String: pageData.Description, Valid: pageData.Description != ""},
-		PreviewState: previewState,
-	})
+		Title:        sql.NullString{},
+		Description:  sql.NullString{},
+		PreviewState: PREVIEW_UNKNOWN,
+	}
+
+	// Load the preview
+	pageData, err := GetPreview(url)
+	if err != nil {
+		LogHandlerError(c, "Could not get preview", err)
+		pageArg.PreviewState = PREVIEW_FAILURE
+	} else {
+		pageArg.PreviewState = PREVIEW_SUCCESS
+		if pageData.Title != "" {
+			pageArg.Title = sql.NullString{String: pageData.Title, Valid: true}
+		}
+		if pageData.Description != "" {
+			pageArg.Description = sql.NullString{String: pageData.Description, Valid: true}
+		}
+	}
+
+	// Create the page
+	page, err := h.Queries().CreatePageWithPreview(c.Request().Context(), pageArg)
 	if err != nil {
 		LogHandlerError(c, "Could not create a page", err)
 		return RenderError(c, http.StatusInternalServerError, "Failed to create page")

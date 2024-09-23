@@ -46,7 +46,8 @@
 
 .page-card--title {
   @apply tw-text-xl tw-text-center tw-underline tw-text-blue-600
-  tw-text-wrap tw-whitespace-normal;
+  tw-text-wrap tw-whitespace-normal
+  tw-line-clamp-1;
 }
 
 .page-card--description {

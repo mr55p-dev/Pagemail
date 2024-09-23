@@ -15,8 +15,9 @@ templ App(user queries.User, pages []queries.Page) {
 					hx-swap="afterbegin"
 					hx-target-error="#messages"
 				>
-					<input placeholder="Page URL" type="url" name="url"/>
+					<input placeholder="Page URL" type="url" id="page-input" name="url"/>
 					<button type="submit">Save</button>
+					<button type="button" onclick="pasteContents('page-input')">Paste</button>
 					<button type="reset">Clear</button>
 				</form>
 			</div>
@@ -27,5 +28,16 @@ templ App(user queries.User, pages []queries.Page) {
 				}
 			</div>
 		</div>
+		<script>
+		function pasteContents(nodeId) {
+			navigator.clipboard.readText().then((contents) => {
+				console.log("Got contents", contents);
+				document.getElementById(nodeId).value = contents;
+			})
+		}
+		</script>
 	}
+}
+
+script handlePaste() {
 }
