@@ -23,12 +23,16 @@ type Handlers struct {
 	mail  *email.Pool
 }
 
-func (s *Handlers) GetIndex(c echo.Context) error {
+func (*Handlers) GetIndex(c echo.Context) error {
 	return Render(c, http.StatusOK, render.Index())
 }
 
-func (s *Handlers) GetLogin(c echo.Context) error {
+func (*Handlers) GetLogin(c echo.Context) error {
 	return Render(c, http.StatusOK, render.Login())
+}
+
+func (*Handlers) GetSignup(c echo.Context) error {
+	return Render(c, http.StatusOK, render.Signup())
 }
 
 func (h *Handlers) GetLogout(c echo.Context) error {

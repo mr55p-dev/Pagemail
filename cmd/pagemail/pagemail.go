@@ -39,10 +39,11 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	authMiddlewares := []echo.MiddlewareFunc{session.Middleware(srv.store), srv.NeedsUser}
 
-	e.GET("/", srv.GetIndex)                            // root
-	e.GET("/login", srv.GetLogin)                       // login
-	e.POST("/login", srv.PostLogin)                     // login
-	e.GET("/logout", srv.GetLogout, authMiddlewares...) // logout
+	e.GET("/", srv.GetIndex)
+	e.GET("/login", srv.GetLogin)
+	e.GET("/signup", srv.GetSignup)
+	e.POST("/login", srv.PostLogin)
+	e.GET("/logout", srv.GetLogout, authMiddlewares...)
 
 	app := e.Group("/app", authMiddlewares...)
 	app.Use(session.Middleware(srv.store), srv.NeedsUser)

@@ -92,3 +92,36 @@ nav {
 .page-card--footer {
   @apply tw-flex tw-justify-between;
 }
+
+.form-signup,
+.form-login {
+  @apply tw-flex tw-flex-col tw-gap-8
+	tw-max-w-96 tw-mx-auto
+	tw-border tw-border-stone-500
+	tw-rounded
+	tw-p-8;
+}
+
+.form-signup--input,
+.form-login--input {
+  @apply tw-py-4 tw-px-6
+	tw-rounded tw-bg-stone-200
+	tw-border-stone-500 tw-border;
+}
+
+.form-signup--submit,
+.form-login--submit {
+  @apply tw-py-2 tw-px-4
+	tw-rounded
+	tw-border tw-border-stone-500;
+}
+
+.form-signup--link,
+.form-login--link {
+  @apply tw-text-sm tw-text-center;
+}
+
+.form-signup--link-text,
+.form-login--link-text {
+  @apply tw-underline tw-text-blue-700;
+}
