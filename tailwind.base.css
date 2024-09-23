@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 .app-wrapper {
+	@apply tw-container tw-mx-auto;
 }
 
 .adder--wrapper {
@@ -10,18 +11,27 @@
 }
 
 #pages-list {
-  @apply tw-w-full tw-grid tw-grid-cols-1 tw-gap-4 tw-px-2 tw-py-4;
+  @apply tw-w-full 
+  tw-gap-4 tw-px-2 tw-py-4
+  tw-grid 
+  tw-grid-cols-1
+  sm:tw-grid-cols-2
+  md:tw-grid-cols-3
+  lg:tw-grid-cols-4
+  xl:tw-grid-cols-6;
 }
 
 .page-card {
   @apply tw-bg-stone-100 tw-text-stone-950
 	tw-rounded-sm
+	tw-overflow-x-hidden
 	tw-border tw-border-stone-200
 	tw-p-6 tw-flex tw-flex-col tw-gap-4;
 }
 
 .page-card--title {
-  @apply tw-text-xl tw-text-center tw-underline tw-text-blue-600;
+  @apply tw-text-xl tw-text-center tw-underline tw-text-blue-600
+  tw-text-wrap tw-whitespace-normal;
 }
 
 .page-card--description {

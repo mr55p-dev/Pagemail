@@ -8,7 +8,19 @@ package render
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/mr55p-dev/pagemail/db/queries"
+import (
+	"fmt"
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"net/url"
+)
+
+func formatURL(inp string) string {
+	parsed, err := url.Parse(inp)
+	if err != nil {
+		return inp
+	}
+	return fmt.Sprintf("%s%s", parsed.Host, parsed.Path)
+}
 
 func PageCard(page queries.Page) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -48,7 +60,7 @@ func PageCard(page queries.Page) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(page.Title.String)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 10, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 22, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -56,9 +68,9 @@ func PageCard(page queries.Page) templ.Component {
 			}
 		} else {
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(page.Url)
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(formatURL(page.Url))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 12, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 24, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -73,7 +85,7 @@ func PageCard(page queries.Page) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(page.Description.String)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 18, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 30, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -92,7 +104,7 @@ func PageCard(page queries.Page) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(page.Updated.Format("02/01 3:04PM"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 24, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/page_card.templ`, Line: 36, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

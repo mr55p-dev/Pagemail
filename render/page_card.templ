@@ -1,6 +1,18 @@
 package render
 
-import "github.com/mr55p-dev/pagemail/db/queries"
+import (
+	"fmt"
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"net/url"
+)
+
+func formatURL(inp string) string {
+	parsed, err := url.Parse(inp)
+	if err != nil {
+		return inp
+	}
+	return fmt.Sprintf("%s%s", parsed.Host, parsed.Path)
+}
 
 templ PageCard(page queries.Page) {
 	<div class="page-card">
@@ -9,7 +21,7 @@ templ PageCard(page queries.Page) {
 				if page.Title.Valid {
 					{ page.Title.String }
 				} else {
-					{ page.Url }
+					{ formatURL(page.Url) }
 				}
 			</a>
 		</h4>
