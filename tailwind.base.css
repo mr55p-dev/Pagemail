@@ -8,7 +8,7 @@
 		tw-border;
 }
 
-.message-ok--wrapper{
+.message-ok--wrapper {
   @apply tw-bg-green-400 tw-border-green-600;
 }
 
@@ -40,7 +40,8 @@
 	tw-rounded-sm
 	tw-overflow-x-hidden
 	tw-border tw-border-stone-200
-	tw-p-6 tw-flex tw-flex-col tw-gap-4;
+	tw-flex tw-flex-col tw-justify-between
+	tw-p-6 tw-gap-4;
 }
 
 .page-card--title {
@@ -49,7 +50,7 @@
 }
 
 .page-card--description {
-  @apply tw-text-lg tw-text-left;
+  @apply tw-text-left tw-line-clamp-3;
 }
 
 .page-card--timestamp {

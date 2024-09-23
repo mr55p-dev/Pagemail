@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"net/url"
+	"strings"
 )
 
 func formatURL(inp string) string {
@@ -11,7 +12,7 @@ func formatURL(inp string) string {
 	if err != nil {
 		return inp
 	}
-	return fmt.Sprintf("%s%s", parsed.Host, parsed.Path)
+	return fmt.Sprintf("%s%s", strings.TrimPrefix(parsed.Host, "www."), parsed.Path)
 }
 
 templ PageCard(page queries.Page) {
@@ -28,12 +29,10 @@ templ PageCard(page queries.Page) {
 		<p class="page-card--description">
 			if page.Description.Valid {
 				{ page.Description.String }
-			} else {
-				No content
 			}
 		</p>
-		<hr/>
 		<div class="page-card--footer">
+			<hr/>
 			<span class="page-card--timestamp">{ page.Updated.Format("02/01 3:04PM") }</span>
 			<button hx-delete={ fmt.Sprintf("/app/page/%s", page.ID) } hx-target-error="#messages" hx-swap="delete" hx-target="closest .page-card" class="page-card--delete">Delete</button>
 		</div>
