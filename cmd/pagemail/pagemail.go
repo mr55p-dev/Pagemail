@@ -37,15 +37,18 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 		}),
 	)
 	e.Pre(middleware.RemoveTrailingSlash())
+	authMiddlewares := []echo.MiddlewareFunc{session.Middleware(srv.store), srv.NeedsUser}
 
-	e.GET("/", srv.GetIndex)        // root
-	e.GET("/login", srv.GetLogin)   // login
-	e.POST("/login", srv.PostLogin) // login
+	e.GET("/", srv.GetIndex)                            // root
+	e.GET("/login", srv.GetLogin)                       // login
+	e.POST("/login", srv.PostLogin)                     // login
+	e.GET("/logout", srv.GetLogout, authMiddlewares...) // logout
 
-	app := e.Group("/app")
+	app := e.Group("/app", authMiddlewares...)
 	app.Use(session.Middleware(srv.store), srv.NeedsUser)
-	app.GET("", srv.GetApp)         // app root
-	app.POST("/page", srv.PostPage) // app page
+
+	app.GET("", srv.GetApp)
+	app.POST("/page", srv.PostPage)
 	app.DELETE("/page/:id", srv.DeletePage)
 
 	e.StaticFS("/assets", assets.FS)

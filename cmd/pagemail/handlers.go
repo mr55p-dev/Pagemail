@@ -31,6 +31,19 @@ func (s *Handlers) GetLogin(c echo.Context) error {
 	return Render(c, http.StatusOK, render.Login())
 }
 
+func (h *Handlers) GetLogout(c echo.Context) error {
+	sess, err := h.store.Get(c.Request(), sessionKey)
+	if err != nil {
+		LogError("Failed to get user session", err)
+	}
+	sess.Options.MaxAge = -1
+	err = sess.Save(c.Request(), c.Response())
+	if err != nil {
+		LogError("Failed to write session", err)
+	}
+	return Redirect(c, "/")
+}
+
 func (h *Handlers) PostLogin(c echo.Context) error {
 	provider := c.QueryParam("provider")
 	err := c.Request().ParseForm()
