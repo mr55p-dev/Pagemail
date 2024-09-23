@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/sessions"
 	"github.com/jordan-wright/email"
@@ -77,6 +78,16 @@ func (h *Handlers) PostPage(c echo.Context) error {
 	err := c.Request().ParseForm()
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, "Failed to parse form")
+	}
+	url, err := url.Parse(c.FormValue("url"))
+	if err != nil {
+		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
+	}
+	pageData, err := GetPreview(url)
+	if err != nil {
+		LogHandlerError(c, "Could not get preview", err)
+	} else {
+		logger.Info("Got page preview", "title", pageData.Title, "desc", pageData.Description)
 	}
 	page, err := h.Queries().CreatePage(c.Request().Context(), queries.CreatePageParams{
 		ID:     tools.NewPageId(),
