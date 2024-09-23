@@ -62,7 +62,17 @@ nav {
 	tw-overflow-x-hidden
 	tw-border tw-border-stone-200
 	tw-flex tw-flex-col tw-justify-between
-	tw-p-6 tw-gap-4;
+	tw-py-6 tw-px-4 tw-gap-4;
+}
+
+.page-card--header {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+}
+
+.page-card--delete {
+  @apply tw-size-5 tw-rounded-full
+ hover:tw-text-red-600;
 }
 
 .page-card--title {
@@ -81,11 +91,4 @@ nav {
 
 .page-card--footer {
   @apply tw-flex tw-justify-between;
-}
-
-.page-card--delete {
-  @apply tw-rounded tw-px-2
-		tw-border tw-border-red-700 
-		tw-bg-red-500 hover:tw-bg-red-600
-		tw-text-white;
 }
