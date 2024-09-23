@@ -25,8 +25,24 @@ nav {
   @apply tw-container tw-mx-auto;
 }
 
-.adder--wrapper {
-  @apply tw-w-full tw-h-16 tw-fixed tw-bottom-0 tw-left-0;
+.toolbar {
+  @apply tw-p-4 tw-mx-auto tw-w-fit 
+  tw-flex tw-justify-center tw-gap-3;
+}
+
+.toolbar--button {
+  @apply tw-px-4 tw-py-2
+  tw-border-x tw-border-x-stone-300
+	tw-bg-stone-100 hover:tw-bg-stone-200;
+}
+
+.toolbar--input-wrapper {
+  @apply tw-rounded tw-border tw-border-stone-300
+	tw-bg-stone-100;
+}
+
+.toolbar--input {
+  @apply tw-px-4 tw-py-2 tw-bg-stone-100;
 }
 
 #pages-list {

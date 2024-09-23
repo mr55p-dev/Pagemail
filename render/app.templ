@@ -7,26 +7,32 @@ import (
 
 templ App(user queries.User, pages []queries.Page) {
 	@wrapper.New(wrapper.WithTitle("Pages")) {
-		<div class="app-wrapper">
-			<div class="adder--wrapper">
-				<form
-					hx-post="/app/page"
-					hx-target="#pages-list"
-					hx-swap="afterbegin"
-					hx-target-error="#messages"
-				>
-					<input placeholder="Page URL" type="url" id="page-input" name="url"/>
-					<button type="submit">Save</button>
-					<button type="button" onclick="pasteContents('page-input')">Paste</button>
-					<button type="reset">Clear</button>
-				</form>
+		<h1 class="tw-text-center tw-text-3xl tw-p-4">Saved pages</h1>
+		<form
+			class="toolbar"
+			hx-post="/app/page"
+			hx-target="#pages-list"
+			hx-swap="afterbegin"
+			hx-target-error="#messages"
+		>
+			<div class="toolbar--input-wrapper">
+				<input
+					class="toolbar--input"
+					placeholder="Page URL"
+					autocomplete="off"
+					type="url"
+					id="page-input"
+					name="url"
+				/>
+				<button class="toolbar--button" type="reset">Clear</button>
+				<button class="toolbar--button" type="button" onclick="pasteContents('page-input')">Paste</button>
+				<button class="toolbar--button" type="submit">Save</button>
 			</div>
-			<h1 class="tw-text-center tw-text-2xl">Saved pages</h1>
-			<div id="pages-list">
-				for _, page := range pages {
-					@PageCard(page)
-				}
-			</div>
+		</form>
+		<div id="pages-list">
+			for _, page := range pages {
+				@PageCard(page)
+			}
 		</div>
 		<script>
 		function pasteContents(nodeId) {
