@@ -9,6 +9,13 @@ import (
 	"golang.org/x/net/html"
 )
 
+const (
+	PREVIEW_UNKNOWN string = "unknown"
+	PREVIEW_PENDING string = "pending"
+	PREVIEW_SUCCESS string = "success"
+	PREVIEW_FAILURE string = "failure"
+)
+
 type PageData struct {
 	Title       string
 	Description string

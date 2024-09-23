@@ -12,8 +12,8 @@ import (
 )
 
 const createPage = `-- name: CreatePage :one
-INSERT INTO pages (id, user_id, url, preview_state)
-VALUES (?, ?, ?, 'unknown')
+INSERT INTO pages (id, user_id, url)
+VALUES (?, ?, ?)
 RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated, readable
 `
 
@@ -25,6 +25,46 @@ type CreatePageParams struct {
 
 func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, error) {
 	row := q.db.QueryRowContext(ctx, createPage, arg.ID, arg.UserID, arg.Url)
+	var i Page
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Title,
+		&i.Description,
+		&i.ImageUrl,
+		&i.PreviewState,
+		&i.Created,
+		&i.Updated,
+		&i.Readable,
+	)
+	return i, err
+}
+
+const createPageWithPreview = `-- name: CreatePageWithPreview :one
+INSERT INTO pages (id, user_id, url, title, description, preview_state) 
+VALUES (?, ?, ?, ?, ?, ?)
+RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated, readable
+`
+
+type CreatePageWithPreviewParams struct {
+	ID           string
+	UserID       string
+	Url          string
+	Title        sql.NullString
+	Description  sql.NullString
+	PreviewState string
+}
+
+func (q *Queries) CreatePageWithPreview(ctx context.Context, arg CreatePageWithPreviewParams) (Page, error) {
+	row := q.db.QueryRowContext(ctx, createPageWithPreview,
+		arg.ID,
+		arg.UserID,
+		arg.Url,
+		arg.Title,
+		arg.Description,
+		arg.PreviewState,
+	)
 	var i Page
 	err := row.Scan(
 		&i.ID,

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -75,6 +76,8 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 
 func (h *Handlers) PostPage(c echo.Context) error {
 	user := GetUser(c)
+
+	// load the form url
 	err := c.Request().ParseForm()
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, "Failed to parse form")
@@ -83,17 +86,29 @@ func (h *Handlers) PostPage(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
 	}
+
+	// Load the preview
 	pageData, err := GetPreview(url)
+	previewState := PREVIEW_SUCCESS
 	if err != nil {
 		LogHandlerError(c, "Could not get preview", err)
-	} else {
-		logger.Info("Got page preview", "title", pageData.Title, "desc", pageData.Description)
+		previewState = PREVIEW_FAILURE
 	}
-	page, err := h.Queries().CreatePage(c.Request().Context(), queries.CreatePageParams{
-		ID:     tools.NewPageId(),
-		UserID: user.ID,
-		Url:    c.FormValue("url"),
+
+	// Create the page
+	page, err := h.Queries().CreatePageWithPreview(c.Request().Context(), queries.CreatePageWithPreviewParams{
+		ID:           tools.NewPageId(),
+		UserID:       user.ID,
+		Url:          c.FormValue("url"),
+		Title:        sql.NullString{String: pageData.Title, Valid: pageData.Title != ""},
+		Description:  sql.NullString{String: pageData.Description, Valid: pageData.Description != ""},
+		PreviewState: previewState,
 	})
+	if err != nil {
+		LogHandlerError(c, "Could not create a page", err)
+		return RenderError(c, http.StatusInternalServerError, "Failed to create page")
+	}
+
 	return Render(c, http.StatusCreated, render.PageCard(page))
 }
 
