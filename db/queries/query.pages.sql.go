@@ -54,13 +54,19 @@ func (q *Queries) DeletePageById(ctx context.Context, id string) (int64, error) 
 	return result.RowsAffected()
 }
 
-const deletePagesByUserId = `-- name: DeletePagesByUserId :execrows
+const deletePageForUser = `-- name: DeletePageForUser :execrows
 DELETE FROM pages
-WHERE user_id = ?
+WHERE id = ?
+AND user_id = ?
 `
 
-func (q *Queries) DeletePagesByUserId(ctx context.Context, userID string) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deletePagesByUserId, userID)
+type DeletePageForUserParams struct {
+	ID     string
+	UserID string
+}
+
+func (q *Queries) DeletePageForUser(ctx context.Context, arg DeletePageForUserParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deletePageForUser, arg.ID, arg.UserID)
 	if err != nil {
 		return 0, err
 	}

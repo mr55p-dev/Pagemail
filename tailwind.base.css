@@ -2,8 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+.message-err--wrapper,
+.message-ok--wrapper {
+  @apply tw-w-full tw-h-12
+		tw-border;
+}
+
+.message-ok--wrapper{
+  @apply tw-bg-green-400 tw-border-green-600;
+}
+
+.message-err--wrapper {
+  @apply tw-bg-red-400 tw-border-red-600;
+}
+
 .app-wrapper {
-	@apply tw-container tw-mx-auto;
+  @apply tw-container tw-mx-auto;
 }
 
 .adder--wrapper {
@@ -40,4 +54,15 @@
 
 .page-card--timestamp {
   @apply tw-text-sm tw-text-stone-600;
+}
+
+.page-card--footer {
+  @apply tw-flex tw-justify-between;
+}
+
+.page-card--delete {
+  @apply tw-rounded tw-px-2
+		tw-border tw-border-red-700 
+		tw-bg-red-500 hover:tw-bg-red-600
+		tw-text-white;
 }

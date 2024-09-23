@@ -14,7 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
-	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/internal/mail"
 )
 
@@ -32,23 +31,24 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.Use(
 		middleware.LoggerWithConfig(middleware.LoggerConfig{
 			Skipper: func(c echo.Context) bool {
-				return strings.HasPrefix(c.Request().URL.Path, urls.Assets)
+				return strings.HasPrefix(c.Request().URL.Path, "/assets")
 			},
 			Output: os.Stdout,
 		}),
 	)
 	e.Pre(middleware.RemoveTrailingSlash())
 
-	e.GET(urls.Root, srv.GetIndex)    // root
-	e.GET(urls.Login, srv.GetLogin)   // login
-	e.POST(urls.Login, srv.PostLogin) // login
+	e.GET("/", srv.GetIndex)        // root
+	e.GET("/login", srv.GetLogin)   // login
+	e.POST("/login", srv.PostLogin) // login
 
-	app := e.Group(urls.App)
+	app := e.Group("/app")
 	app.Use(session.Middleware(srv.store), srv.NeedsUser)
-	app.GET(urls.GroupURL(urls.App, urls.App), srv.GetApp)     // app root
-	app.POST(urls.GroupURL(urls.App, urls.Page), srv.PostPage) // app page
+	app.GET("", srv.GetApp)         // app root
+	app.POST("/page", srv.PostPage) // app page
+	app.DELETE("/page/:id", srv.DeletePage)
 
-	e.StaticFS(urls.Assets, assets.FS)
+	e.StaticFS("/assets", assets.FS)
 }
 
 func concatHostPort(host string, port int) string {

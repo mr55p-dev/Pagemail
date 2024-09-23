@@ -86,6 +86,23 @@ func (h *Handlers) PostPage(c echo.Context) error {
 	return Render(c, http.StatusCreated, render.PageCard(page))
 }
 
+func (h *Handlers) DeletePage(c echo.Context) error {
+	user := GetUser(c)
+	pageId := c.Param("id")
+	cnt, err := h.Queries().DeletePageForUser(c.Request().Context(), queries.DeletePageForUserParams{
+		ID:     pageId,
+		UserID: user.ID,
+	})
+	if err != nil {
+		LogError("Failed to delete page", err)
+		return RenderGenericError(c)
+	} else if cnt == 0 {
+		return RenderError(c, http.StatusNotFound, "No such page found")
+	} else {
+		return c.NoContent(http.StatusOK)
+	}
+}
+
 func (h *Handlers) GetApp(c echo.Context) error {
 	user := GetUser(c)
 	pages, err := h.Queries().ReadPagesByUserId(c.Request().Context(), queries.ReadPagesByUserIdParams{

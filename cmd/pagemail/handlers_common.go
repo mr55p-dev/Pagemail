@@ -31,6 +31,10 @@ func RenderError(ctx echo.Context, statusCode int, err string) error {
 	return Render(ctx, statusCode, render.Error(err))
 }
 
+func RenderMsg(ctx echo.Context, statusCode int, msg string) error {
+	return Render(ctx, statusCode, render.Message(msg))
+}
+
 // RenderGenericError displays a basic 500 error
 func RenderGenericError(ctx echo.Context) error {
 	return RenderError(ctx, http.StatusInternalServerError, "Something went wrong.")

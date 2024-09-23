@@ -33,6 +33,9 @@ templ PageCard(page queries.Page) {
 			}
 		</p>
 		<hr/>
-		<span class="page-card--timestamp">{ page.Updated.Format("02/01 3:04PM") }</span>
+		<div class="page-card--footer">
+			<span class="page-card--timestamp">{ page.Updated.Format("02/01 3:04PM") }</span>
+			<button hx-delete={ fmt.Sprintf("/app/page/%s", page.ID) } hx-target-error="#messages" hx-swap="delete" hx-target="closest .page-card" class="page-card--delete">Delete</button>
+		</div>
 	</div>
 }

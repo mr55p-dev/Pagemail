@@ -32,9 +32,10 @@ WHERE id = ?;
 DELETE FROM pages 
 WHERE id = ?;
 
--- name: DeletePagesByUserId :execrows
+-- name: DeletePageForUser :execrows
 DELETE FROM pages
-WHERE user_id = ?;
+WHERE id = ?
+AND user_id = ?;
 
 -- name: ReadPagesByUserId :many
 SELECT * FROM pages

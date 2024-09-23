@@ -1,0 +1,13 @@
+package render
+
+templ Error(msg string) {
+	<div class="message-err--wrapper">
+		<p class="tw-text-red-500">{ msg }</p>
+	</div>
+}
+
+templ Message(msg string) {
+	<div class="message-ok--wrapper">
+	<p class="tw-text-green-500">{msg}</p>
+	</div>
+}
