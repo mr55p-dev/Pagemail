@@ -2,5 +2,5 @@
 <title>Pagemail</title>
 <title>Pagemail - 
 </title>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><main hx-ext=\"response-targets\"><div id=\"messages\"></div>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><nav><a href=\"/logout\">Log out</a></nav><main hx-ext=\"response-targets\"><div id=\"messages\"></div>
 </main><script src=\"/assets/js/htmx-2.0.0.js\"></script><script src=\"/assets/js/htmx-response-targets-2.0.0.js\"></script></body></html>

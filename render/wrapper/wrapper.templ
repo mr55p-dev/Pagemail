@@ -32,6 +32,9 @@ templ (w *wrapper) do() {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		</head>
 		<body>
+			<nav>
+				<a href="/logout">Log out</a>
+			</nav>
 			<main hx-ext="response-targets">
 				<div id="messages"></div>
 				{ children... }

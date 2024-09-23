@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+nav {
+  @apply tw-sticky tw-top-0 tw-left-0
+	tw-bg-stone-100;
+}
+
 .message-err--wrapper,
 .message-ok--wrapper {
   @apply tw-w-full tw-h-12
