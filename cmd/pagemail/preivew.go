@@ -28,6 +28,11 @@ func NodeText(node *html.Node) string {
 	if node == nil {
 		return ""
 	}
+	for _, attr := range node.Attr {
+		if attr.Key == "content" && attr.Val != "" {
+			return attr.Val
+		}
+	}
 	buf := new(strings.Builder)
 	getText(node, buf)
 	return buf.String()
@@ -51,6 +56,7 @@ func GetPreview(pageUrl *url.URL) (*PageData, error) {
 		title, _ := htmlquery.Query(doc, q)
 		if txt := NodeText(title); txt != "" {
 			res.Title = txt
+			break
 		}
 	}
 
