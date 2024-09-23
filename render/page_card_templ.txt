@@ -1,6 +1,0 @@
-<div class=\"page-card\"><h4 class=\"page-card--title\"><a href=\"
-\" target=\"_blank\" rel=\"noopener noreferrer\">
-</a></h4><p class=\"page-card--description\">
-</p><div class=\"page-card--footer\"><hr><span class=\"page-card--timestamp\">
-</span> <button hx-delete=\"
-\" hx-target-error=\"#messages\" hx-swap=\"delete\" hx-target=\"closest .page-card\" class=\"page-card--delete\">Delete</button></div></div>
