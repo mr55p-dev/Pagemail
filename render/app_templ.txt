@@ -1,0 +1,2 @@
+<div class=\"app-wrapper\"><div class=\"adder--wrapper\"><form hx-post=\"/app/page\" hx-target=\"#pages-list\" hx-swap=\"afterbegin\" hx-target-error=\"#messages\"><input placeholder=\"Page URL\" type=\"url\" name=\"url\"> <button type=\"submit\">Save</button> <button type=\"reset\">Clear</button></form></div><h1 class=\"tw-text-center tw-text-2xl\">Saved pages</h1><div id=\"pages-list\">
+</div></div>

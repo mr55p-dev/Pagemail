@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.app-wrapper {
+}
+
+.adder--wrapper {
+  @apply tw-w-full tw-h-16 tw-fixed tw-bottom-0 tw-left-0;
+}
+
+#pages-list {
+  @apply tw-w-full tw-grid tw-grid-cols-1 tw-gap-4 tw-px-2 tw-py-4;
+}
+
+.page-card {
+  @apply tw-bg-stone-100 tw-text-stone-950
+	tw-rounded-sm
+	tw-border tw-border-stone-200
+	tw-p-6 tw-flex tw-flex-col tw-gap-4;
+}
+
+.page-card--title {
+  @apply tw-text-xl tw-text-center tw-underline tw-text-blue-600;
+}
+
+.page-card--description {
+  @apply tw-text-lg tw-text-left;
+}
+
+.page-card--timestamp {
+  @apply tw-text-sm tw-text-stone-600;
+}

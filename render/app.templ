@@ -7,11 +7,8 @@ import (
 
 templ App(user queries.User, pages []queries.Page) {
 	@wrapper.New(wrapper.WithTitle("Pages")) {
-		<div>
-			<h1>App</h1>
-			<p>{ user.ID }</p>
-			<p>{ user.Email }</p>
-			<div>
+		<div class="app-wrapper">
+			<div class="adder--wrapper">
 				<form
 					hx-post="/app/page"
 					hx-target="#pages-list"
@@ -23,6 +20,7 @@ templ App(user queries.User, pages []queries.Page) {
 					<button type="reset">Clear</button>
 				</form>
 			</div>
+			<h1 class="tw-text-center tw-text-2xl">Saved pages</h1>
 			<div id="pages-list">
 				for _, page := range pages {
 					@PageCard(page)

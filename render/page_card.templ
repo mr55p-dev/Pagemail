@@ -3,16 +3,24 @@ package render
 import "github.com/mr55p-dev/pagemail/db/queries"
 
 templ PageCard(page queries.Page) {
-	<div>
-		if page.Title.Valid {
-			<h4>{ page.Title.String }</h4>
-		} else {
-			<h4>{ page.Url }</h4>
-		}
-		if page.Description.Valid {
-			<p>{ page.Description.String }</p>
-		} else {
-			<p>No content</p>
-		}
+	<div class="page-card">
+		<h4 class="page-card--title">
+			<a href={ templ.SafeURL(page.Url) } target="_blank" rel="noopener noreferrer">
+				if page.Title.Valid {
+					{ page.Title.String }
+				} else {
+					{ page.Url }
+				}
+			</a>
+		</h4>
+		<p class="page-card--description">
+			if page.Description.Valid {
+				{ page.Description.String }
+			} else {
+				No content
+			}
+		</p>
+		<hr/>
+		<span class="page-card--timestamp">{ page.Updated.Format("02/01 3:04PM") }</span>
 	</div>
 }

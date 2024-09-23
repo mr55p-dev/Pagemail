@@ -1,0 +1,6 @@
+<div class=\"page-card\"><h4 class=\"page-card--title\"><a href=\"
+\" target=\"_blank\" rel=\"noopener noreferrer\">
+</a></h4><p class=\"page-card--description\">
+No content
+</p><hr><span class=\"page-card--timestamp\">
+</span></div>

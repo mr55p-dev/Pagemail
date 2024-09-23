@@ -5,17 +5,17 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./pagemail"
-  cmd = "make clean && make build"
+  cmd = "go build ./cmd/pagemail"
   delay = 1000
-  exclude_dir = ["assets/css"]
-  exclude_file = []
-  exclude_regex = ["_test.go", "_templ.go", "db/queries"]
+  exclude_dir = ["tmp", "vendor", "testdata"]
+  exclude_file = ["tailwind.base.css"]
+  exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
   full_bin = ""
   include_dir = []
-  include_ext = ["go", "templ", "tmpl"]
-  include_file = ["pagemail.yaml"]
+  include_ext = ["go", "css"]
+  include_file = []
   kill_delay = "0s"
   log = "build-errors.log"
   poll = false
@@ -39,8 +39,13 @@ tmp_dir = "tmp"
   time = false
 
 [misc]
-  clean_on_exit = true
+  clean_on_exit = false
+
+[proxy]
+  app_port = 0
+  enabled = false
+  proxy_port = 0
 
 [screen]
-  clear_on_rebuild = true 
+  clear_on_rebuild = false
   keep_scroll = true
