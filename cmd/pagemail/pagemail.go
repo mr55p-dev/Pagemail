@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mr55p-dev/pagemail/assets"
 	"github.com/mr55p-dev/pagemail/internal/mail"
+	"github.com/mr55p-dev/pagemail/render"
 )
 
 // Global logger instance
@@ -39,10 +40,11 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.Pre(middleware.RemoveTrailingSlash())
 	authMiddlewares := []echo.MiddlewareFunc{session.Middleware(srv.store), srv.NeedsUser}
 
-	e.GET("/", srv.GetIndex)
-	e.GET("/login", srv.GetLogin)
-	e.GET("/signup", srv.GetSignup)
+	e.GET("/", srv.GetPage(render.Index))
+	e.GET("/login", srv.GetPage(render.Login))
+	e.GET("/signup", srv.GetPage(render.Signup))
 	e.POST("/login", srv.PostLogin)
+	s.POST("/signup", srv.PostSignup)
 	e.GET("/logout", srv.GetLogout, authMiddlewares...)
 
 	app := e.Group("/app", authMiddlewares...)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/a-h/templ"
 	"github.com/gorilla/sessions"
 	"github.com/jordan-wright/email"
 	"github.com/labstack/echo/v4"
@@ -23,16 +24,14 @@ type Handlers struct {
 	mail  *email.Pool
 }
 
-func (*Handlers) GetIndex(c echo.Context) error {
-	return Render(c, http.StatusOK, render.Index())
-}
+type PageComponent func(user *queries.User) templ.Component
 
-func (*Handlers) GetLogin(c echo.Context) error {
-	return Render(c, http.StatusOK, render.Login())
-}
-
-func (*Handlers) GetSignup(c echo.Context) error {
-	return Render(c, http.StatusOK, render.Signup())
+// GetPage will render a simple page
+func (h *Handlers) GetPage(component PageComponent) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		user, _ := h.User(c)
+		return Render(c, http.StatusOK, component(user))
+	}
 }
 
 func (h *Handlers) GetLogout(c echo.Context) error {
@@ -88,6 +87,10 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	}
 
 	return Redirect(c, urls.App)
+}
+
+func (h *Handlers) PostSignup(c echo.Context) error {
+	return nil
 }
 
 func (h *Handlers) PostPage(c echo.Context) error {
@@ -163,5 +166,5 @@ func (h *Handlers) GetApp(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusOK, "Failed to read pages")
 	}
-	return Render(c, http.StatusOK, render.App(user, pages))
+	return Render(c, http.StatusOK, render.App(&user, pages))
 }

@@ -5,8 +5,8 @@ import (
 	"github.com/mr55p-dev/pagemail/render/wrapper"
 )
 
-templ App(user queries.User, pages []queries.Page) {
-	@wrapper.New(wrapper.WithTitle("Pages")) {
+templ App(user *queries.User, pages []queries.Page) {
+	@wrapper.New(user, wrapper.WithTitle("Pages")) {
 		<h1 class="tw-text-center tw-text-3xl tw-p-4">Saved pages</h1>
 		<form
 			class="toolbar"

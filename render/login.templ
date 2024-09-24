@@ -1,9 +1,12 @@
 package render
 
-import "github.com/mr55p-dev/pagemail/render/wrapper"
+import (
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/render/wrapper"
+)
 
-templ Login() {
-	@wrapper.New(wrapper.WithTitle("Login")) {
+templ Login(user *queries.User) {
+	@wrapper.New(user, wrapper.WithTitle("Login")) {
 		<form
 			hx-post="/login?provider=native"
 			hx-target-error="#messages"

@@ -8,13 +8,15 @@ package wrapper
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
+import "github.com/mr55p-dev/pagemail/db/queries"
+
 type wrapper struct {
 	title string
 }
 
 type WithFunc func(w *wrapper)
 
-func New(with ...WithFunc) templ.Component {
+func New(user *queries.User, with ...WithFunc) templ.Component {
 	w := new(wrapper)
 	for _, fn := range with {
 		fn(w)
@@ -66,7 +68,7 @@ func (w *wrapper) do() templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(w.title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/wrapper/wrapper.templ`, Line: 29, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/wrapper/wrapper.templ`, Line: 31, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
