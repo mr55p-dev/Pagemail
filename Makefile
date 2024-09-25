@@ -5,7 +5,7 @@ ifndef PM_ENV
 	PM_ENV := dev
 endif
 
-$(server):
+$(server): clean
 	go build ./cmd/pagemail/
 
 install:
