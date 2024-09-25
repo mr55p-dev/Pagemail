@@ -44,7 +44,7 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 	e.GET("/login", srv.GetPage(render.Login))
 	e.GET("/signup", srv.GetPage(render.Signup))
 	e.POST("/login", srv.PostLogin)
-	s.POST("/signup", srv.PostSignup)
+	e.POST("/signup", srv.PostSignup)
 	e.GET("/logout", srv.GetLogout, authMiddlewares...)
 
 	app := e.Group("/app", authMiddlewares...)

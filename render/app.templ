@@ -34,16 +34,5 @@ templ App(user *queries.User, pages []queries.Page) {
 				@PageCard(page)
 			}
 		</div>
-		<script>
-		function pasteContents(nodeId) {
-			navigator.clipboard.readText().then((contents) => {
-				console.log("Got contents", contents);
-				document.getElementById(nodeId).value = contents;
-			})
-		}
-		</script>
 	}
-}
-
-script handlePaste() {
 }

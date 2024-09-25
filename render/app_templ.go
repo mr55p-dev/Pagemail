@@ -70,13 +70,4 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 	})
 }
 
-func handlePaste() templ.ComponentScript {
-	return templ.ComponentScript{
-		Name:       `__templ_handlePaste_e3b0`,
-		Function:   `function __templ_handlePaste_e3b0(){}`,
-		Call:       templ.SafeScript(`__templ_handlePaste_e3b0`),
-		CallInline: templ.SafeScriptInline(`__templ_handlePaste_e3b0`),
-	}
-}
-
 var _ = templruntime.GeneratedTemplate
