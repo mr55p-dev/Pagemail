@@ -1,2 +1,0 @@
-FROM ghcr.io/amacneil/dbmate
-COPY db/migrations /migrations
