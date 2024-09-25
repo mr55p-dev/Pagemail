@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -30,6 +31,12 @@ var config = MustLoadConfig()
 
 // bindRoutes attaches route handlers to endpoints
 func bindRoutes(e *echo.Echo, srv *Handlers) {
+	// health check
+	e.GET("/health/ready", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+
+	// middlewares
 	e.Use(
 		middleware.LoggerWithConfig(middleware.LoggerConfig{
 			Skipper: func(c echo.Context) bool {
