@@ -38,6 +38,7 @@ func bindRoutes(e *echo.Echo, srv *Handlers) {
 
 	// middlewares
 	e.Use(
+		middleware.Recover(),
 		middleware.LoggerWithConfig(middleware.LoggerConfig{
 			Skipper: func(c echo.Context) bool {
 				return strings.HasPrefix(c.Request().URL.Path, "/assets")
