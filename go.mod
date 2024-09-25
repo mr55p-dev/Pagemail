@@ -11,7 +11,7 @@ require (
 	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/mr55p-dev/gonk v0.3.0
+	github.com/mr55p-dev/gonk v0.4.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
 )
