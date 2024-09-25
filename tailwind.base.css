@@ -62,8 +62,8 @@ nav {
 	tw-py-6 tw-px-4;
 }
 
-.page-card--header {
-	@apply tw-mb-2;
+.page-card--main{
+	@apply tw-my-4;
 }
 
 .page-card--title {
