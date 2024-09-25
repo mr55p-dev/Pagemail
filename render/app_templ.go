@@ -46,7 +46,7 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 1)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h1 class=\"tw-text-center tw-text-3xl tw-p-4\">Saved pages</h1><form class=\"toolbar\" hx-post=\"/app/page\" hx-target=\"#pages-list\" hx-swap=\"afterbegin\" hx-target-error=\"#messages\"><div class=\"toolbar--input-wrapper\"><input class=\"toolbar--input\" placeholder=\"Page URL\" autocomplete=\"off\" type=\"url\" id=\"page-input\" name=\"url\"> <button class=\"toolbar--button\" type=\"reset\">Clear</button> <button class=\"toolbar--button\" type=\"button\" onclick=\"pasteContents(&#39;page-input&#39;)\">Paste</button> <button class=\"toolbar--button\" type=\"submit\">Save</button></div></form><div id=\"pages-list\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -56,7 +56,7 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 2)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

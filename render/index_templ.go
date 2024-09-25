@@ -47,7 +47,7 @@ func Index(user *queries.User) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 1)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"tw-w-[80%] tw-mx-auto tw-mt-4 tw-h-96 tw-border-gray-200 tw-border tw-rounded-xl tw-shadow-sm tw-shadow-gray-100 tw-p-4 tw-grid tw-place-items-center\"><div class=\"tw-text-center tw-flex tw-flex-col tw-gap-2\"><h1 class=\"tw-text-4xl\">Pagemail v6</h1><p class=\"tw-text-blue-300\">This one's for real!</p><a class=\"tw-underline tw-text-orange-300\" href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -56,7 +56,7 @@ func Index(user *queries.User) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 2)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Get started</a></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

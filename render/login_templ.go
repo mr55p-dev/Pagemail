@@ -46,7 +46,7 @@ func Login(user *queries.User) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 1)
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login?provider=native\" hx-target-error=\"#messages\" class=\"form-login\"><h1>Log in</h1><input class=\"form-login--input\" placeholder=\"E-mail\" type=\"email\" autofill=\"email\" name=\"email\"> <input class=\"form-login--input\" placeholder=\"Password\" type=\"password\" autofill=\"password-current\" name=\"password\"> <button class=\"form-login--submit\" type=\"submit\">Log in</button><p class=\"form-login--link\">Don't have an account? <a href=\"/signup\" class=\"form-login--link-text\">Sign up</a></p></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
