@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"os"
@@ -105,10 +106,16 @@ func main() {
 		}
 	}()
 
+	// get the session key
+	cookieKey, err := hex.DecodeString(config.App.CookieKey)
+	if err != nil {
+		PanicError("Failed to decode cookie key", err)
+	}
+
 	// bind everything together
 	bindRoutes(server, &Handlers{
 		conn:  db,
-		store: sessions.NewCookieStore([]byte(config.App.CookieKey)),
+		store: sessions.NewCookieStore(cookieKey),
 		mail:  mailPool,
 	})
 
