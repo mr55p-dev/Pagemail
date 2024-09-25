@@ -4,9 +4,9 @@ import "github.com/mr55p-dev/gonk"
 
 type Config struct {
 	App struct {
-		Host          string
-		Port          int
-		CookieKeyFile string
+		Host      string
+		Port      int
+		CookieKey string
 	}
 	Mail struct {
 		Host     string

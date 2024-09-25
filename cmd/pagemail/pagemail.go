@@ -73,12 +73,8 @@ func main() {
 		PanicError("Failed to open db connection", err)
 	}
 
-	// create the routes
+	// create the server instance
 	server := echo.New()
-	cookieKey, err := os.ReadFile(config.App.CookieKeyFile)
-	if err != nil {
-		PanicError("Failed to read cookie key", err)
-	}
 
 	// create the mail pool
 	mailPool, err := mail.NewPool(
@@ -112,7 +108,7 @@ func main() {
 	// bind everything together
 	bindRoutes(server, &Handlers{
 		conn:  db,
-		store: sessions.NewCookieStore(cookieKey),
+		store: sessions.NewCookieStore([]byte(config.App.CookieKey)),
 		mail:  mailPool,
 	})
 
