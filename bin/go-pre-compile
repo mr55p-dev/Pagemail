@@ -6,7 +6,14 @@ curl -fsSL -o ./bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/rele
 chmod +x ./bin/tailwindcss
 # curl -fsSL -o ./bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 
+echo "generating templates"
 # ./bin/templ generate
+echo "...done"
+echo "generating sql"
 ./bin/sqlc generate
+echo "...done"
+echo "generating css"
 ./bin/tailwindcss --input tailwind.base.css --output assets/css/main.css --minify
+echo "...done"
+echo "done all"
 # ./dbmate up
