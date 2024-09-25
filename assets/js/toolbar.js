@@ -3,3 +3,10 @@ function pasteContents(nodeId) {
         document.getElementById(nodeId).value = contents;
     });
 }
+
+function copyText(text) {
+    navigator.clipboard
+        .writeText(text)
+        .then(() => console.log("Copied"))
+        .catch((err) => console.error("Failed to copy", err));
+}
