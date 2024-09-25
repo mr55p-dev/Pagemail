@@ -1,19 +1,18 @@
 #!/bin/bash
 
+echo "installing templ"
 go install github.com/a-h/templ/cmd/templ@latest
+echo "installing sqlc"
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+echo "installing tailwind"
 curl -fsSL -o ./bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.13/tailwindcss-linux-x64
 chmod +x ./bin/tailwindcss
 # curl -fsSL -o ./bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 
-echo "generating templates"
-# ./bin/templ generate
-echo "...done"
+echo "generating templ"
+./bin/templ generate
 echo "generating sql"
 ./bin/sqlc generate
-echo "...done"
 echo "generating css"
 ./bin/tailwindcss --input tailwind.base.css --output assets/css/main.css --minify
-echo "...done"
-echo "done all"
 # ./dbmate up
