@@ -3,10 +3,10 @@
 go install github.com/a-h/templ/cmd/templ@latest
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 curl -fsSL -o ./bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.13/tailwindcss-linux-arm64
-chmod u+x ./bin/tailwindcss
+chmod +x ./bin/tailwindcss
 sudo curl -fsSL -o ./bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 
-./bin/templ generate
+# ./bin/templ generate
 ./bin/sqlc generate
 ./bin/tailwindcss --input tailwind.base.css --output assets/css/main.css --minify
 # ./dbmate up
