@@ -2,7 +2,7 @@
 
 go install github.com/a-h/templ/cmd/templ@latest
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-curl -fsSL -o ./bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.13/tailwindcss-linux-arm64
+curl -fsSL -o ./bin/tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.13/tailwindcss-linux-x64
 chmod +x ./bin/tailwindcss
 # curl -fsSL -o ./bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 
