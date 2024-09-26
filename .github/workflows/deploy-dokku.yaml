@@ -1,5 +1,6 @@
 ---
 name: Deploy to dokku
+# yamllint disable-line rule:truthy
 on:
   workflow_dispatch:
   push:
@@ -20,4 +21,3 @@ jobs:
         with:
           git_remote_url: ${{ vars.DOKKU_HOST }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-          branch: v6
