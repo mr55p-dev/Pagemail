@@ -18,7 +18,7 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: ${{ vars.DOKKU_HOST }}
+          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           command: "review-apps:create"
           review_app_name: review-pagemail-${{ github.event.pull_request.number }}
@@ -33,6 +33,6 @@ jobs:
         uses: dokku/github-action@master
         with:
           command: "review-apps:destroy"
-          git_remote_url: ${{ vars.DOKKU_HOST }}
+          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           review_app_name: review-appname-${{ github.event.pull_request.number }}
