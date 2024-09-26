@@ -40,7 +40,7 @@ templates := $(shell ls render/**/*.templ | sed "s/\.templ/_templ.go/")
 $(templates): $(templ)
 	$(templ) generate
 
-templates: clean-templates $(templates)
+templates: $(templates)
 watch-templates: clean-templates
 	$(templ) generate -watch
 clean-templates:
