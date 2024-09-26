@@ -21,6 +21,7 @@ jobs:
           git_remote_url: ${{ vars.DOKKU_HOST }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           command: "review-apps:create"
+          review_app_name: review-pagemail-${{ github.event.pull_request.number }}
           branch: v6
 
   destroy_review_app:
@@ -34,3 +35,4 @@ jobs:
           command: "review-apps:destroy"
           git_remote_url: ${{ vars.DOKKU_HOST }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          review_app_name: review-appname-${{ github.event.pull_request.number }}
