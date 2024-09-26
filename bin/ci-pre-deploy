@@ -1,0 +1,5 @@
+#!/bin/sh -l
+if [ "$IS_REVIEW_APP" = "true" ]; then
+  ssh "$SSH_REMOTE" -- letsencrypt:enable $APP_NAME
+  echo "configured ssl for the pr env"
+fi
