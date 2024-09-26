@@ -18,10 +18,10 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          command: review-apps:create
           git_remote_url: ${{ vars.DOKKU_HOST }}
-          review_app_name: pagemail-review-${{ github.event.pull_request.number }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          command: "review-apps:create"
+          branch: v6
 
   destroy_review_app:
     runs-on: ubuntu-latest
@@ -31,25 +31,6 @@ jobs:
       - name: Destroy the review app
         uses: dokku/github-action@master
         with:
-          # destroy a review app
-          command: review-apps:destroy
+          command: "review-apps:destroy"
           git_remote_url: ${{ vars.DOKKU_HOST }}
-          # specify a name for the review app
-          review_app_name: pagemail-review-${{ github.event.pull_request.number }}
-          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    if: always()
-    needs: [review_app]
-    steps:
-      - name: Cloning repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Push to dokku
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: ${{ vars.DOKKU_HOST }}-review-${{ github.event.pull_request.number }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
