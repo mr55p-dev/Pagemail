@@ -1,14 +1,11 @@
 tmp/
 db/*.sqlite3
 db/schema.sql
-pkg/render/*.go
-!pkg/render/main.go
 
 *.key
 *.pub
 *.pem
-/pagemail
 .env
-tailwindcss
+bin/tailwindcss
+pagemail
 pagemail.yaml
-assets/css/main.css
