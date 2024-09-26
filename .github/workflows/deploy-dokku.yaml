@@ -3,8 +3,8 @@ name: Deploy to dokku
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - v6
 
 jobs:
   deploy:
@@ -20,4 +20,4 @@ jobs:
         with:
           git_remote_url: ${{ vars.DOKKU_HOST }}
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-          branch: v6-tester-deploy
+          branch: v6
