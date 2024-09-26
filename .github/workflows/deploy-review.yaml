@@ -20,4 +20,4 @@ jobs:
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           command: "review-apps:create"
           review_app_name: pagemail-${{ github.event.pull_request.number }}-review
-          branch: v6
+          branch: master
