@@ -16,4 +16,4 @@ jobs:
           command: "review-apps:destroy"
           git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-          review_app_name: review-appname-${{ github.event.pull_request.number }}
+          review_app_name: pagemail-${{ github.event.pull_request.number }}-review
