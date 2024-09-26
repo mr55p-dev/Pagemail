@@ -1,23 +1,19 @@
 ---
-name: "deploy"
+name: "undeploy feature"
 
 # yamllint disable-line rule:truthy
-on: pull_request
+on:
+  pull_request:
+    types: [closed]
 
 jobs:
-  review_app:
+  destroy_review_app:
     runs-on: ubuntu-latest
     steps:
-      - name: Cloning repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Push to dokku
+      - name: Destroy the review app
         uses: dokku/github-action@master
         with:
+          command: "review-apps:destroy"
           git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-          command: "review-apps:create"
           review_app_name: review-${{ github.event.pull_request.number }}-pagemail
-          branch: v6
