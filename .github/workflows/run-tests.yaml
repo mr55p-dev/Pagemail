@@ -25,5 +25,5 @@ jobs:
 
       - name: Do the testing
         env:
-          GOBIN: $HOME/go
+          GOBIN: ${{ github.workspace }}/go
         run: make test
