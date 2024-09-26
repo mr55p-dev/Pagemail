@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./pagemail"
-  cmd = "go build ./cmd/pagemail"
+  cmd = "make server"
   delay = 1000
   exclude_dir = ["tmp", "vendor", "testdata"]
   exclude_file = ["tailwind.base.css"]
