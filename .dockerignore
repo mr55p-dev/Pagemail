@@ -1,9 +1,0 @@
-.git/
-**/node_modules/
-pagemail-jwt-signature.key
-pagemail-jwt-signature.key.pub
-**/dist
-deploy/
-**/*.sqlite3
-db/query.sql
-pagemail.yaml

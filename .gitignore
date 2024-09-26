@@ -11,4 +11,4 @@ pkg/render/*.go
 .env
 tailwindcss
 pagemail.yaml
-render/**/*.txt
+assets/css/main.css

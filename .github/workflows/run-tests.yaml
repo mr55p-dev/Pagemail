@@ -5,8 +5,6 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   test:
@@ -25,5 +23,7 @@ jobs:
         with:
           go-version-file: "./go.mod"
 
-      - name: Run tests
-        run: go test ./...
+      - name: Do the testing
+        env:
+          GOBIN: ${{ github.workspace }}/go
+        run: make test

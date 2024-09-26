@@ -57,11 +57,10 @@ func GetUser(c echo.Context) queries.User {
 // Redirect performs a HXMX-safe redirect
 func Redirect(c echo.Context, location string) error {
 	c.Response().Header().Set("HX-Location", location)
-	var status = http.StatusSeeOther
 	if isHTMX(c) {
-		status = http.StatusOK
+		return c.NoContent(http.StatusOK)
 	}
-	return c.Redirect(status, location)
+	return c.Redirect(http.StatusSeeOther, location)
 }
 
 // Queries gives access to the db queries object directly
