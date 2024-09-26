@@ -19,5 +19,5 @@ jobs:
           git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           command: "review-apps:create"
-          review_app_name: pagemail-${{ github.event.pull_request.number }}-review
-          branch: master
+          review_app_name: review-${{ github.event.pull_request.number }}-pagemail
+          branch: v6
