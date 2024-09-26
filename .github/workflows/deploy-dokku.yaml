@@ -19,7 +19,7 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemailv6
+          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
           command: deploy
           branch: v6
