@@ -1,6 +1,11 @@
 -- name: CreatePage :one
-INSERT INTO pages (id, user_id, url, preview_state)
-VALUES (?, ?, ?, 'unknown')
+INSERT INTO pages (id, user_id, url)
+VALUES (?, ?, ?)
+RETURNING *;
+
+-- name: CreatePageWithPreview :one
+INSERT INTO pages (id, user_id, url, title, description, preview_state) 
+VALUES (?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: ReadPageById :one
@@ -32,9 +37,10 @@ WHERE id = ?;
 DELETE FROM pages 
 WHERE id = ?;
 
--- name: DeletePagesByUserId :execrows
+-- name: DeletePageForUser :execrows
 DELETE FROM pages
-WHERE user_id = ?;
+WHERE id = ?
+AND user_id = ?;
 
 -- name: ReadPagesByUserId :many
 SELECT * FROM pages

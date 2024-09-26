@@ -1,0 +1,55 @@
+---
+name: "deploy"
+
+# yamllint disable-line rule:truthy
+on: pull_request
+
+jobs:
+  review_app:
+    runs-on: ubuntu-latest
+    # only run when a pull request is opened
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    steps:
+      - name: Cloning repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          command: review-apps:create
+          git_remote_url: ${{ vars.DOKKU_HOST }}
+          review_app_name: pagemail-review-${{ github.event.pull_request.number }}
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+  destroy_review_app:
+    runs-on: ubuntu-latest
+    # only run when a pull request is closed
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    steps:
+      - name: Destroy the review app
+        uses: dokku/github-action@master
+        with:
+          # destroy a review app
+          command: review-apps:destroy
+          git_remote_url: ${{ vars.DOKKU_HOST }}
+          # specify a name for the review app
+          review_app_name: pagemail-review-${{ github.event.pull_request.number }}
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [review_app]
+    steps:
+      - name: Cloning repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: ${{ vars.DOKKU_HOST }}-review-${{ github.event.pull_request.number }}
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}

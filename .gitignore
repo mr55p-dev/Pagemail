@@ -9,3 +9,6 @@ pkg/render/*.go
 *.pem
 /pagemail
 .env
+tailwindcss
+pagemail.yaml
+assets/css/main.css

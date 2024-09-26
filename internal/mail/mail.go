@@ -6,138 +6,157 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"runtime"
-	"sync"
-	"sync/atomic"
+	"net/smtp"
 	"time"
 
+	"github.com/jordan-wright/email"
 	"github.com/mr55p-dev/pagemail/db/queries"
-	"github.com/mr55p-dev/pagemail/internal/logging"
-	"github.com/mr55p-dev/pagemail/internal/render"
-	"github.com/mr55p-dev/pagemail/internal/timer"
+	"github.com/mr55p-dev/pagemail/render"
 )
 
-// Email address to send mail from
-const (
-	ADDR_DIGEST = "mail@pagemail.io"
-	SUBJ_DIGEST = "Your daily digest"
-	ADDR_RESET  = "support@pagemail.io"
-	SUBJ_RESET  = "Reset your password"
-)
-
-var logger = logging.NewLogger("mail")
-
-// Sender allows for different implementations of email clients using a send method
-type Sender interface {
-	Send(ctx context.Context, msg Message) error
+type Mailer struct {
+	timeout time.Duration
+	pool    *email.Pool
+	conn    *sql.DB
 }
 
-// MailGo starts a goroutine on a timer to send emails to all subscribed users every 24 hours at
-// 7 am
-func MailGo(ctx context.Context, db *sql.DB, sender Sender) {
-	now := time.Now()
-	start := time.Date(now.Year(), now.Month(), now.Day(), 7, 0, 0, 0, time.Local)
-	timer := timer.NewCronTimer(time.Hour*24, start)
-	defer timer.Stop()
-
-	for now := range timer.T {
-		ctx, cancel := context.WithTimeout(ctx, time.Minute*2)
-		logger.InfoCtx(ctx, "Starting mail job", "time", now.Format(time.Stamp))
-		err := DigestJob(ctx, db, sender, now)
-		cancel()
-		if err != nil {
-			logger.ErrorCtx(ctx, "Failed to send digest", "error", err.Error())
-		}
+// New will create a new mailer and populate it's schedules list. The self populatio ends when the context is cancelled
+func New(ctx context.Context, db *sql.DB, pool *email.Pool, timeout time.Duration) *Mailer {
+	return &Mailer{
+		timeout: timeout,
+		pool:    pool,
+		conn:    db,
 	}
 }
 
-// DigestJob collects all subscribed users, their pages between 24 hours ago and now, and then sends
-// them
-func DigestJob(ctx context.Context, db *sql.DB, sender Sender, now time.Time) error {
-	// Get users with mail enabled
-	users, err := queries.New(db).ReadUsersWithMail(ctx)
+func NewPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
+	mailAuth := smtp.PlainAuth("", username, password, host)
+	connPool, err := email.NewPool(fmt.Sprintf("%s:%d", host, port), poolSize, mailAuth)
 	if err != nil {
-		return fmt.Errorf("Failed to get user list: %w", err)
+		return nil, fmt.Errorf("Failed to open the connection pool: %w", err)
 	}
-
-	// Dispatch jobs to the other goroutines
-	var errCount int32
-	jobs := make(chan queries.ReadUsersWithMailRow)
-	errChan := make(chan error)
-	wg := &sync.WaitGroup{}
-	for i := 0; i < runtime.NumCPU(); i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for user := range jobs {
-				err := SendUserDigest(ctx, &user, db, sender, now)
-				if err != nil {
-					errChan <- err
-				}
-			}
-		}()
+	err = connPool.Send(&email.Email{
+		To:      []string{"success@simulator.amazonses.com"},
+		From:    formatAddress("Test Pagemail", "mail@pagemail.io"),
+		Subject: "Test",
+		Text:    []byte("Hello, world!"),
+	}, time.Second*10)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to send the test email: %w", err)
 	}
-
-	// Read out all the errors
-	errList := make([]error, 0)
-	go func() {
-		for err := range errChan {
-			atomic.AddInt32(&errCount, 1)
-			errList = append(errList, err)
-		}
-	}()
-
-	// Dispatch all the jobs
-	for _, user := range users {
-		jobs <- user
-	}
-	close(jobs)
-	wg.Wait()
-
-	if len(errList) > 0 {
-		return errors.Join(errList...)
-	}
-	return nil
+	return connPool, nil
 }
 
-// SendUserDigest fetches the users pages, constructs an email and sends it via the sender interface
-func SendUserDigest(ctx context.Context, user *queries.ReadUsersWithMailRow, db *sql.DB, sender Sender, now time.Time) error {
-	logger := logger.With("user", user.Email)
-	logger.DebugCtx(ctx, "Generating mail for user")
+func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) (int, error) {
+	schedules, err := m.queries().ReadSchedules(ctx)
+	count := 0
+	if err != nil {
+		return count, fmt.Errorf("Failed to get schedules: %w", err)
+	}
 
-	// Read the users pages
-	start := now.Add(-time.Hour * 24)
-	end := now
-	pages, err := queries.New(db).ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
-		Start:  start,
-		End:    end,
-		UserID: user.ID,
+	// check for schedules which need to be sent
+	errList := []error{}
+	for _, schedule := range schedules {
+		loc, err := time.LoadLocation(schedule.Timezone)
+		if err != nil {
+			return count, err
+		}
+		var day int = now.Day()
+		if schedule.Days != 0 && now.Weekday() != time.Weekday(schedule.Days)-1 {
+			// it's not the right day of the week (some timezone fuckery definitely happens here)
+			continue
+		}
+		sendWindow := time.Date(
+			now.Year(), now.Month(), day,
+			int(schedule.Hour), int(schedule.Minute),
+			0, 0, loc,
+		)
+		if now.Before(sendWindow) {
+			// skip, we have not yet reached the cutoff window
+			continue
+		} else if schedule.LastSent.After(sendWindow) {
+			// skip, we have sent an email corresponding to this schedule entry
+			continue
+		}
+
+		if err := m.sendForSchedule(ctx, schedule, now); err != nil {
+			errList = append(errList, err)
+		} else {
+			count++
+		}
+	}
+	return count, errors.Join(errList...)
+}
+
+func (m *Mailer) queries() *queries.Queries {
+	return queries.New(m.conn)
+}
+
+// sendForSchedule will send the email required by a schedule
+func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule, now time.Time) error {
+	// load user
+	user, err := m.queries().ReadUserById(ctx, schedule.UserID)
+	if err != nil {
+		return fmt.Errorf("Could not find user for schedule")
+	}
+
+	// load pages
+	pages, err := m.queries().ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
+		Start:  schedule.LastSent,
+		End:    now,
+		UserID: schedule.UserID,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to load pages for user %s: %w", schedule.UserID, err)
 	}
 
-	// Brea
 	if len(pages) == 0 {
-		logger.DebugCtx(ctx, "No pages found")
 		return nil
 	}
 
-	// Generate the mail and send it
-	buf := bytes.Buffer{}
-	err = render.MailDigest(now, user.Username, pages).Render(ctx, &buf)
+	// send the email
+	content, err := getEmailContent(ctx, &user, pages)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to get content: %w", err)
 	}
-	msg := MakeMessage(
-		user.Email,
-		WithSubject(SUBJ_DIGEST),
-		WithBody(&buf),
-		// WithTags(map[string]string{"puropse:": "digest"}),
-	)
-	err = sender.Send(ctx, msg)
+
+	err = m.pool.Send(content, m.timeout)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to send email: %w", err)
 	}
+
+	// update last sent
+	err = m.queries().UpdateScheduleLastSent(ctx, queries.UpdateScheduleLastSentParams{
+		LastSent: now,
+		UserID:   user.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to update last sent for mail")
+	}
+
 	return nil
+}
+
+// getEmailContent will compile an email to send
+func getEmailContent(ctx context.Context, user *queries.User, pages []queries.Page) (*email.Email, error) {
+	buf := new(bytes.Buffer)
+	for _, page := range pages {
+		err := render.PageCard(page).Render(ctx, buf)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &email.Email{
+		ReplyTo: []string{"mail@pagemail.io"},
+		From:    formatAddress("Pagemail Daily Update", "mail@pagemail.io"),
+		To:      []string{user.Email},
+		Subject: "Your saved pages",
+		HTML:    buf.Bytes(),
+	}, nil
+
+}
+
+// formatAddress will give a display name to an email address
+func formatAddress(name string, address string) string {
+	return fmt.Sprintf("%s <%s>", name, address)
 }

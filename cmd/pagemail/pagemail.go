@@ -2,144 +2,143 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"io"
-	"io/fs"
+	"encoding/hex"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"os"
+	"os/signal"
 	"strings"
+	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/mr55p-dev/gonk"
-	"github.com/mr55p-dev/pagemail/db"
-	"github.com/mr55p-dev/pagemail/internal/assets"
-	"github.com/mr55p-dev/pagemail/internal/logging"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/mr55p-dev/pagemail/assets"
 	"github.com/mr55p-dev/pagemail/internal/mail"
-	"github.com/mr55p-dev/pagemail/internal/preview"
-	"github.com/mr55p-dev/pagemail/internal/readability"
-	"github.com/mr55p-dev/pagemail/internal/router"
+	"github.com/mr55p-dev/pagemail/render"
 )
 
-var logger = logging.NewLogger("routes")
+// Global logger instance
+var logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	AddSource: true,
+	Level:     slog.LevelDebug,
+}))
+
+// Global config instance
+var config = MustLoadConfig()
+
+// bindRoutes attaches route handlers to endpoints
+func bindRoutes(e *echo.Echo, srv *Handlers) {
+	// health check
+	e.GET("/health/ready", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+
+	// middlewares
+	e.Use(
+		middleware.Recover(),
+		middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Skipper: func(c echo.Context) bool {
+				return strings.HasPrefix(c.Request().URL.Path, "/assets")
+			},
+			Output: os.Stdout,
+		}),
+	)
+	e.Pre(middleware.RemoveTrailingSlash())
+	authMiddlewares := []echo.MiddlewareFunc{session.Middleware(srv.store), srv.NeedsUser}
+
+	e.GET("/", srv.GetPage(render.Index))
+	e.GET("/login", srv.GetPage(render.Login))
+	e.GET("/signup", srv.GetPage(render.Signup))
+	e.POST("/login", srv.PostLogin)
+	e.POST("/signup", srv.PostSignup)
+	e.GET("/logout", srv.GetLogout, authMiddlewares...)
+
+	app := e.Group("/app", authMiddlewares...)
+	app.Use(session.Middleware(srv.store), srv.NeedsUser)
+
+	app.GET("", srv.GetApp)
+	app.POST("/page", srv.PostPage)
+	app.DELETE("/page/:id", srv.DeletePage)
+
+	e.StaticFS("/assets", assets.FS)
+}
+
+func concatHostPort(host string, port int) string {
+	return fmt.Sprintf("%s:%d", host, port)
+}
 
 func main() {
-	ctx := context.Background()
-	cfg := mustGetConfig()
-	logger := getLogger(cfg.LogLevel)
+	// configure interrupt handling
+	ctx, appCancel := context.WithCancel(context.Background())
+	interruptChan := make(chan os.Signal)
+	signal.Notify(interruptChan, os.Interrupt)
 
-	conn := db.MustConnect(ctx, cfg.DBPath)
-	defer conn.Close()
+	// connect to DB
+	db, err := openDB(ctx, config.Db.Path)
+	if err != nil {
+		PanicError("Failed to open db connection", err)
+	}
 
-	var client mail.Sender
-	awsCfg, err := config.LoadDefaultConfig(
-		ctx,
-		config.WithSharedConfigProfile(cfg.Aws.Profile),
-		config.WithSharedConfigFiles([]string{cfg.Aws.ConfigFile}),
-		config.WithSharedCredentialsFiles([]string{cfg.Aws.CredentialsFile}),
+	// create the server instance
+	server := echo.New()
+
+	// create the mail pool
+	mailPool, err := mail.NewPool(
+		config.Mail.Username,
+		config.Mail.Password,
+		config.Mail.Host,
+		config.Mail.Port,
+		config.Mail.PoolSize,
 	)
 	if err != nil {
-		panic(err)
+		PanicError("Failed to open mail pool", err)
 	}
-	logger.InfoCtx(ctx, "Starting mail job")
-	client = mail.NewAwsSender(ctx, awsCfg)
-	assets := getAssets(cfg.Environment)
-	cookieKey := MustReadFile(cfg.CookieKeyFile)
+	mailTimeout := time.Minute
+	mailInterval := time.Minute * 30
+	mailer := mail.New(ctx, db, mailPool, mailTimeout)
+	go func() {
+		for {
+			timer := time.NewTimer(mailInterval)
+			select {
+			case now := <-timer.C:
+				count, err := mailer.RunScheduledSend(ctx, now)
+				logger.InfoContext(ctx, "Finished mail job", "count", count, "errors", err)
+			case <-ctx.Done():
+				timer.Stop()
+				return
+			}
 
-	reader := readability.New(ctx, &url.URL{
-		Scheme: cfg.Readability.Scheme,
-		Host:   cfg.Readability.Host,
+		}
+	}()
+
+	// get the session key
+	cookieKey, err := hex.DecodeString(config.App.CookieKey)
+	if err != nil {
+		PanicError("Failed to decode cookie key", err)
+	}
+
+	// bind everything together
+	bindRoutes(server, &Handlers{
+		conn:  db,
+		store: sessions.NewCookieStore(cookieKey),
+		mail:  mailPool,
 	})
-	if err != nil {
-		panic(err)
-	}
-	previewer := preview.New(ctx, conn, reader)
 
-	router, err := router.New(
-		ctx,
-		conn,
-		assets,
-		client,
-		previewer,
-		cookieKey,
-		cfg.GoogleClientId,
-		cfg.External.Host,
-		cfg.External.Scheme,
-		reader,
-	)
-	if err != nil {
-		panic(err)
-	}
+	// start the server
+	go func() {
+		defer appCancel()
+		LogError("Failed to serve", server.Start(concatHostPort(config.App.Host, config.App.Port)))
+	}()
 
-	// Load the mail client
-	if cfg.Environment == "prd" {
-		logger.Info("Starting mail client")
-		go mail.MailGo(ctx, conn, router.Sender)
-	} else {
-		logger.Warn("Environment is not production, not starting mailGo")
+	// wait for an exit condition
+	select {
+	case <-ctx.Done():
+		logger.Info("Closing application", "reason", "app context canclled")
+	case <-interruptChan:
+		logger.Info("Interrupt received, shutting down")
 	}
-
-	logger.Info("Starting http server", "config", cfg)
-	if err := http.ListenAndServe(cfg.Host, router.Mux); err != nil {
-		panic(err)
-	}
-}
-
-func mustGetConfig() *AppConfig {
-	cfg := new(AppConfig)
-	envSource := gonk.EnvLoader("pm")
-	yamlSource, err := gonk.NewYamlLoader("pagemail.yaml")
-	if err != nil {
-		logger.WithError(err).Warn("Could not load local pagemail.yaml file")
-	}
-
-	err = gonk.LoadConfig(cfg, yamlSource, envSource)
-	if err != nil {
-		panic(err)
-	}
-	return cfg
-}
-
-func getLogger(level string) *logging.Logger {
-	var lvl = slog.LevelInfo
-	switch strings.ToUpper(level) {
-	case "DEBUG":
-		lvl = slog.LevelDebug
-	case "ERROR":
-		lvl = slog.LevelError
-	case "WARN":
-		lvl = slog.LevelWarn
-	case "INFO":
-		lvl = slog.LevelInfo
-	}
-	logging.Level.Set(lvl)
-	logger := logging.NewLogger("main")
-	return logger
-}
-
-func getAssets(env string) fs.FS {
-	switch env {
-	case "stg", "prd":
-		subdir, err := fs.Sub(assets.FS, "public")
-		if err != nil {
-			panic(err)
-		}
-		return subdir
-	default:
-		return os.DirFS("internal/assets/public/")
-	}
-}
-
-func MustReadFile(path string) io.Reader {
-	if path == "-" {
-		return io.LimitReader(rand.Reader, 32)
-	} else {
-		logger.Debug("Using cookie key from file", "file", path)
-		cookieDataFile, err := os.Open(path)
-		if err != nil {
-			panic(err)
-		}
-		return cookieDataFile
-	}
+	return
 }

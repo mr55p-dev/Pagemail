@@ -37,6 +37,17 @@ CREATE TABLE IF NOT EXISTS pages (
 
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+CREATE TABLE schedules (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    timezone TEXT NOT NULL DEFAULT 'Europe/London',
+    days INTEGER NOT NULL DEFAULT 0,
+    hour INTEGER NOT NULL,
+    minute INTEGER NOT NULL DEFAULT 0,
+    last_sent DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
 -- Dbmate schema migrations
 INSERT INTO schema_migrations (version) VALUES
   ('20240104200335'),
@@ -52,4 +63,6 @@ INSERT INTO schema_migrations (version) VALUES
   ('20240520185930'),
   ('20240522124057'),
   ('20240602181219'),
-  ('20240918184847');
+  ('20240918184847'),
+  ('20240920110302'),
+  ('20240920120056');

@@ -1,37 +1,35 @@
 package main
 
-import (
-	"log/slog"
+import "github.com/mr55p-dev/gonk"
 
-	"github.com/mr55p-dev/pagemail/internal/tools"
-)
-
-type AppConfig struct {
-	Environment    string `config:"app.environment"`
-	LogLevel       string `config:"app.log-level" log:"logLevel"`
-	Host           string `config:"app.host" log:"host"`
-	DBPath         string `config:"db.path" log:"db-path"`
-	CookieKeyFile  string `config:"app.cookie-key-file" log:"cookie-key-file"`
-	GoogleClientId string `config:"app.google-client-id" log:"google-client-id"`
-
-	External struct {
-		Scheme string `config:"scheme" log:"extern-scheme"`
-		Host   string `config:"host" log:"extern-host"`
-	} `config:"extern"`
-
-	Readability struct {
-		Scheme string `config:"scheme" log:"readability-scheme"`
-		Host   string `config:"host" log:"readability-host"`
-	} `config:"readability"`
-
-	Aws struct {
-		Profile         string `config:"profile" log:"profile"`
-		ConfigFile      string `config:"config-file"`
-		CredentialsFile string `config:"credentials-file"`
-	} `config:"aws"`
+type Config struct {
+	App struct {
+		Host      string
+		Port      int
+		CookieKey string
+	}
+	Mail struct {
+		Host     string
+		Port     int
+		Username string
+		Password string
+		PoolSize int
+	}
+	Db struct {
+		Path string
+	}
 }
 
-func (config *AppConfig) LogValue() slog.Value {
-	vals := tools.LogValue(config)
-	return slog.GroupValue(vals...)
+func MustLoadConfig() *Config {
+	config := new(Config)
+	yamlLoader, err := gonk.NewYamlLoader("pagemail.yaml")
+	if err != nil {
+		LogError("Failed to open pagemail.yaml", err)
+	}
+	err = gonk.LoadConfig(config, yamlLoader, gonk.EnvLoader("PM"))
+	if err != nil {
+		PanicError("Failed to load config", err)
+	}
+
+	return config
 }

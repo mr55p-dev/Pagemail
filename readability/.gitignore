@@ -1,6 +1,0 @@
-node_modules/
-venv/
-dist/
-__pycache__/
-*.tsbuildinfo
-*.html

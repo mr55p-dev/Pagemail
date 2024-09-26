@@ -1,0 +1,95 @@
+package render
+
+import (
+	"fmt"
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/render/icons"
+	"net/url"
+	"strings"
+)
+
+func formatURL(inp string) string {
+	parsed, err := url.Parse(inp)
+	if err != nil {
+		return inp
+	}
+	return fmt.Sprintf("%s%s", strings.TrimPrefix(parsed.Host, "www."), parsed.Path)
+}
+
+templ PageCard(page queries.Page) {
+	<section class="page-card">
+		<header class="page-card--header">
+			<h4 class="page-card--title">
+				<a href={ templ.SafeURL(page.Url) } target="_blank" rel="noopener noreferrer">
+					if page.Title.Valid {
+						{ page.Title.String }
+					} else {
+						{ formatURL(page.Url) }
+					}
+				</a>
+			</h4>
+		</header>
+		<main class="page-card--main">
+			<p class="page-card--description">
+				if page.Description.Valid {
+					{ page.Description.String }
+				}
+			</p>
+		</main>
+		<footer class="tw-flex tw-justify-between tw-w-full">
+			<span class="tw-text-sm tw-text-stone-600">{ page.Updated.Format("02/01 3:04PM") }</span>
+			<div class={ Anchor(page.ID), "" }>
+				<button
+					class="tw-size-6 tw-relative"
+					id={ fmt.Sprintf("popover-trigger-%s", page.ID) }
+					popovertarget={ fmt.Sprintf("popover-%s", page.ID) }
+				>
+					@icons.Ellipsis()
+				</button>
+				@Popup(page)
+			</div>
+		</footer>
+	</section>
+}
+
+templ Popup(page queries.Page) {
+	<div
+		class={ "page-card--popover", Anchored(page.ID) }
+		id={ fmt.Sprintf("popover-%s", page.ID) }
+		popover
+	>
+		<ul class="page-card--popover-list">
+			<li class="page-card--popover-element">
+				@icons.Clipboard()
+				<button data-url={ page.Url } onclick="copyText(this.getAttribute('data-url'))">Copy</button>
+			</li>
+			<li class="page-card--popover-element">
+				@icons.Open()
+				<a href={ templ.SafeURL(page.Url) } target="_blank" rel="noopener noreferrer">Open</a>
+			</li>
+			<li class="page-card--popover-element">
+				@icons.Archive()
+				<button
+					hx-delete={ fmt.Sprintf("/app/page/%s", page.ID) }
+					hx-target-error="#messages"
+					hx-swap="delete"
+					hx-target="closest .page-card"
+				>
+					Delete
+				</button>
+			</li>
+		</ul>
+	</div>
+}
+
+func getanchor(id string) string {
+	return fmt.Sprintf("--%s", id)
+}
+
+css Anchor(id string) {
+	anchor-name: { getanchor(id) };
+}
+
+css Anchored(id string) {
+	inset: { templ.SafeCSSProperty(fmt.Sprintf("auto anchor(%s left) anchor(%s top) auto ", getanchor(id), getanchor(id))) };
+}

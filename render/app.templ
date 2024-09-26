@@ -1,0 +1,38 @@
+package render
+
+import (
+	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/render/wrapper"
+)
+
+templ App(user *queries.User, pages []queries.Page) {
+	@wrapper.New(user, wrapper.WithTitle("Pages")) {
+		<h1 class="tw-text-center tw-text-3xl tw-p-4">Saved pages</h1>
+		<form
+			class="toolbar"
+			hx-post="/app/page"
+			hx-target="#pages-list"
+			hx-swap="afterbegin"
+			hx-target-error="#messages"
+		>
+			<div class="toolbar--input-wrapper">
+				<input
+					class="toolbar--input"
+					placeholder="Page URL"
+					autocomplete="off"
+					type="url"
+					id="page-input"
+					name="url"
+				/>
+				<button class="toolbar--button" type="reset">Clear</button>
+				<button class="toolbar--button" type="button" onclick="pasteContents('page-input')">Paste</button>
+				<button class="toolbar--button" type="submit">Save</button>
+			</div>
+		</form>
+		<div id="pages-list">
+			for _, page := range pages {
+				@PageCard(page)
+			}
+		</div>
+	}
+}
