@@ -1,4 +1,4 @@
-.PHONY = clean-all build-all clean-css clean-templates clean-sql clean 
+.PHONY = clean-all build-all clean-css clean-templates clean-sql clean test
 
 # get the correct os and arch for installing tailwind
 ifeq ($(shell uname), Darwin)
@@ -82,3 +82,5 @@ clean:
 # Shared
 prerequisites: $(templates) $(sql) $(css)
 clean-all: clean clean-css clean-sql clean-templates
+test: $(server)
+	go test ./...
