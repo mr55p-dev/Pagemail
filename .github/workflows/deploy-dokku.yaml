@@ -15,9 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Disable host verification
-        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
-
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
