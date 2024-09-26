@@ -24,4 +24,6 @@ jobs:
           go-version-file: "./go.mod"
 
       - name: Do the testing
+        env:
+          GOBIN: $HOME/go
         run: make test
