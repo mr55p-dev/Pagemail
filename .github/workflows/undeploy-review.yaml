@@ -1,0 +1,19 @@
+---
+name: "undeploy feature"
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  destroy_review_app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Destroy the review app
+        uses: dokku/github-action@master
+        with:
+          command: "review-apps:destroy"
+          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          review_app_name: review-appname-${{ github.event.pull_request.number }}

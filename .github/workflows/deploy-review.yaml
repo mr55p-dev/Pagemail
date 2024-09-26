@@ -7,8 +7,6 @@ on: pull_request
 jobs:
   review_app:
     runs-on: ubuntu-latest
-    # only run when a pull request is opened
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     steps:
       - name: Cloning repo
         uses: actions/checkout@v4
@@ -23,16 +21,3 @@ jobs:
           command: "review-apps:create"
           review_app_name: review-pagemail-${{ github.event.pull_request.number }}
           branch: v6
-
-  destroy_review_app:
-    runs-on: ubuntu-latest
-    # only run when a pull request is closed
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    steps:
-      - name: Destroy the review app
-        uses: dokku/github-action@master
-        with:
-          command: "review-apps:destroy"
-          git_remote_url: ${{ vars.DOKKU_HOST }}/pagemail
-          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
-          review_app_name: review-appname-${{ github.event.pull_request.number }}
