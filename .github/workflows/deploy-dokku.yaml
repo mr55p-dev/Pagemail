@@ -1,0 +1,25 @@
+---
+name: Deploy to dokku
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu:latest
+    steps:
+      - name: Cloning repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Disable host verification
+        run: echo "StrictHostKeyChecking no" >> $HOME/.ssh/config
+
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: ${{ vars.DOKKU_HOST }}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
