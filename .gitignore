@@ -6,6 +6,5 @@ db/schema.sql
 *.pub
 *.pem
 .env
-bin/tailwindcss
 pagemail
 pagemail.yaml
