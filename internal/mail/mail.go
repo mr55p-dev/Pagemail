@@ -15,18 +15,9 @@ import (
 )
 
 type Mailer struct {
-	timeout time.Duration
-	pool    *email.Pool
-	conn    *sql.DB
-}
-
-// New will create a new mailer and populate it's schedules list. The self populatio ends when the context is cancelled
-func New(ctx context.Context, db *sql.DB, pool *email.Pool, timeout time.Duration) *Mailer {
-	return &Mailer{
-		timeout: timeout,
-		pool:    pool,
-		conn:    db,
-	}
+	Timetout time.Duration
+	Pool     *email.Pool
+	DB       *sql.DB
 }
 
 func NewPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
@@ -102,9 +93,9 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 
 	// load pages
 	pages, err := m.queries().ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
-		Start:  schedule.LastSent,
-		End:    now,
-		UserID: schedule.UserID,
+		Created:   schedule.LastSent,
+		Created_2: now,
+		UserID:    schedule.UserID,
 	})
 	if err != nil {
 		return fmt.Errorf("Failed to load pages for user %s: %w", schedule.UserID, err)
@@ -120,7 +111,7 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 		return fmt.Errorf("Failed to get content: %w", err)
 	}
 
-	err = m.pool.Send(content, m.timeout)
+	err = m.Pool.Send(content, m.Timetout)
 	if err != nil {
 		return fmt.Errorf("Failed to send email: %w", err)
 	}

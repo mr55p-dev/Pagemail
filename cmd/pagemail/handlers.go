@@ -12,8 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/db/queries"
-	"github.com/mr55p-dev/pagemail/internal/auth"
-	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/render"
 )
 
@@ -56,12 +54,13 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 		return RenderError(c, http.StatusBadRequest, msg)
 	}
 
-	var user *queries.User
+	var user queries.User
 	switch provider {
 	case "native":
-		user, err = auth.LoginNative(c.Request().Context(), h.Queries(), &auth.LoginNativeParams{
+		user, err = h.Queries().ReadUserWithCredential(c.Request().Context(), queries.ReadUserWithCredentialParams{
 			Email:    c.FormValue("email"),
-			Password: []byte(c.FormValue("password")),
+			Platform: "pagemail",
+			Crypt:    c.FormValue("password"),
 		})
 	default:
 		err = errors.New("Invalid provider")
@@ -69,9 +68,8 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, err.Error())
 	}
-	if user == nil {
-		LogHandlerError(c, "Could not find user, but no error produced", errors.New("No error"))
-		return RenderError(c, http.StatusInternalServerError, "User not found")
+	if user.ID == uuid.Nil {
+		return RenderError(c, http.StatusBadRequest, "Invalid username or password")
 	}
 
 	sess, err := h.store.Get(c.Request(), sessionKey)
@@ -106,21 +104,17 @@ func (h *Handlers) PostPage(c echo.Context) error {
 		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
 	}
 	pageArg := queries.CreatePageWithPreviewParams{
-		ID:           tools.NewPageId(),
-		UserID:       user.ID,
-		Url:          c.FormValue("url"),
-		Title:        sql.NullString{},
-		Description:  sql.NullString{},
-		PreviewState: PREVIEW_UNKNOWN,
+		UserID:      user.ID,
+		Url:         c.FormValue("url"),
+		Title:       sql.NullString{},
+		Description: sql.NullString{},
 	}
 
 	// Load the preview
 	pageData, err := GetPreview(url)
 	if err != nil {
 		LogHandlerError(c, "Could not get preview", err)
-		pageArg.PreviewState = PREVIEW_FAILURE
 	} else {
-		pageArg.PreviewState = PREVIEW_SUCCESS
 		if pageData.Title != "" {
 			pageArg.Title = sql.NullString{String: pageData.Title, Valid: true}
 		}

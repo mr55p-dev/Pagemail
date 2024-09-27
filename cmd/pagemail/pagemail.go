@@ -96,9 +96,12 @@ func main() {
 	if err != nil {
 		PanicError("Failed to open mail pool", err)
 	}
-	mailTimeout := time.Minute
 	mailInterval := time.Minute * 30
-	mailer := mail.New(ctx, db, mailPool, mailTimeout)
+	mailer := &mail.Mailer{
+		Timetout: time.Minute,
+		Pool:     mailPool,
+		DB:       db,
+	}
 	go func() {
 		for {
 			timer := time.NewTimer(mailInterval)

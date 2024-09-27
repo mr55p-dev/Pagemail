@@ -1,11 +1,11 @@
 -- name: CreatePage :one
-INSERT INTO pages (id, user_id, url)
-VALUES ($1, $2, $3)
+INSERT INTO pages (user_id, url)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: CreatePageWithPreview :one
-INSERT INTO pages (id, user_id, url, title, description) 
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO pages ( user_id, url, title, description) 
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: ReadPageById :one
