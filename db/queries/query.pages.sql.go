@@ -7,24 +7,24 @@ package queries
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPage = `-- name: CreatePage :one
 INSERT INTO pages (id, user_id, url)
-VALUES (?, ?, ?)
-RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated, readable
+VALUES ($1, $2, $3)
+RETURNING id, user_id, url, title, description, image_url, created, updated
 `
 
 type CreatePageParams struct {
-	ID     string
-	UserID string
+	ID     pgtype.UUID
+	UserID pgtype.UUID
 	Url    string
 }
 
 func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, error) {
-	row := q.db.QueryRowContext(ctx, createPage, arg.ID, arg.UserID, arg.Url)
+	row := q.db.QueryRow(ctx, createPage, arg.ID, arg.UserID, arg.Url)
 	var i Page
 	err := row.Scan(
 		&i.ID,
@@ -33,37 +33,33 @@ func (q *Queries) CreatePage(ctx context.Context, arg CreatePageParams) (Page, e
 		&i.Title,
 		&i.Description,
 		&i.ImageUrl,
-		&i.PreviewState,
 		&i.Created,
 		&i.Updated,
-		&i.Readable,
 	)
 	return i, err
 }
 
 const createPageWithPreview = `-- name: CreatePageWithPreview :one
-INSERT INTO pages (id, user_id, url, title, description, preview_state) 
-VALUES (?, ?, ?, ?, ?, ?)
-RETURNING id, user_id, url, title, description, image_url, preview_state, created, updated, readable
+INSERT INTO pages (id, user_id, url, title, description) 
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, url, title, description, image_url, created, updated
 `
 
 type CreatePageWithPreviewParams struct {
-	ID           string
-	UserID       string
-	Url          string
-	Title        sql.NullString
-	Description  sql.NullString
-	PreviewState string
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Url         string
+	Title       pgtype.Text
+	Description pgtype.Text
 }
 
 func (q *Queries) CreatePageWithPreview(ctx context.Context, arg CreatePageWithPreviewParams) (Page, error) {
-	row := q.db.QueryRowContext(ctx, createPageWithPreview,
+	row := q.db.QueryRow(ctx, createPageWithPreview,
 		arg.ID,
 		arg.UserID,
 		arg.Url,
 		arg.Title,
 		arg.Description,
-		arg.PreviewState,
 	)
 	var i Page
 	err := row.Scan(
@@ -73,54 +69,52 @@ func (q *Queries) CreatePageWithPreview(ctx context.Context, arg CreatePageWithP
 		&i.Title,
 		&i.Description,
 		&i.ImageUrl,
-		&i.PreviewState,
 		&i.Created,
 		&i.Updated,
-		&i.Readable,
 	)
 	return i, err
 }
 
 const deletePageById = `-- name: DeletePageById :execrows
 DELETE FROM pages 
-WHERE id = ?
+WHERE id = $1
 `
 
-func (q *Queries) DeletePageById(ctx context.Context, id string) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deletePageById, id)
+func (q *Queries) DeletePageById(ctx context.Context, id pgtype.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deletePageById, id)
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected()
+	return result.RowsAffected(), nil
 }
 
 const deletePageForUser = `-- name: DeletePageForUser :execrows
 DELETE FROM pages
-WHERE id = ?
-AND user_id = ?
+WHERE id = $1
+AND user_id = $2
 `
 
 type DeletePageForUserParams struct {
-	ID     string
-	UserID string
+	ID     pgtype.UUID
+	UserID pgtype.UUID
 }
 
 func (q *Queries) DeletePageForUser(ctx context.Context, arg DeletePageForUserParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deletePageForUser, arg.ID, arg.UserID)
+	result, err := q.db.Exec(ctx, deletePageForUser, arg.ID, arg.UserID)
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected()
+	return result.RowsAffected(), nil
 }
 
 const readPageById = `-- name: ReadPageById :one
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable FROM pages
-WHERE id = ?
+SELECT id, user_id, url, title, description, image_url, created, updated FROM pages
+WHERE id = $1
 LIMIT 1
 `
 
-func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
-	row := q.db.QueryRowContext(ctx, readPageById, id)
+func (q *Queries) ReadPageById(ctx context.Context, id pgtype.UUID) (Page, error) {
+	row := q.db.QueryRow(ctx, readPageById, id)
 	var i Page
 	err := row.Scan(
 		&i.ID,
@@ -129,74 +123,27 @@ func (q *Queries) ReadPageById(ctx context.Context, id string) (Page, error) {
 		&i.Title,
 		&i.Description,
 		&i.ImageUrl,
-		&i.PreviewState,
 		&i.Created,
 		&i.Updated,
-		&i.Readable,
 	)
 	return i, err
 }
 
-const readPagesByReadable = `-- name: ReadPagesByReadable :many
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable FROM pages
-WHERE readable = ?
-AND user_id = ?
-`
-
-type ReadPagesByReadableParams struct {
-	Readable bool
-	UserID   string
-}
-
-func (q *Queries) ReadPagesByReadable(ctx context.Context, arg ReadPagesByReadableParams) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByReadable, arg.Readable, arg.UserID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Page
-	for rows.Next() {
-		var i Page
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Url,
-			&i.Title,
-			&i.Description,
-			&i.ImageUrl,
-			&i.PreviewState,
-			&i.Created,
-			&i.Updated,
-			&i.Readable,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const readPagesByUserBetween = `-- name: ReadPagesByUserBetween :many
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable FROM pages 
-WHERE created BETWEEN ?1 AND ?2
-AND user_id = ?3
+SELECT id, user_id, url, title, description, image_url, created, updated FROM pages 
+WHERE user_id = $1
+AND created BETWEEN $2 AND $3
 ORDER BY created DESC
 `
 
 type ReadPagesByUserBetweenParams struct {
-	Start  time.Time
-	End    time.Time
-	UserID string
+	UserID    pgtype.UUID
+	Created   pgtype.Timestamp
+	Created_2 pgtype.Timestamp
 }
 
 func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUserBetweenParams) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByUserBetween, arg.Start, arg.End, arg.UserID)
+	rows, err := q.db.Query(ctx, readPagesByUserBetween, arg.UserID, arg.Created, arg.Created_2)
 	if err != nil {
 		return nil, err
 	}
@@ -211,17 +158,12 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 			&i.Title,
 			&i.Description,
 			&i.ImageUrl,
-			&i.PreviewState,
 			&i.Created,
 			&i.Updated,
-			&i.Readable,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -230,20 +172,20 @@ func (q *Queries) ReadPagesByUserBetween(ctx context.Context, arg ReadPagesByUse
 }
 
 const readPagesByUserId = `-- name: ReadPagesByUserId :many
-SELECT id, user_id, url, title, description, image_url, preview_state, created, updated, readable FROM pages
-WHERE user_id = ?
+SELECT id, user_id, url, title, description, image_url, created, updated FROM pages
+WHERE user_id = $1
 ORDER BY created DESC
-LIMIT ? OFFSET ?
+LIMIT $2 OFFSET $3
 `
 
 type ReadPagesByUserIdParams struct {
-	UserID string
-	Limit  int64
-	Offset int64
+	UserID pgtype.UUID
+	Limit  int32
+	Offset int32
 }
 
 func (q *Queries) ReadPagesByUserId(ctx context.Context, arg ReadPagesByUserIdParams) ([]Page, error) {
-	rows, err := q.db.QueryContext(ctx, readPagesByUserId, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, readPagesByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -258,17 +200,12 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, arg ReadPagesByUserIdPa
 			&i.Title,
 			&i.Description,
 			&i.ImageUrl,
-			&i.PreviewState,
 			&i.Created,
 			&i.Updated,
-			&i.Readable,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -278,46 +215,26 @@ func (q *Queries) ReadPagesByUserId(ctx context.Context, arg ReadPagesByUserIdPa
 
 const updatePagePreview = `-- name: UpdatePagePreview :exec
 UPDATE pages SET
-    title = ?,
-    description = ?,
-    image_url = ?,
-    preview_state = ?,
-    updated = CURRENT_TIMESTAMP
-WHERE id = ?
+    title = $1,
+    description = $2,
+    image_url = $3,
+    updated = now()
+WHERE id = $4
 `
 
 type UpdatePagePreviewParams struct {
-	Title        sql.NullString
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	PreviewState string
-	ID           string
+	Title       pgtype.Text
+	Description pgtype.Text
+	ImageUrl    pgtype.Text
+	ID          pgtype.UUID
 }
 
 func (q *Queries) UpdatePagePreview(ctx context.Context, arg UpdatePagePreviewParams) error {
-	_, err := q.db.ExecContext(ctx, updatePagePreview,
+	_, err := q.db.Exec(ctx, updatePagePreview,
 		arg.Title,
 		arg.Description,
 		arg.ImageUrl,
-		arg.PreviewState,
 		arg.ID,
 	)
-	return err
-}
-
-const updatePageReadability = `-- name: UpdatePageReadability :exec
-UPDATE pages SET
-    readable = ?,
-	updated = CURRENT_TIMESTAMP
-WHERE id = ?
-`
-
-type UpdatePageReadabilityParams struct {
-	Readable bool
-	ID       string
-}
-
-func (q *Queries) UpdatePageReadability(ctx context.Context, arg UpdatePageReadabilityParams) error {
-	_, err := q.db.ExecContext(ctx, updatePageReadability, arg.Readable, arg.ID)
 	return err
 }

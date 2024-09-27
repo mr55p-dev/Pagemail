@@ -77,7 +77,7 @@ func main() {
 	signal.Notify(interruptChan, os.Interrupt)
 
 	// connect to DB
-	db, err := openDB(ctx, config.Db.Path)
+	db, err := openDB(ctx, config.DB.DSN)
 	if err != nil {
 		PanicError("Failed to open db connection", err)
 	}

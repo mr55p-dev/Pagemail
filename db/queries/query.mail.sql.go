@@ -7,25 +7,26 @@ package queries
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createSchedule = `-- name: CreateSchedule :exec
 INSERT INTO schedules (user_id, timezone, days, hour, minute) 
-VALUES (?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
 type CreateScheduleParams struct {
-	UserID   string
+	UserID   pgtype.UUID
 	Timezone string
-	Days     int64
-	Hour     int64
-	Minute   int64
+	Days     int32
+	Hour     int32
+	Minute   int32
 }
 
 func (q *Queries) CreateSchedule(ctx context.Context, arg CreateScheduleParams) error {
-	_, err := q.db.ExecContext(ctx, createSchedule,
+	_, err := q.db.Exec(ctx, createSchedule,
 		arg.UserID,
 		arg.Timezone,
 		arg.Days,
@@ -40,7 +41,7 @@ SELECT id, user_id, timezone, days, hour, minute, last_sent FROM schedules
 `
 
 func (q *Queries) ReadSchedules(ctx context.Context) ([]Schedule, error) {
-	rows, err := q.db.QueryContext(ctx, readSchedules)
+	rows, err := q.db.Query(ctx, readSchedules)
 	if err != nil {
 		return nil, err
 	}
@@ -61,9 +62,6 @@ func (q *Queries) ReadSchedules(ctx context.Context) ([]Schedule, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -72,16 +70,16 @@ func (q *Queries) ReadSchedules(ctx context.Context) ([]Schedule, error) {
 
 const updateScheduleLastSent = `-- name: UpdateScheduleLastSent :exec
 UPDATE schedules
-SET last_sent = ?
-WHERE user_id = ?
+SET last_sent = $1
+WHERE user_id = $2
 `
 
 type UpdateScheduleLastSentParams struct {
-	LastSent time.Time
-	UserID   string
+	LastSent pgtype.Timestamp
+	UserID   pgtype.UUID
 }
 
 func (q *Queries) UpdateScheduleLastSent(ctx context.Context, arg UpdateScheduleLastSentParams) error {
-	_, err := q.db.ExecContext(ctx, updateScheduleLastSent, arg.LastSent, arg.UserID)
+	_, err := q.db.Exec(ctx, updateScheduleLastSent, arg.LastSent, arg.UserID)
 	return err
 }

@@ -2,26 +2,16 @@
 INSERT INTO users (
     id,
     email,
-    username,
-    subscribed
-) VALUES (?, ?, ?, ?)
+    username
+) VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: ReadUserById :one
 SELECT * FROM users 
-WHERE id = ? 
+WHERE id = $1 
 LIMIT 1;
 
 -- name: ReadUserByEmail :one
 SELECT * FROM users 
-WHERE email = ?
+WHERE email = $1
 LIMIT 1;
-
--- name: ReadUsersWithMail :many
-SELECT id, username, email FROM users 
-WHERE subscribed = true;
-
--- name: UpdateUserSubscription :exec
-UPDATE users SET 
-subscribed = ? 
-WHERE id = ?;

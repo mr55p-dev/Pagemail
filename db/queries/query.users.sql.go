@@ -7,38 +7,32 @@ package queries
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     id,
     email,
-    username,
-    subscribed
-) VALUES (?, ?, ?, ?)
-RETURNING id, email, username, subscribed, has_readability, created, updated
+    username
+) VALUES ($1, $2, $3)
+RETURNING id, email, username, has_readability, created, updated
 `
 
 type CreateUserParams struct {
-	ID         string
-	Email      string
-	Username   string
-	Subscribed bool
+	ID       pgtype.UUID
+	Email    string
+	Username string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
-		arg.Email,
-		arg.Username,
-		arg.Subscribed,
-	)
+	row := q.db.QueryRow(ctx, createUser, arg.ID, arg.Email, arg.Username)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Username,
-		&i.Subscribed,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
@@ -47,19 +41,18 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const readUserByEmail = `-- name: ReadUserByEmail :one
-SELECT id, email, username, subscribed, has_readability, created, updated FROM users 
-WHERE email = ?
+SELECT id, email, username, has_readability, created, updated FROM users 
+WHERE email = $1
 LIMIT 1
 `
 
 func (q *Queries) ReadUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, readUserByEmail, email)
+	row := q.db.QueryRow(ctx, readUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Username,
-		&i.Subscribed,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
@@ -68,72 +61,21 @@ func (q *Queries) ReadUserByEmail(ctx context.Context, email string) (User, erro
 }
 
 const readUserById = `-- name: ReadUserById :one
-SELECT id, email, username, subscribed, has_readability, created, updated FROM users 
-WHERE id = ? 
+SELECT id, email, username, has_readability, created, updated FROM users 
+WHERE id = $1 
 LIMIT 1
 `
 
-func (q *Queries) ReadUserById(ctx context.Context, id string) (User, error) {
-	row := q.db.QueryRowContext(ctx, readUserById, id)
+func (q *Queries) ReadUserById(ctx context.Context, id pgtype.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, readUserById, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Username,
-		&i.Subscribed,
 		&i.HasReadability,
 		&i.Created,
 		&i.Updated,
 	)
 	return i, err
-}
-
-const readUsersWithMail = `-- name: ReadUsersWithMail :many
-SELECT id, username, email FROM users 
-WHERE subscribed = true
-`
-
-type ReadUsersWithMailRow struct {
-	ID       string
-	Username string
-	Email    string
-}
-
-func (q *Queries) ReadUsersWithMail(ctx context.Context) ([]ReadUsersWithMailRow, error) {
-	rows, err := q.db.QueryContext(ctx, readUsersWithMail)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ReadUsersWithMailRow
-	for rows.Next() {
-		var i ReadUsersWithMailRow
-		if err := rows.Scan(&i.ID, &i.Username, &i.Email); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const updateUserSubscription = `-- name: UpdateUserSubscription :exec
-UPDATE users SET 
-subscribed = ? 
-WHERE id = ?
-`
-
-type UpdateUserSubscriptionParams struct {
-	Subscribed bool
-	ID         string
-}
-
-func (q *Queries) UpdateUserSubscription(ctx context.Context, arg UpdateUserSubscriptionParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserSubscription, arg.Subscribed, arg.ID)
-	return err
 }
