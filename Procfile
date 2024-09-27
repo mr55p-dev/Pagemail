@@ -1,1 +1,2 @@
 web: pagemail
+release: migrate

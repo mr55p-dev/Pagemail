@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/amacneil/dbmate/v2/pkg/dbmate"
+	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
 	migrations "github.com/mr55p-dev/pagemail/db"
 )
 
@@ -16,6 +17,8 @@ func main() {
 	}
 	db := dbmate.New(u)
 	db.FS = migrations.FS
+	db.MigrationsDir = []string{"migrations"}
+	db.AutoDumpSchema = false
 
 	migrations, err := db.FindMigrations()
 	if err != nil {
