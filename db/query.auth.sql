@@ -3,21 +3,21 @@ INSERT INTO auth (
     user_id,
     platform,
 	credential
-) VALUES ($1, 'pagemail', crypt($1, gen_salt('bf')));
+) VALUES ($1, 'pagemail', crypt($2, gen_salt('bf')));
 
 -- name: CreateShortcutAuth :exec
 INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES ($1, 'shortcut', crypt($1, gen_salt('bf')));
+) VALUES ($1, 'shortcut', crypt($2, gen_salt('bf')));
 
 -- name: CreateIdpAuth :exec
 INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES ($1, $2, crypt($1, gen_salt('bf')));
+) VALUES ($1, $2, crypt($3, gen_salt('bf')));
 
 -- name: ReadByUidPlatform :one
 SELECT *

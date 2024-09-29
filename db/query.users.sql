@@ -1,9 +1,8 @@
 -- name: CreateUser :one
 INSERT INTO users (
-    id,
     email,
     username
-) VALUES ($1, $2, $3)
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ReadUserById :one

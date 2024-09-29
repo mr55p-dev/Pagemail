@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/a-h/templ"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -70,28 +73,56 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, err.Error())
 	}
-	// TODO check user is nil
-	if true {
+	if user.ID == uuid.Nil {
 		return RenderError(c, http.StatusBadRequest, "Invalid username or password")
 	}
 
-	sess, err := h.store.Get(c.Request(), sessionKey)
-	sess.Values[idKey] = user.ID.String()
-	if err != nil {
-		LogHandlerError(c, "Failed to get user session", err)
-		return RenderGenericError(c)
-	}
-
-	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		LogHandlerError(c, "Failed to save user session", err)
-		return RenderGenericError(c)
+	if err := h.CreateSession(c, &user); err != nil {
+		return err
 	}
 
 	return Redirect(c, urls.App)
 }
 
 func (h *Handlers) PostSignup(c echo.Context) error {
-	return nil
+	provider := c.QueryParam("provider")
+	err := c.Request().ParseForm()
+	if err != nil {
+		msg := "Failed to parse form data"
+		LogHandlerError(c, msg, err)
+		return RenderError(c, http.StatusBadRequest, msg)
+	}
+
+	var user queries.User
+	switch provider {
+	case "native":
+		err := h.WrapTx(c, func(ctx context.Context, q *queries.Queries) error {
+			user, err = q.CreateUser(ctx, queries.CreateUserParams{
+				Email:    c.FormValue("email"),
+				Username: c.FormValue("username"),
+			})
+			if err != nil {
+				return fmt.Errorf("Failed to create user: %w", err)
+			}
+			err = q.CreateLocalAuth(ctx, queries.CreateLocalAuthParams{
+				UserID: user.ID,
+				Crypt:  c.FormValue("password"),
+			})
+			return nil
+		})
+		if err != nil {
+			LogHandlerError(c, "Failed to create user", err)
+			return RenderGenericError(c)
+		}
+	default:
+		err = errors.New("Invalid provider")
+	}
+
+	if err := h.CreateSession(c, &user); err != nil {
+		return err
+	}
+
+	return Redirect(c, urls.App)
 }
 
 func (h *Handlers) PostPage(c echo.Context) error {

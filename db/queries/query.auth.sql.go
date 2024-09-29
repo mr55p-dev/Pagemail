@@ -17,16 +17,17 @@ INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES ($1, $2, crypt($1, gen_salt('bf')))
+) VALUES ($1, $2, crypt($3, gen_salt('bf')))
 `
 
 type CreateIdpAuthParams struct {
 	UserID   uuid.UUID
 	Platform string
+	Crypt    string
 }
 
 func (q *Queries) CreateIdpAuth(ctx context.Context, arg CreateIdpAuthParams) error {
-	_, err := q.db.Exec(ctx, createIdpAuth, arg.UserID, arg.Platform)
+	_, err := q.db.Exec(ctx, createIdpAuth, arg.UserID, arg.Platform, arg.Crypt)
 	return err
 }
 
@@ -35,11 +36,16 @@ INSERT INTO auth (
     user_id,
     platform,
 	credential
-) VALUES ($1, 'pagemail', crypt($1, gen_salt('bf')))
+) VALUES ($1, 'pagemail', crypt($2, gen_salt('bf')))
 `
 
-func (q *Queries) CreateLocalAuth(ctx context.Context, userID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, createLocalAuth, userID)
+type CreateLocalAuthParams struct {
+	UserID uuid.UUID
+	Crypt  string
+}
+
+func (q *Queries) CreateLocalAuth(ctx context.Context, arg CreateLocalAuthParams) error {
+	_, err := q.db.Exec(ctx, createLocalAuth, arg.UserID, arg.Crypt)
 	return err
 }
 
@@ -48,11 +54,16 @@ INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES ($1, 'shortcut', crypt($1, gen_salt('bf')))
+) VALUES ($1, 'shortcut', crypt($2, gen_salt('bf')))
 `
 
-func (q *Queries) CreateShortcutAuth(ctx context.Context, userID uuid.UUID) error {
-	_, err := q.db.Exec(ctx, createShortcutAuth, userID)
+type CreateShortcutAuthParams struct {
+	UserID uuid.UUID
+	Crypt  string
+}
+
+func (q *Queries) CreateShortcutAuth(ctx context.Context, arg CreateShortcutAuthParams) error {
+	_, err := q.db.Exec(ctx, createShortcutAuth, arg.UserID, arg.Crypt)
 	return err
 }
 
