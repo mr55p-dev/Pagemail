@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,7 +19,7 @@ RETURNING id
 `
 
 type CreateScheduleParams struct {
-	UserID   pgtype.UUID
+	UserID   uuid.UUID
 	Timezone string
 	Days     int32
 	Hour     int32
@@ -76,7 +77,7 @@ WHERE user_id = $2
 
 type UpdateScheduleLastSentParams struct {
 	LastSent pgtype.Timestamp
-	UserID   pgtype.UUID
+	UserID   uuid.UUID
 }
 
 func (q *Queries) UpdateScheduleLastSent(ctx context.Context, arg UpdateScheduleLastSentParams) error {

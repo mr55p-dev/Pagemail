@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -20,7 +21,7 @@ INSERT INTO auth (
 `
 
 type CreateIdpAuthParams struct {
-	UserID   pgtype.UUID
+	UserID   uuid.UUID
 	Platform string
 }
 
@@ -37,7 +38,7 @@ INSERT INTO auth (
 ) VALUES ($1, 'pagemail', crypt($1, gen_salt('bf')))
 `
 
-func (q *Queries) CreateLocalAuth(ctx context.Context, userID pgtype.UUID) error {
+func (q *Queries) CreateLocalAuth(ctx context.Context, userID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, createLocalAuth, userID)
 	return err
 }
@@ -50,7 +51,7 @@ INSERT INTO auth (
 ) VALUES ($1, 'shortcut', crypt($1, gen_salt('bf')))
 `
 
-func (q *Queries) CreateShortcutAuth(ctx context.Context, userID pgtype.UUID) error {
+func (q *Queries) CreateShortcutAuth(ctx context.Context, userID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, createShortcutAuth, userID)
 	return err
 }
@@ -59,7 +60,7 @@ const readAuthMethods = `-- name: ReadAuthMethods :many
 SELECT id, user_id, platform, credential, reset_token, reset_expiry, created, updated FROM auth WHERE user_id = $1
 `
 
-func (q *Queries) ReadAuthMethods(ctx context.Context, userID pgtype.UUID) ([]Auth, error) {
+func (q *Queries) ReadAuthMethods(ctx context.Context, userID uuid.UUID) ([]Auth, error) {
 	rows, err := q.db.Query(ctx, readAuthMethods, userID)
 	if err != nil {
 		return nil, err
@@ -101,9 +102,9 @@ type ReadByResetTokenParams struct {
 	ResetExpiry pgtype.Timestamp
 }
 
-func (q *Queries) ReadByResetToken(ctx context.Context, arg ReadByResetTokenParams) (pgtype.UUID, error) {
+func (q *Queries) ReadByResetToken(ctx context.Context, arg ReadByResetTokenParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, readByResetToken, arg.ResetToken, arg.ResetExpiry)
-	var user_id pgtype.UUID
+	var user_id uuid.UUID
 	err := row.Scan(&user_id)
 	return user_id, err
 }
@@ -117,7 +118,7 @@ LIMIT 1
 `
 
 type ReadByUidPlatformParams struct {
-	UserID   pgtype.UUID
+	UserID   uuid.UUID
 	Platform string
 }
 
@@ -170,7 +171,7 @@ WHERE user_id = $2
 
 type UpdatePasswordParams struct {
 	Credential string
-	UserID     pgtype.UUID
+	UserID     uuid.UUID
 }
 
 func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) (int64, error) {
@@ -193,7 +194,7 @@ WHERE user_id = $3
 type UpdateResetTokenParams struct {
 	ResetToken  pgtype.Text
 	ResetExpiry pgtype.Timestamp
-	UserID      pgtype.UUID
+	UserID      uuid.UUID
 }
 
 func (q *Queries) UpdateResetToken(ctx context.Context, arg UpdateResetTokenParams) error {
@@ -210,7 +211,7 @@ WHERE user_id = $2
 
 type UpdateShortcutTokenParams struct {
 	Credential string
-	UserID     pgtype.UUID
+	UserID     uuid.UUID
 }
 
 func (q *Queries) UpdateShortcutToken(ctx context.Context, arg UpdateShortcutTokenParams) error {

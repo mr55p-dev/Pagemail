@@ -76,7 +76,7 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	}
 
 	sess, err := h.store.Get(c.Request(), sessionKey)
-	sess.Values[idKey] = user.ID
+	sess.Values[idKey] = user.ID.String()
 	if err != nil {
 		LogHandlerError(c, "Failed to get user session", err)
 		return RenderGenericError(c)

@@ -5,12 +5,13 @@
 package queries
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Auth struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
+	ID          uuid.UUID
+	UserID      uuid.UUID
 	Platform    string
 	Credential  string
 	ResetToken  pgtype.Text
@@ -21,7 +22,7 @@ type Auth struct {
 
 type Page struct {
 	ID          string
-	UserID      pgtype.UUID
+	UserID      uuid.UUID
 	Url         string
 	Title       pgtype.Text
 	Description pgtype.Text
@@ -31,8 +32,8 @@ type Page struct {
 }
 
 type Schedule struct {
-	ID       pgtype.UUID
-	UserID   pgtype.UUID
+	ID       uuid.UUID
+	UserID   uuid.UUID
 	Timezone string
 	Days     int32
 	Hour     int32
@@ -41,7 +42,7 @@ type Schedule struct {
 }
 
 type User struct {
-	ID             pgtype.UUID
+	ID             uuid.UUID
 	Email          string
 	Username       string
 	HasReadability bool

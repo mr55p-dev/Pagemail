@@ -13,3 +13,8 @@ sql:
         package: "queries"
         sql_package: "pgx/v5"
         out: "db/queries"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

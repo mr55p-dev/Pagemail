@@ -8,6 +8,7 @@ package queries
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -19,7 +20,7 @@ RETURNING id, user_id, url, title, description, image_url, created, updated
 
 type CreatePageWithPreviewParams struct {
 	ID          string
-	UserID      pgtype.UUID
+	UserID      uuid.UUID
 	Url         string
 	Title       pgtype.Text
 	Description pgtype.Text
@@ -68,7 +69,7 @@ AND user_id = $2
 
 type DeletePageForUserParams struct {
 	ID     string
-	UserID pgtype.UUID
+	UserID uuid.UUID
 }
 
 func (q *Queries) DeletePageForUser(ctx context.Context, arg DeletePageForUserParams) (int64, error) {
@@ -109,7 +110,7 @@ ORDER BY created DESC
 `
 
 type ReadPagesByUserBetweenParams struct {
-	UserID    pgtype.UUID
+	UserID    uuid.UUID
 	Created   pgtype.Timestamp
 	Created_2 pgtype.Timestamp
 }
@@ -151,7 +152,7 @@ LIMIT $2 OFFSET $3
 `
 
 type ReadPagesByUserIdParams struct {
-	UserID pgtype.UUID
+	UserID uuid.UUID
 	Limit  int32
 	Offset int32
 }

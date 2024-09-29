@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	"github.com/jackc/pgtype"
+	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/db/queries"
@@ -80,7 +80,8 @@ func (h *Handlers) User(c echo.Context) (*queries.User, error) {
 	if !ok {
 		return nil, errors.New("Invalid id key")
 	}
-	user, err := h.Queries().ReadUserById(c.Request().Context(), )
+	uuidVal, err := uuid.Parse(id)
+	user, err := h.Queries().ReadUserById(c.Request().Context(), uuidVal)
 	if err != nil {
 		return nil, errors.New("Failed to read user")
 	}
