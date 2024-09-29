@@ -37,7 +37,7 @@ templ PageCard(page queries.Page) {
 			</p>
 		</main>
 		<footer class="tw-flex tw-justify-between tw-w-full">
-			<span class="tw-text-sm tw-text-stone-600">{ page.Updated.Format("02/01 3:04PM") }</span>
+			<span class="tw-text-sm tw-text-stone-600">{ page.Updated.Time.Format("02/01 3:04PM") }</span>
 			<div class={ Anchor(page.ID), "" }>
 				<button
 					class="tw-size-6 tw-relative"

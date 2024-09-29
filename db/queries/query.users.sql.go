@@ -79,3 +79,33 @@ func (q *Queries) ReadUserById(ctx context.Context, id pgtype.UUID) (User, error
 	)
 	return i, err
 }
+
+const readUserWithCredential = `-- name: ReadUserWithCredential :one
+SELECT users.id, users.email, users.username, users.has_readability, users.created, users.updated 
+FROM users
+LEFT JOIN auth 
+ON users.id = auth.user_id
+WHERE users.email = $1
+AND auth.platform = $2
+AND auth.credential = crypt($3, auth.credential)
+`
+
+type ReadUserWithCredentialParams struct {
+	Email    string
+	Platform string
+	Crypt    string
+}
+
+func (q *Queries) ReadUserWithCredential(ctx context.Context, arg ReadUserWithCredentialParams) (User, error) {
+	row := q.db.QueryRow(ctx, readUserWithCredential, arg.Email, arg.Platform, arg.Crypt)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.HasReadability,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}

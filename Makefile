@@ -13,7 +13,7 @@ else
 endif
 
 server := pagemail
-all: clean-all $(server) 
+all: clean-all $(server) migrate
 
 # Install
 tailwindcss := ./bin/tailwindcss
@@ -84,8 +84,15 @@ watch-server: clean $(air)
 clean: 
 	rm -f $(server)
 
+# Migrations
+migrate := migrate
+$(migrate):
+	go build -o $(migrate) ./cmd/migrate
+clean-migrate:
+	rm -f $(migrate)
+
 # Shared
 prerequisites: $(templates) $(sql) $(css)
-clean-all: clean clean-css clean-sql clean-templates
+clean-all: clean clean-migrate clean-css clean-sql clean-templates
 test: $(server)
 	go test ./...

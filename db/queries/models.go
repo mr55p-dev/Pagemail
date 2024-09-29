@@ -20,7 +20,7 @@ type Auth struct {
 }
 
 type Page struct {
-	ID          pgtype.UUID
+	ID          string
 	UserID      pgtype.UUID
 	Url         string
 	Title       pgtype.Text

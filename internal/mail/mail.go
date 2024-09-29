@@ -3,12 +3,13 @@ package mail
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/smtp"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jordan-wright/email"
 	"github.com/mr55p-dev/pagemail/db/queries"
 	"github.com/mr55p-dev/pagemail/render"
@@ -17,7 +18,7 @@ import (
 type Mailer struct {
 	Timetout time.Duration
 	Pool     *email.Pool
-	DB       *sql.DB
+	DB       *pgx.Conn
 }
 
 func NewPool(username, password, host string, port, poolSize int) (*email.Pool, error) {
@@ -65,7 +66,7 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) (int, erro
 		if now.Before(sendWindow) {
 			// skip, we have not yet reached the cutoff window
 			continue
-		} else if schedule.LastSent.After(sendWindow) {
+		} else if schedule.LastSent.Time.After(sendWindow) {
 			// skip, we have sent an email corresponding to this schedule entry
 			continue
 		}
@@ -80,7 +81,7 @@ func (m *Mailer) RunScheduledSend(ctx context.Context, now time.Time) (int, erro
 }
 
 func (m *Mailer) queries() *queries.Queries {
-	return queries.New(m.conn)
+	return queries.New(m.DB)
 }
 
 // sendForSchedule will send the email required by a schedule
@@ -94,7 +95,7 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 	// load pages
 	pages, err := m.queries().ReadPagesByUserBetween(ctx, queries.ReadPagesByUserBetweenParams{
 		Created:   schedule.LastSent,
-		Created_2: now,
+		Created_2: pgtype.Timestamp{Time: now, Valid: true},
 		UserID:    schedule.UserID,
 	})
 	if err != nil {
@@ -118,7 +119,7 @@ func (m *Mailer) sendForSchedule(ctx context.Context, schedule queries.Schedule,
 
 	// update last sent
 	err = m.queries().UpdateScheduleLastSent(ctx, queries.UpdateScheduleLastSentParams{
-		LastSent: now,
+		LastSent: pgtype.Timestamp{Time: now, Valid: true},
 		UserID:   user.ID,
 	})
 	if err != nil {

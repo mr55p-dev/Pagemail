@@ -1,23 +1,25 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"net/url"
 
 	"github.com/a-h/templ"
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jordan-wright/email"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/db/queries"
+	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/render"
 )
 
 // Handlers wraps all the route handlers
 type Handlers struct {
-	conn  *sql.DB
+	conn  *pgx.Conn
 	store *sessions.CookieStore
 	mail  *email.Pool
 }
@@ -68,7 +70,8 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, err.Error())
 	}
-	if user.ID == uuid.Nil {
+	// TODO check user is nil
+	if true {
 		return RenderError(c, http.StatusBadRequest, "Invalid username or password")
 	}
 
@@ -104,10 +107,11 @@ func (h *Handlers) PostPage(c echo.Context) error {
 		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
 	}
 	pageArg := queries.CreatePageWithPreviewParams{
+		ID:          tools.NewPageId(),
 		UserID:      user.ID,
 		Url:         c.FormValue("url"),
-		Title:       sql.NullString{},
-		Description: sql.NullString{},
+		Title:       pgtype.Text{},
+		Description: pgtype.Text{},
 	}
 
 	// Load the preview
@@ -116,10 +120,10 @@ func (h *Handlers) PostPage(c echo.Context) error {
 		LogHandlerError(c, "Could not get preview", err)
 	} else {
 		if pageData.Title != "" {
-			pageArg.Title = sql.NullString{String: pageData.Title, Valid: true}
+			pageArg.Title = pgtype.Text{String: pageData.Title, Valid: true}
 		}
 		if pageData.Description != "" {
-			pageArg.Description = sql.NullString{String: pageData.Description, Valid: true}
+			pageArg.Description = pgtype.Text{String: pageData.Description, Valid: true}
 		}
 	}
 
@@ -136,6 +140,7 @@ func (h *Handlers) PostPage(c echo.Context) error {
 func (h *Handlers) DeletePage(c echo.Context) error {
 	user := GetUser(c)
 	pageId := c.Param("id")
+	// parse the page id hex into bytes
 	cnt, err := h.Queries().DeletePageForUser(c.Request().Context(), queries.DeletePageForUserParams{
 		ID:     pageId,
 		UserID: user.ID,

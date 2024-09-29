@@ -6,5 +6,6 @@ db/schema.sql
 *.pub
 *.pem
 .env
-pagemail
 pagemail.yaml
+pagemail
+migrate

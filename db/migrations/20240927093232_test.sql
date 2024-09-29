@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS auth (
     UNIQUE (user_id, platform)
 );
 CREATE TABLE IF NOT EXISTS pages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id CHAR(16) PRIMARY KEY,
     user_id UUID NOT NULL,
     url TEXT NOT NULL,
     title TEXT,
