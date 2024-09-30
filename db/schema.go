@@ -1,6 +1,6 @@
 package db
 
-import _ "embed"
+import "embed"
 
-//go:embed schema.sql
-var schema string
+//go:embed migrations/*.sql
+var FS embed.FS

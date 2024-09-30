@@ -5,55 +5,47 @@
 package queries
 
 import (
-	"database/sql"
-	"time"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Auth struct {
-	ID                  int64
-	UserID              string
-	Platform            string
-	PasswordHash        []byte
-	PasswordResetToken  []byte
-	PasswordResetExpiry sql.NullTime
-	Credential          []byte
-	Created             time.Time
-	Updated             time.Time
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Platform    string
+	Credential  string
+	ResetToken  pgtype.Text
+	ResetExpiry pgtype.Timestamp
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
 }
 
 type Page struct {
-	ID           string
-	UserID       string
-	Url          string
-	Title        sql.NullString
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	PreviewState string
-	Created      time.Time
-	Updated      time.Time
-	Readable     bool
+	ID          string
+	UserID      uuid.UUID
+	Url         string
+	Title       pgtype.Text
+	Description pgtype.Text
+	ImageUrl    pgtype.Text
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
 }
 
 type Schedule struct {
-	ID       string
-	UserID   string
+	ID       uuid.UUID
+	UserID   uuid.UUID
 	Timezone string
-	Days     int64
-	Hour     int64
-	Minute   int64
-	LastSent time.Time
-}
-
-type SchemaMigration struct {
-	Version string
+	Days     int32
+	Hour     int32
+	Minute   int32
+	LastSent pgtype.Timestamp
 }
 
 type User struct {
-	ID             string
+	ID             uuid.UUID
 	Email          string
 	Username       string
-	Subscribed     bool
 	HasReadability bool
-	Created        time.Time
-	Updated        time.Time
+	Created        pgtype.Timestamp
+	Updated        pgtype.Timestamp
 }

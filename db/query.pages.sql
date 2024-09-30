@@ -1,55 +1,38 @@
--- name: CreatePage :one
-INSERT INTO pages (id, user_id, url)
-VALUES (?, ?, ?)
-RETURNING *;
-
 -- name: CreatePageWithPreview :one
-INSERT INTO pages (id, user_id, url, title, description, preview_state) 
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO pages (id, user_id, url, title, description) 
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: ReadPageById :one
 SELECT * FROM pages
-WHERE id = ?
+WHERE id = $1
 LIMIT 1;
-
--- name: ReadPagesByReadable :many
-SELECT * FROM pages
-WHERE readable = ?
-AND user_id = ?;
 
 -- name: UpdatePagePreview :exec
 UPDATE pages SET
-    title = ?,
-    description = ?,
-    image_url = ?,
-    preview_state = ?,
-    updated = CURRENT_TIMESTAMP
-WHERE id = ?;
-
--- name: UpdatePageReadability :exec
-UPDATE pages SET
-    readable = ?,
-	updated = CURRENT_TIMESTAMP
-WHERE id = ?;
+    title = $1,
+    description = $2,
+    image_url = $3,
+    updated = now()
+WHERE id = $4;
 
 -- name: DeletePageById :execrows
 DELETE FROM pages 
-WHERE id = ?;
+WHERE id = $1;
 
 -- name: DeletePageForUser :execrows
 DELETE FROM pages
-WHERE id = ?
-AND user_id = ?;
+WHERE id = $1
+AND user_id = $2;
 
 -- name: ReadPagesByUserId :many
 SELECT * FROM pages
-WHERE user_id = ?
+WHERE user_id = $1
 ORDER BY created DESC
-LIMIT ? OFFSET ?;
+LIMIT $2 OFFSET $3;
 
 -- name: ReadPagesByUserBetween :many
 SELECT * FROM pages 
-WHERE created BETWEEN sqlc.arg(start) AND sqlc.arg(end)
-AND user_id = sqlc.arg(user_id)
+WHERE user_id = $1
+AND created BETWEEN $2 AND $3
 ORDER BY created DESC;

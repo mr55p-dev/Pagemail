@@ -2,32 +2,32 @@
 INSERT INTO auth (
     user_id,
     platform,
-    password_hash
-) VALUES (?, 'pagemail', ?);
+	credential
+) VALUES ($1, 'pagemail', crypt($2, gen_salt('bf')));
 
 -- name: CreateShortcutAuth :exec
 INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES (?, 'shortcut', ?);
+) VALUES ($1, 'shortcut', crypt($2, gen_salt('bf')));
 
 -- name: CreateIdpAuth :exec
 INSERT INTO auth (
     user_id,
     platform,
     credential
-) VALUES (?, ?, ?);
+) VALUES ($1, $2, crypt($3, gen_salt('bf')));
 
 -- name: ReadByUidPlatform :one
 SELECT *
 FROM auth
-WHERE user_id = ?
-AND platform = ?
+WHERE user_id = $1
+AND platform = $2
 LIMIT 1;
 
 -- name: ReadAuthMethods :many
-SELECT * FROM auth WHERE user_id = ?;
+SELECT * FROM auth WHERE user_id = $1;
 
 -- name: ReadUserByShortcut :one
 SELECT users.*
@@ -35,32 +35,32 @@ FROM users
 LEFT JOIN auth
     ON auth.user_id = users.id
     AND auth.platform = 'shortcut'
-WHERE auth.credential = ?
+WHERE auth.credential = $1
 LIMIT 1;
 
 -- name: ReadByResetToken :one
 SELECT user_id
 FROM auth
-WHERE password_reset_token = ?
-    AND password_reset_expiry > ?
+WHERE reset_token = $1
+    AND reset_expiry > $2
 LIMIT 1;
 
 -- name: UpdatePassword :execrows
 UPDATE auth
-SET password_hash = ?
-WHERE user_id = ?
+SET credential = $1
+WHERE user_id = $2
     AND platform = 'pagemail';
 
 -- name: UpdateShortcutToken :exec
 UPDATE auth
-SET credential = ?
-WHERE user_id = ?
+SET credential = $1
+WHERE user_id = $2
     AND platform = 'shortcut';
 
 -- name: UpdateResetToken :exec
 UPDATE auth
 SET 
-    password_reset_token = ?,
-    password_reset_expiry = ?
-WHERE user_id = ?
+    reset_token = $1,
+    reset_expiry = $2
+WHERE user_id = $3
     AND platform = 'pagemail';

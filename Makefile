@@ -12,28 +12,34 @@ else
 	ARCH := x64
 endif
 
-all: clean-all $(server) 
+server := pagemail
+all: clean-all $(server) migrate
 
 # Install
 tailwindcss := ./bin/tailwindcss
 templ := ${GOBIN}/templ
 sqlc := ${GOBIN}/sqlc
 air := ${GOBIN}/air
+dbmate := ./bin/dbmate
+tools := $(tailwindcss) $(templ) $(sqlc) $(air) $(dbmate)
 $(tailwindcss): 
-	mkdir -p ./bin
 	curl -fsSL \
 		-o ./bin/tailwindcss \
 		https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-$(OS)-$(ARCH)
 	chmod +x ./bin/tailwindcss
+$(dbmate):
+	curl -fsSL -o ./bin/dbmate \
+		https://github.com/amacneil/dbmate/releases/latest/download/dbmate-$(OS)-$(ARCH)
+	chmod +x ./bin/dbmate
 $(templ):
 	go install github.com/a-h/templ/cmd/templ@latest
 $(sqlc):
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 $(air):
 	go install github.com/air-verse/air@latest
-install: $(tailwindcss) $(templ) $(sqlc) $(air)
+install: $(tools)
 uninstall: 
-	rm -f $(tailwindcss) $(templ) $(sqlc) $(air)
+	rm -f $(tools)
 
 # Templates 
 templates := $(shell ls render/**/*.templ | sed "s/\.templ/_templ.go/")
@@ -69,7 +75,6 @@ clean-css:
 	rm -f $(css)
 
 # Server
-server := pagemail
 $(server): $(templates) $(sql) $(css)
 	go build -o $(server) ./cmd/pagemail 
 
@@ -79,8 +84,15 @@ watch-server: clean $(air)
 clean: 
 	rm -f $(server)
 
+# Migrations
+migrate := migrate
+$(migrate):
+	go build -o $(migrate) ./cmd/migrate
+clean-migrate:
+	rm -f $(migrate)
+
 # Shared
 prerequisites: $(templates) $(sql) $(css)
-clean-all: clean clean-css clean-sql clean-templates
+clean-all: clean clean-migrate clean-css clean-sql clean-templates
 test: $(server)
 	go test ./...

@@ -25,3 +25,10 @@ func LogHandlerError(c echo.Context, msg string, err error) {
 	}
 	logger.InfoContext(c.Request().Context(), msg, "error", err.Error())
 }
+
+func DebugHandlerError(c echo.Context, msg string, err error) {
+	if err == nil {
+		return
+	}
+	logger.DebugContext(c.Request().Context(), msg, "error", err.Error())
+}

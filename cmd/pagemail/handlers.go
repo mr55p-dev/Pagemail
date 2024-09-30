@@ -1,25 +1,28 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/a-h/templ"
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jordan-wright/email"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/cmd/pagemail/urls"
 	"github.com/mr55p-dev/pagemail/db/queries"
-	"github.com/mr55p-dev/pagemail/internal/auth"
 	"github.com/mr55p-dev/pagemail/internal/tools"
 	"github.com/mr55p-dev/pagemail/render"
 )
 
 // Handlers wraps all the route handlers
 type Handlers struct {
-	conn  *sql.DB
+	conn  *pgx.Conn
 	store *sessions.CookieStore
 	mail  *email.Pool
 }
@@ -56,12 +59,13 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 		return RenderError(c, http.StatusBadRequest, msg)
 	}
 
-	var user *queries.User
+	var user queries.User
 	switch provider {
 	case "native":
-		user, err = auth.LoginNative(c.Request().Context(), h.Queries(), &auth.LoginNativeParams{
+		user, err = h.Queries().ReadUserWithCredential(c.Request().Context(), queries.ReadUserWithCredentialParams{
 			Email:    c.FormValue("email"),
-			Password: []byte(c.FormValue("password")),
+			Platform: "pagemail",
+			Crypt:    c.FormValue("password"),
 		})
 	default:
 		err = errors.New("Invalid provider")
@@ -69,28 +73,56 @@ func (h *Handlers) PostLogin(c echo.Context) error {
 	if err != nil {
 		return RenderError(c, http.StatusBadRequest, err.Error())
 	}
-	if user == nil {
-		LogHandlerError(c, "Could not find user, but no error produced", errors.New("No error"))
-		return RenderError(c, http.StatusInternalServerError, "User not found")
+	if user.ID == uuid.Nil {
+		return RenderError(c, http.StatusBadRequest, "Invalid username or password")
 	}
 
-	sess, err := h.store.Get(c.Request(), sessionKey)
-	sess.Values[idKey] = user.ID
-	if err != nil {
-		LogHandlerError(c, "Failed to get user session", err)
-		return RenderGenericError(c)
-	}
-
-	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		LogHandlerError(c, "Failed to save user session", err)
-		return RenderGenericError(c)
+	if err := h.CreateSession(c, &user); err != nil {
+		return err
 	}
 
 	return Redirect(c, urls.App)
 }
 
 func (h *Handlers) PostSignup(c echo.Context) error {
-	return nil
+	provider := c.QueryParam("provider")
+	err := c.Request().ParseForm()
+	if err != nil {
+		msg := "Failed to parse form data"
+		LogHandlerError(c, msg, err)
+		return RenderError(c, http.StatusBadRequest, msg)
+	}
+
+	var user queries.User
+	switch provider {
+	case "native":
+		err := h.WrapTx(c, func(ctx context.Context, q *queries.Queries) error {
+			user, err = q.CreateUser(ctx, queries.CreateUserParams{
+				Email:    c.FormValue("email"),
+				Username: c.FormValue("username"),
+			})
+			if err != nil {
+				return fmt.Errorf("Failed to create user: %w", err)
+			}
+			err = q.CreateLocalAuth(ctx, queries.CreateLocalAuthParams{
+				UserID: user.ID,
+				Crypt:  c.FormValue("password"),
+			})
+			return nil
+		})
+		if err != nil {
+			LogHandlerError(c, "Failed to create user", err)
+			return RenderGenericError(c)
+		}
+	default:
+		err = errors.New("Invalid provider")
+	}
+
+	if err := h.CreateSession(c, &user); err != nil {
+		return err
+	}
+
+	return Redirect(c, urls.App)
 }
 
 func (h *Handlers) PostPage(c echo.Context) error {
@@ -106,26 +138,23 @@ func (h *Handlers) PostPage(c echo.Context) error {
 		return RenderError(c, http.StatusBadRequest, "The provided URL is not valid")
 	}
 	pageArg := queries.CreatePageWithPreviewParams{
-		ID:           tools.NewPageId(),
-		UserID:       user.ID,
-		Url:          c.FormValue("url"),
-		Title:        sql.NullString{},
-		Description:  sql.NullString{},
-		PreviewState: PREVIEW_UNKNOWN,
+		ID:          tools.NewPageId(),
+		UserID:      user.ID,
+		Url:         c.FormValue("url"),
+		Title:       pgtype.Text{},
+		Description: pgtype.Text{},
 	}
 
 	// Load the preview
 	pageData, err := GetPreview(url)
 	if err != nil {
 		LogHandlerError(c, "Could not get preview", err)
-		pageArg.PreviewState = PREVIEW_FAILURE
 	} else {
-		pageArg.PreviewState = PREVIEW_SUCCESS
 		if pageData.Title != "" {
-			pageArg.Title = sql.NullString{String: pageData.Title, Valid: true}
+			pageArg.Title = pgtype.Text{String: pageData.Title, Valid: true}
 		}
 		if pageData.Description != "" {
-			pageArg.Description = sql.NullString{String: pageData.Description, Valid: true}
+			pageArg.Description = pgtype.Text{String: pageData.Description, Valid: true}
 		}
 	}
 
@@ -142,6 +171,7 @@ func (h *Handlers) PostPage(c echo.Context) error {
 func (h *Handlers) DeletePage(c echo.Context) error {
 	user := GetUser(c)
 	pageId := c.Param("id")
+	// parse the page id hex into bytes
 	cnt, err := h.Queries().DeletePageForUser(c.Request().Context(), queries.DeletePageForUserParams{
 		ID:     pageId,
 		UserID: user.ID,

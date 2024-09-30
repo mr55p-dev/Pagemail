@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mr55p-dev/pagemail/db/queries"
@@ -79,8 +82,10 @@ func (h *Handlers) User(c echo.Context) (*queries.User, error) {
 	if !ok {
 		return nil, errors.New("Invalid id key")
 	}
-	user, err := h.Queries().ReadUserById(c.Request().Context(), id)
+	uuidVal, err := uuid.Parse(id)
+	user, err := h.Queries().ReadUserById(c.Request().Context(), uuidVal)
 	if err != nil {
+		DebugHandlerError(c, "Bad user", err)
 		return nil, errors.New("Failed to read user")
 	}
 	return &user, nil
@@ -96,4 +101,41 @@ func (h *Handlers) NeedsUser(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set("user", *user)
 		return next(c)
 	}
+}
+
+func (h *Handlers) CreateSession(c echo.Context, user *queries.User) error {
+	sess, err := h.store.Get(c.Request(), sessionKey)
+	sess.Values[idKey] = user.ID.String()
+	if err != nil {
+		LogHandlerError(c, "Failed to get user session", err)
+		return RenderGenericError(c)
+	}
+
+	if err := sess.Save(c.Request(), c.Response()); err != nil {
+		LogHandlerError(c, "Failed to save user session", err)
+		return RenderGenericError(c)
+	}
+	return nil
+}
+
+func (h *Handlers) WrapTx(c echo.Context, fn func(ctx context.Context, q *queries.Queries) error) error {
+	ctx := c.Request().Context()
+	tx, err := h.conn.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("Failed to begin transaction: %w", err)
+	}
+	if fnErr := fn(ctx, h.Queries().WithTx(tx)); fnErr != nil {
+		// Handle error
+		err := tx.Rollback(ctx)
+		if err != nil {
+			fnErr = fmt.Errorf("Failed to rollback transaction (reason %w): %w", err, fnErr)
+		}
+		return fmt.Errorf("Failed to execute statements: %w", fnErr)
+	} else {
+		err := tx.Commit(ctx)
+		if err != nil {
+			return fmt.Errorf("Failed to commit transaction: %w", err)
+		}
+	}
+	return nil
 }

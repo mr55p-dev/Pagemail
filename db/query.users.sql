@@ -1,27 +1,25 @@
 -- name: CreateUser :one
 INSERT INTO users (
-    id,
     email,
-    username,
-    subscribed
-) VALUES (?, ?, ?, ?)
+    username
+) VALUES ($1, $2)
 RETURNING *;
 
 -- name: ReadUserById :one
 SELECT * FROM users 
-WHERE id = ? 
+WHERE id = $1 
 LIMIT 1;
 
 -- name: ReadUserByEmail :one
 SELECT * FROM users 
-WHERE email = ?
+WHERE email = $1
 LIMIT 1;
 
--- name: ReadUsersWithMail :many
-SELECT id, username, email FROM users 
-WHERE subscribed = true;
-
--- name: UpdateUserSubscription :exec
-UPDATE users SET 
-subscribed = ? 
-WHERE id = ?;
+-- name: ReadUserWithCredential :one
+SELECT users.* 
+FROM users
+LEFT JOIN auth 
+ON users.id = auth.user_id
+WHERE users.email = $1
+AND auth.platform = $2
+AND auth.credential = crypt($3, auth.credential);
