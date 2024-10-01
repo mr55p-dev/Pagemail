@@ -51,8 +51,8 @@ watch-templates: clean-templates
 	$(templ) generate -watch
 clean-templates:
 	rm -f \
-		./render/**/*_templ.go \
-		./render/**/*_templ.txt
+		render/**/*_templ.go \
+		render/**/*_templ.txt
 
 # Sql
 sql := db/queries/db.go db/queries/models.go $(shell ls db/query.*.sql | sed "s/query.*\.sql/queries\/&.go/")
@@ -64,13 +64,18 @@ clean-sql:
 	rm -f ./db/queries/*.go
 
 css := assets/css/main.css
-css-input := tailwind.base.css
+css-input := tailwind.base.css $(wildcard render/**/*.css)
 $(css): $(tailwindcss) $(css-input)
-	$(tailwindcss) --input $(css-input) --output $(css) --minify
+	cat $(css-input) > input.css
+	$(tailwindcss) --input input.css --output $(css) --minify
+	rm input.css
 
 css: clean-css $(css)
 watch-css: clean-css
-	$(tailwindcss) --input $(css-input) --output $(css) --watch
+	@echo "Listening for changes in the render dir"
+	@fswatch render \
+		| grep --line-buffered -E "\.css$$" \
+		| xargs -L1 -I "{}" $(MAKE) css
 clean-css:
 	rm -f $(css)
 

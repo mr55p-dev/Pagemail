@@ -9,3 +9,5 @@ db/schema.sql
 pagemail.yaml
 pagemail
 migrate
+input.css
+render/**/*.txt
