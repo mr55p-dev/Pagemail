@@ -1,11 +1,19 @@
 body {
-  @apply tw-bg-blue-500
+  @apply tw-bg-secondary
   tw-container tw-max-w-screen-lg tw-mx-auto;
 }
 
 nav {
   @apply tw-sticky tw-top-0 tw-left-0
-	tw-bg-background-primary;
+	tw-bg-primary
+	tw-h-16;
+}
+
+input {
+	@apply 
+		tw-px-4 tw-py-2
+		tw-rounded-lg
+		tw-border-
 }
 
 .message-err--wrapper,
