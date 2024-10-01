@@ -13,7 +13,7 @@ input {
 	@apply 
 		tw-px-4 tw-py-2
 		tw-rounded-lg
-		tw-border-
+		tw-border tw-border-red-500
 }
 
 .message-err--wrapper,

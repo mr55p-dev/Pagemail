@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply tw-bg-secondary 
+  tw-container tw-max-w-screen-lg tw-mx-auto;
+}
+
+nav {
+  @apply tw-sticky tw-top-0 tw-left-0
+	tw-bg-primary;
+}
+
+.message-err--wrapper,
+.message-ok--wrapper {
+  @apply tw-w-full tw-h-12
+		tw-border;
+}
+
+.message-ok--wrapper {
+  @apply tw-bg-green-400 tw-border-green-600;
+}
+
+.message-err--wrapper {
+  @apply tw-bg-red-400 tw-border-red-600;
+}
+
+.app-wrapper {
+  @apply tw-container tw-mx-auto;
+}
+
 .toolbar {
   @apply tw-p-4 tw-mx-auto tw-w-fit 
   tw-flex tw-justify-center tw-gap-3;
@@ -9,17 +37,17 @@
 
 .toolbar--button {
   @apply tw-px-4 tw-py-2
-  tw-border-x tw-border-x-stone-300
-	tw-bg-stone-100 hover:tw-bg-stone-200;
+  tw-border-x tw-border-x-red-300
+	tw-bg-red-100 hover:tw-bg-red-200;
 }
 
 .toolbar--input-wrapper {
-  @apply tw-rounded tw-border tw-border-stone-300
-	tw-bg-stone-100;
+  @apply tw-rounded tw-border tw-border-red-300
+	tw-bg-red-100;
 }
 
 .toolbar--input {
-  @apply tw-px-4 tw-py-2 tw-bg-stone-100;
+  @apply tw-px-4 tw-py-2 tw-bg-red-100;
 }
 
 #pages-list {
@@ -29,9 +57,9 @@
 }
 
 .page-card {
-  @apply tw-bg-stone-100 tw-text-stone-950
+  @apply tw-bg-red-100 tw-text-red-950
 	tw-rounded-sm
-	tw-border tw-border-blue-700
+	tw-border tw-border-red-700
 	tw-py-6 tw-px-4;
 }
 
@@ -40,7 +68,7 @@
 }
 
 .page-card--title {
-  @apply tw-text-xl tw-text-left tw-underline tw-decoration-dashed tw-decoration-blue-600
+  @apply tw-text-xl tw-text-left tw-underline tw-decoration-dashed tw-decoration-red-600
   tw-text-wrap tw-whitespace-normal
   tw-line-clamp-1
   tw-col-span-6;
@@ -52,7 +80,7 @@
 
 .page-card--popover:popover-open {
   @apply tw-p-2 tw-rounded-lg 
-	tw-border tw-border-stone-500 tw-bg-stone-100
+	tw-border tw-border-red-500 tw-bg-red-100
 	tw-flex tw-flex-col tw-gap-2
 	tw-m-0;
 }
@@ -63,7 +91,7 @@
 
 .page-card--popover-element {
   @apply tw-rounded-md
-	hover:tw-bg-stone-200
+	hover:tw-bg-red-200
 	tw-px-4 tw-py-2
 	tw-grid tw-gap-2;
   grid-template-columns: 24px 1fr;
@@ -73,7 +101,7 @@
 .form-login {
   @apply tw-flex tw-flex-col tw-gap-8
 	tw-max-w-96 tw-mx-auto
-	tw-border tw-border-stone-500
+	tw-border tw-border-red-500
 	tw-rounded
 	tw-p-8;
 }
@@ -81,15 +109,15 @@
 .form-signup--input,
 .form-login--input {
   @apply tw-py-4 tw-px-6
-	tw-rounded tw-bg-stone-200
-	tw-border-stone-500 tw-border;
+	tw-rounded tw-bg-red-200
+	tw-border-red-500 tw-border;
 }
 
 .form-signup--submit,
 .form-login--submit {
   @apply tw-py-2 tw-px-4
 	tw-rounded
-	tw-border tw-border-stone-500;
+	tw-border tw-border-red-500;
 }
 
 .form-signup--link,
@@ -99,5 +127,6 @@
 
 .form-signup--link-text,
 .form-login--link-text {
-  @apply tw-underline tw-text-blue-700;
+  @apply tw-underline tw-text-red-700;
 }
+
