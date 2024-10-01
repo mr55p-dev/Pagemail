@@ -79,7 +79,7 @@ func (w *wrapper) do() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body hx-boost=\"true\"><nav><a href=\"/logout\" hx-boost=\"false\">Log out</a></nav><main hx-ext=\"response-targets\"><div id=\"messages\"></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" type=\"text/css\" href=\"/assets/css/main.css\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, viewport-fit=cover\"></head><body hx-boost=\"true\"><nav><a href=\"/logout\" hx-boost=\"false\">Log out</a></nav><main hx-ext=\"response-targets\"><div id=\"messages\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

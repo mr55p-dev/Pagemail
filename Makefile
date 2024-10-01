@@ -64,7 +64,7 @@ clean-sql:
 	rm -f ./db/queries/*.go
 
 css := assets/css/main.css
-css-input := tailwind.base.css $(wildcard render/**/*.css)
+css-input := tailwind.base.css $(wildcard render/*.css) $(wildcard render/wrapper/*.css)
 $(css): $(tailwindcss) $(css-input)
 	cat $(css-input) > input.css
 	$(tailwindcss) --input input.css --output $(css) --minify

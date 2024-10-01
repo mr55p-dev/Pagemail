@@ -1,0 +1,4 @@
+.app-header {
+	@apply tw-bg-primary
+	tw-w-full tw-pt-16;
+}

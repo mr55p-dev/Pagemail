@@ -4,16 +4,31 @@ body {
 }
 
 nav {
+	display: none;
   @apply tw-sticky tw-top-0 tw-left-0
 	tw-bg-primary
 	tw-h-16;
 }
 
-input {
+fieldset[role=group]:has(input) {
 	@apply 
+		tw-flex tw-align-middle
+		tw-justify-between
 		tw-px-4 tw-py-2
+		tw-bg-gray-300
 		tw-rounded-lg
-		tw-border tw-border-red-500
+		tw-text-gray-600
+		tw-border tw-border-gray-400;
+}
+
+fieldset[role=group] > input {
+	@apply tw-bg-gray-300
+	tw-font-semibold ;
+}
+
+fieldset[role=group] button > svg {
+	@apply 
+	tw-size-6;
 }
 
 .message-err--wrapper,
