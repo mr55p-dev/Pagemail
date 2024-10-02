@@ -73,10 +73,13 @@ $(css): $(tailwindcss) $(css-input)
 	@$(tailwindcss) --input $(css-input) --output $(css) --minify
 
 css: clean-css $(css)
-watch-css: clean-css
+watch-css: 
 	@echo "Listening for changes in the render dir"
 	@fswatch render \
 		| xargs -L1 -I "{}" $(MAKE) css
+watch-clean-css: 
+	@fswatch render \
+		| xargs -L1 -I "{}" $(MAKE) clean-css
 clean-css:
 	rm -f $(css) $(css-input)
 

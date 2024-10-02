@@ -61,6 +61,14 @@ form .button-group > button {
 		hover:tw-bg-gray-400
 }
 
+article {
+	@apply 
+		tw-rounded-lg
+		tw-bg-primary
+		tw-border-brand-600
+		;
+}
+
 .message-err--wrapper,
 .message-ok--wrapper {
   @apply tw-w-full tw-h-12

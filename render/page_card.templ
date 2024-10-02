@@ -17,7 +17,7 @@ func formatURL(inp string) string {
 }
 
 templ PageCard(page queries.Page) {
-	<section class="page-card">
+	<article class="page-card">
 		<header class="page-card--header">
 			<h4 class="page-card--title">
 				<a href={ templ.SafeURL(page.Url) } target="_blank" rel="noopener noreferrer">
@@ -49,7 +49,7 @@ templ PageCard(page queries.Page) {
 				@Popup(page)
 			</div>
 		</footer>
-	</section>
+	</article>
 }
 
 templ Popup(page queries.Page) {

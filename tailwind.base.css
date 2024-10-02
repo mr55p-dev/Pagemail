@@ -56,47 +56,6 @@ nav {
 	tw-flex tw-flex-col;
 }
 
-.page-card {
-	@apply tw-bg-red-100 tw-text-red-950
-	tw-rounded-sm
-	tw-border tw-border-red-700
-	tw-py-6 tw-px-4;
-}
-
-.page-card--main{
-	@apply tw-my-4;
-}
-
-.page-card--title {
-	@apply tw-text-xl tw-text-left tw-underline tw-decoration-dashed tw-decoration-red-600
-	tw-text-wrap tw-whitespace-normal
-	tw-line-clamp-1
-	tw-col-span-6;
-}
-
-.page-card--description {
-	@apply tw-text-left tw-line-clamp-3 tw-col-span-6;
-}
-
-.page-card--popover:popover-open {
-	@apply tw-p-2 tw-rounded-lg 
-	tw-border tw-border-red-500 tw-bg-red-100
-	tw-flex tw-flex-col tw-gap-2
-	tw-m-0;
-}
-
-.page-card--popover-list {
-	@apply tw-block;
-}
-
-.page-card--popover-element {
-	@apply tw-rounded-md
-	hover:tw-bg-red-200
-	tw-px-4 tw-py-2
-	tw-grid tw-gap-2;
-	grid-template-columns: 24px 1fr;
-}
-
 .form-signup,
 .form-login {
 	@apply tw-flex tw-flex-col tw-gap-8
