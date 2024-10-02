@@ -74,7 +74,6 @@ css: clean-css $(css)
 watch-css: clean-css
 	@echo "Listening for changes in the render dir"
 	@fswatch render \
-		| grep --line-buffered -E "\.css$$" \
 		| xargs -L1 -I "{}" $(MAKE) css
 clean-css:
 	rm -f $(css)

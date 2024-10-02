@@ -111,11 +111,13 @@ module.exports = {
                 "900": "#522504",
                 "950": "#401B01"
             },
+            inherit: 'inherit',
+            transparent: 'transparent',
         },
         extend: {
             backgroundColor: {
                 primary: '#ffffff',
-                secondary: '#f5f5f5'
+                secondary: '#f5f5f5',
             },
         },
         plugins: [],

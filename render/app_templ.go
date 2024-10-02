@@ -47,7 +47,7 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"app-header tw-bg-green-500\"><form hx-post=\"/app/page\" hx-target=\"#pages-list\" hx-swap=\"afterbegin\" hx-target-error=\"#messages\"><fieldset role=\"group\" class=\"tw-mx-2\"><input placeholder=\"Page URL\" autocomplete=\"off\" type=\"url\" id=\"page-input\" name=\"url\"><div><button type=\"button\" onclick=\"pasteContents(&#39;page-input&#39;)\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"app-header\"><form hx-post=\"/app/page\" hx-target=\"#pages-list\" hx-swap=\"afterbegin\" hx-target-error=\"#messages\"><fieldset role=\"group\"><input placeholder=\"Page URL\" autocomplete=\"off\" type=\"url\" id=\"page-input\" name=\"url\"><div class=\"button-group\"><button type=\"button\" onclick=\"pasteContents(&#39;page-input&#39;)\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
