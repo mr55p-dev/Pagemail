@@ -45,6 +45,9 @@ func main() {
 		}
 
 		outputMap[name][value] = code
+		if value == "500" {
+			outputMap[name]["DEFAULT"] = code
+		}
 	}
 
 	outBytes, _ := json.Marshal(outputMap)

@@ -46,7 +46,7 @@ func Signup(user *queries.User) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/signup?provider=native\" hx-target-error=\"#messages\" class=\"form-login\"><h1>Sign up</h1><input class=\"form-login--input\" placeholder=\"E-mail\" type=\"email\" autofill=\"email\" name=\"email\"> <input class=\"form-login--input\" placeholder=\"Password\" type=\"password\" autofill=\"password-current\" name=\"password\"> <button class=\"form-login--submit\" type=\"submit\">Sign up</button><p class=\"form-signup--link\">Already have an account? <a href=\"/login\" class=\"form-signup--link-text\">Log in</a></p></form>")
+			templ_7745c5c3_Err = templ.WriteWatchModeString(templ_7745c5c3_Buffer, 1)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

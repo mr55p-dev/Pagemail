@@ -100,3 +100,8 @@ prerequisites: $(templates) $(sql) $(css)
 clean-all: clean clean-migrate clean-css clean-sql clean-templates
 test: $(server)
 	go test ./...
+
+import-colours:
+	@jq '[.variables[] | { name: .name, rgba: .valuesByMode["3919:19"] }]' < Color\ Primitives.json \
+		| go run ./cmd/colours \
+		| jq | sed 's/"\([A-Za-z]*\)"/\1/'
