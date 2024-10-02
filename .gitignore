@@ -9,5 +9,5 @@ db/schema.sql
 pagemail.yaml
 pagemail
 migrate
-input.css
+tailwind.input.css
 render/**/*.txt

@@ -64,11 +64,13 @@ clean-sql:
 	rm -f ./db/queries/*.go
 
 css := assets/css/main.css
-css-input := tailwind.base.css $(wildcard render/*.css) $(wildcard render/wrapper/*.css)
+css-input := tailwind.input.css
+css-source := tailwind.base.css $(wildcard render/*.css) $(wildcard render/wrapper/*.css)
+$(css-input):
+	@echo "Bundling css files $(css-source)"
+	@cat $(css-source) > $(css-input)
 $(css): $(tailwindcss) $(css-input)
-	cat $(css-input) > input.css
-	$(tailwindcss) --input input.css --output $(css) --minify
-	rm input.css
+	@$(tailwindcss) --input $(css-input) --output $(css) --minify
 
 css: clean-css $(css)
 watch-css: clean-css
@@ -76,7 +78,7 @@ watch-css: clean-css
 	@fswatch render \
 		| xargs -L1 -I "{}" $(MAKE) css
 clean-css:
-	rm -f $(css)
+	rm -f $(css) $(css-input)
 
 # Server
 $(server): $(templates) $(sql) $(css)

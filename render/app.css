@@ -1,7 +1,7 @@
 .app-header {
 	@apply tw-bg-primary
-	tw-w-full 
-	tw-pb-2 tw-px-2;
+		tw-w-full
+		tw-pb-2 tw-px-2;
 	padding-top: calc(env(safe-area-inset-top) + 0.5rem);
 }
 
