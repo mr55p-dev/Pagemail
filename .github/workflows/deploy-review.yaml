@@ -21,6 +21,7 @@ jobs:
           command: "review-apps:create"
           review_app_name: review-${{ github.event.pull_request.number }}-pagemail
           branch: v6
+          git_push_flags: --force
 
       - name: Find Comment
         uses: peter-evans/find-comment@v3
