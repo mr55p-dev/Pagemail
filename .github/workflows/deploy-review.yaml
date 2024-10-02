@@ -21,3 +21,20 @@ jobs:
           command: "review-apps:create"
           review_app_name: review-${{ github.event.pull_request.number }}-pagemail
           branch: v6
+          git_push_flags: --force
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: Review branch deployed.
+
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: |
+            Review branch deployed.
+            Available at [https://review-${{ github.event.pull_request.number }}-pagemail.188.245.154.130.sslip.io](https://review-${{ github.event.pull_request.number }}-pagemail.188.245.154.130.sslip.io).
