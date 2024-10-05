@@ -1,12 +1,3 @@
-.page-card {
-	@apply
-		tw-w-full
-		tw-shadow-md
-		tw-border
-		tw-border-brand-800
-		;
-}
-
 .page-card--header {
 	@apply
 		tw-flex

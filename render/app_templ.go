@@ -63,7 +63,7 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></fieldset></form></div><div id=\"pages-list\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</button></div></fieldset></form></div><form class=\"tw-group/pages\" id=\"pages-form\"><div class=\"\n\t\ttw-grid tw-grid-cols-2\n\t\ttw-gap-2\n\t\ttw-px-2 tw-pt-4\n\t\t\"><button type=\"button\" class=\"tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out\" onclick=\"\">Search</button> <button type=\"button\" class=\"tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out\" onclick=\"handleSelecting(this)\">Select</button></div><div id=\"pages-list\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -73,7 +73,7 @@ func App(user *queries.User, pages []queries.Page) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></form><script>\n\t\t\tfunction isSelecting() {\n\t\t\t\treturn document.querySelector(\"form#pages-form\").dataset.selecting === \"true\"\n\t\t\t}\n\n\t\t\tfunction handleSelecting(trigger) {\n\t\t\t\tconst form = trigger.closest(\"form\");\n\t\t\t\tform.dataset.selecting = form.dataset.selecting === \"true\" ? \"false\" : \"true\"\n\t\t\t\tconst selecting = form.dataset.selecting === \"true\";\n\t\t\t\tif (selecting) {\n\t\t\t\t\ttrigger.textContent = \"Cancel\"\n\t\t\t\t} else {\n\t\t\t\t\ttrigger.textContent = \"Select\";\n\t\t\t\t\tform.querySelectorAll(\"input[type=checkbox]\").forEach(box => {\n\t\t\t\t\t\tbox.checked = false\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction handleSelect(element) {\n\t\t\t\tif (!isSelecting()) {\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tconst id = element.dataset.id;\n\t\t\t\tconst input = element.querySelector(\"input[type=checkbox]\");\n\t\t\t\tinput.checked = !input.checked;\n\t\t\t}\n\t\t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
