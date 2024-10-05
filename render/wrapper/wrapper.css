@@ -78,14 +78,10 @@ article {
 		tw-gap-4
 		;
 }
-
-
-article > header {
-	@apply
-		tw-text-brand-800
-		tw-text-2xl
-		tw-line-clamp-1
-		;
+article > header,
+article > main,
+article > footer{
+	@apply tw-w-full;
 }
 
 article > main {

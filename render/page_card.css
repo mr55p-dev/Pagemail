@@ -1,10 +1,58 @@
 .page-card {
 	@apply
 		tw-w-full
-		tw-shadow-sm
+		tw-shadow-md
 		tw-border
 		tw-border-brand-800
 		;
+}
+
+.page-card--header {
+	@apply
+		tw-flex
+		tw-flex-col
+		tw-gap-2
+		;
+}
+
+.page-card--title {
+	@apply
+		tw-text-brand-800
+		tw-text-xl
+		md:tw-text-2xl
+		tw-line-clamp-2
+		md:tw-line-clamp-1
+		hover:tw-underline
+		hover:tw-decoration-brand-800
+		hover:tw-decoration-dashed
+		;
+}
+
+.page-card--link {
+	@apply
+		tw-flex
+		tw-justify-start
+		tw-items-center
+		tw-gap-2
+		tw-text-sm
+		tw-text-brand-900
+		tw-w-max
+		tw-px-1
+		tw-py-0.5
+		tw-rounded-lg
+		tw-box-border
+		tw-border tw-border-transparent
+		tw-transition-colors
+		tw-ease-in-out
+		hover:tw-border-brand-400
+		hover:tw-bg-brand-100
+		;
+}
+
+.page-card--description {
+	@apply
+		tw-line-clamp-4
+		md:tw-line-clamp-3;
 }
 
 .page-card > footer {
