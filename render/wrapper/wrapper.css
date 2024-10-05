@@ -10,6 +10,10 @@ nav {
 	tw-h-16;
 }
 
+form {
+	margin: 0;
+}
+
 fieldset[role=group]:has(input) {
 	@apply 
 		tw-flex tw-align-middle
@@ -66,6 +70,33 @@ article {
 		tw-rounded-lg
 		tw-bg-primary
 		tw-border-brand-600
+		tw-p-5 
+		tw-flex
+		tw-flex-col
+		tw-justify-between
+		tw-items-start
+		tw-gap-4
+		;
+}
+
+
+article > header {
+	@apply
+		tw-text-brand-800
+		tw-text-2xl
+		tw-line-clamp-1
+		;
+}
+
+article > main {
+	@apply
+		tw-text-gray
+		;
+}
+
+article > footer {
+	@apply
+		tw-text-gray-400
 		;
 }
 

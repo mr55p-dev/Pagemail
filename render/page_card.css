@@ -1,0 +1,16 @@
+.page-card {
+	@apply
+		tw-w-full
+		tw-shadow-sm
+		tw-border
+		tw-border-brand-800
+		;
+}
+
+.page-card > footer {
+	@apply 
+		tw-flex 
+		tw-justify-between 
+		tw-w-full
+		;
+}

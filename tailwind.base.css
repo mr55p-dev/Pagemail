@@ -2,34 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-	@apply tw-bg-secondary 
-	tw-container tw-max-w-screen-lg tw-mx-auto;
-}
-
-nav {
-	@apply tw-sticky tw-top-0 tw-left-0
-	tw-bg-primary;
-}
-
-.message-err--wrapper,
-.message-ok--wrapper {
-	@apply tw-w-full tw-h-12
-	tw-border;
-}
-
-.message-ok--wrapper {
-	@apply tw-bg-green-400 tw-border-green-600;
-}
-
-.message-err--wrapper {
-	@apply tw-bg-red-400 tw-border-red-600;
-}
-
-.app-wrapper {
-	@apply tw-container tw-mx-auto;
-}
-
 .toolbar {
 	@apply tw-p-4 tw-mx-auto tw-w-fit 
 	tw-flex tw-justify-center tw-gap-3;
