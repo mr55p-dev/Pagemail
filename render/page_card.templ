@@ -17,7 +17,10 @@ func formatURL(inp string) string {
 }
 
 templ PageCard(page queries.Page) {
-	<section class="page-card">
+	<article
+		class="page-card"
+		data-url={ page.Url }
+	>
 		<header class="page-card--header">
 			<h4 class="page-card--title">
 				<a href={ templ.SafeURL(page.Url) } target="_blank" rel="noopener noreferrer">
@@ -28,6 +31,41 @@ templ PageCard(page queries.Page) {
 					}
 				</a>
 			</h4>
+			if page.Title.Valid {
+				<button
+					onclick="copyText(this)"
+					class="tw-group page-card--link"
+				>
+					<div
+						class="
+					tw-hidden
+					group-data-[failed=true]:tw-block
+					tw-size-4
+					"
+					>
+						@icons.Cross()
+					</div>
+					<div
+						class="
+					tw-hidden
+					group-data-[copied=true]:tw-block
+					tw-size-4
+					"
+					>
+						@icons.Check()
+					</div>
+					<div
+						class="
+					group-data-[copied=true]:tw-hidden
+					group-data-[failed=false]:tw-hidden
+					tw-size-4
+					"
+					>
+						@icons.Link()
+					</div>
+					<span>{ formatURL(page.Url) }</span>
+				</button>
+			}
 		</header>
 		<main class="page-card--main">
 			<p class="page-card--description">
@@ -36,9 +74,9 @@ templ PageCard(page queries.Page) {
 				}
 			</p>
 		</main>
-		<footer class="tw-flex tw-justify-between tw-w-full">
-			<span class="tw-text-sm tw-text-stone-600">{ page.Updated.Time.Format("02/01 3:04PM") }</span>
-			<div class={ Anchor(page.ID), "" }>
+		<footer>
+			<span class="tw-text-sm">{ page.Updated.Time.Format("02/01 3:04PM") }</span>
+			<div class={ Anchor(page.ID) }>
 				<button
 					class="tw-size-6 tw-relative"
 					id={ fmt.Sprintf("popover-trigger-%s", page.ID) }
@@ -49,7 +87,7 @@ templ PageCard(page queries.Page) {
 				@Popup(page)
 			</div>
 		</footer>
-	</section>
+	</article>
 }
 
 templ Popup(page queries.Page) {

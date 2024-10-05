@@ -8,7 +8,7 @@ package icons
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func Ellipsis() templ.Component {
+func Cross() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +29,7 @@ func Ellipsis() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"currentColor\" stroke=\"currentColor\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M4.80005 16C4.80005 14.6745 5.87457 13.6 7.20005 13.6C8.52553 13.6 9.60005 14.6745 9.60005 16C9.60005 17.3255 8.52553 18.4 7.20005 18.4C5.87457 18.4 4.80005 17.3255 4.80005 16Z\"></path> <path d=\"M13.6 16C13.6 14.6745 14.6746 13.6 16 13.6C17.3255 13.6 18.4001 14.6745 18.4001 16C18.4001 17.3255 17.3255 18.4 16 18.4C14.6746 18.4 13.6 17.3255 13.6 16Z\"></path> <path d=\"M24.8001 13.6C23.4746 13.6 22.4001 14.6745 22.4001 16C22.4001 17.3255 23.4746 18.4 24.8001 18.4C26.1255 18.4 27.2001 17.3255 27.2001 16C27.2001 14.6745 26.1255 13.6 24.8001 13.6Z\"></path></svg>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M6 18L18 6M6 6L18 18\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

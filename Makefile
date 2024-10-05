@@ -51,8 +51,8 @@ watch-templates: clean-templates
 	$(templ) generate -watch
 clean-templates:
 	rm -f \
-		./render/**/*_templ.go \
-		./render/**/*_templ.txt
+		render/**/*_templ.go \
+		render/**/*_templ.txt
 
 # Sql
 sql := db/queries/db.go db/queries/models.go $(shell ls db/query.*.sql | sed "s/query.*\.sql/queries\/&.go/")
@@ -64,15 +64,24 @@ clean-sql:
 	rm -f ./db/queries/*.go
 
 css := assets/css/main.css
-css-input := tailwind.base.css
+css-input := tailwind.input.css
+css-source := tailwind.base.css $(wildcard render/*.css) $(wildcard render/wrapper/*.css)
+$(css-input):
+	@echo "Bundling css files $(css-source)"
+	@cat $(css-source) > $(css-input)
 $(css): $(tailwindcss) $(css-input)
-	$(tailwindcss) --input $(css-input) --output $(css) --minify
+	@$(tailwindcss) --input $(css-input) --output $(css) --minify
 
 css: clean-css $(css)
-watch-css: clean-css
-	$(tailwindcss) --input $(css-input) --output $(css) --watch
+watch-css: 
+	@echo "Listening for changes in the render dir"
+	@fswatch render \
+		| xargs -L1 -I "{}" $(MAKE) css
+watch-clean-css: 
+	@fswatch render \
+		| xargs -L1 -I "{}" $(MAKE) clean-css
 clean-css:
-	rm -f $(css)
+	rm -f $(css) $(css-input)
 
 # Server
 $(server): $(templates) $(sql) $(css)
@@ -96,3 +105,8 @@ prerequisites: $(templates) $(sql) $(css)
 clean-all: clean clean-migrate clean-css clean-sql clean-templates
 test: $(server)
 	go test ./...
+
+import-colours:
+	@jq '[.variables[] | { name: .name, rgba: .valuesByMode["3919:19"] }]' < Color\ Primitives.json \
+		| go run ./cmd/colours \
+		| jq | sed 's/"\([A-Za-z]*\)"/\1/'

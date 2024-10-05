@@ -1,31 +1,16 @@
 root = "."
-testdata_dir = "testdata"
-tmp_dir = "tmp"
 
 [build]
-  args_bin = []
   bin = "./pagemail"
-  cmd = "make server"
-  delay = 1000
-  exclude_dir = ["tmp", "vendor", "testdata"]
-  exclude_file = ["tailwind.base.css"]
-  exclude_regex = ["_test.go"]
-  exclude_unchanged = false
-  follow_symlink = false
-  full_bin = ""
-  include_dir = []
+  pre_cmd = ["make clean"]
+  cmd = "make pagemail"
+  exclude_dir = []
+  exclude_regex = ["render.*css", "^tailwind"]
+  include_dir = ["assets/css", "cmd", "db/queries", "internal"]
   include_ext = ["go", "css"]
-  include_file = []
-  kill_delay = "0s"
-  log = "build-errors.log"
-  poll = false
-  poll_interval = 0
-  post_cmd = []
-  pre_cmd = []
-  rerun = false
-  rerun_delay = 500
-  send_interrupt = false
-  stop_on_error = false
+  send_interrupt = true
+  delay = 1000
+
 
 [color]
   app = ""

@@ -1,0 +1,116 @@
+body {
+  @apply tw-bg-secondary
+  tw-container tw-max-w-screen-lg tw-mx-auto;
+}
+
+nav {
+	display: none;
+  @apply tw-sticky tw-top-0 tw-left-0
+	tw-bg-primary
+	tw-h-16;
+}
+
+form {
+	margin: 0;
+}
+
+fieldset[role=group]:has(input) {
+	@apply 
+		tw-flex tw-align-middle
+		tw-justify-between
+		tw-bg-gray-200
+		tw-overflow-clip
+		tw-rounded-lg
+		tw-text-gray-500
+		tw-border tw-border-gray-300
+		focus-within:tw-outline-brand-600 
+		focus-within:tw-outline;
+}
+
+fieldset[role=group] > input {
+	@apply 
+		tw-bg-inherit
+		tw-box-content
+		tw-px-4 tw-py-2
+		tw-w-full
+		focus:tw-outline-none;
+}
+
+fieldset[role=group] > input::placeholder,
+fieldset[role=group] > input {
+	@apply
+		tw-text-inherit
+		tw-text-[1rem]
+		tw-font-semibold ;
+}
+
+fieldset[role=group] button > svg {
+	@apply 
+	tw-text-inherit
+	tw-size-6;
+}
+
+form .button-group {
+	@apply tw-flex
+		tw-gap-2
+		tw-mr-2;
+}
+
+form .button-group > button {
+	@apply
+		tw-p-1 
+		tw-size-fit 
+		tw-my-auto
+		tw-rounded-lg
+		hover:tw-bg-gray-400
+}
+
+article {
+	@apply 
+		tw-rounded-lg
+		tw-bg-primary
+		tw-border-brand-600
+		tw-p-5 
+		tw-flex
+		tw-flex-col
+		tw-justify-between
+		tw-items-start
+		tw-gap-4
+		;
+}
+article > header,
+article > main,
+article > footer{
+	@apply tw-w-full;
+}
+
+article > main {
+	@apply
+		tw-text-gray
+		;
+}
+
+article > footer {
+	@apply
+		tw-text-gray-400
+		;
+}
+
+.message-err--wrapper,
+.message-ok--wrapper {
+  @apply tw-w-full tw-h-12
+		tw-border;
+}
+
+.message-ok--wrapper {
+  @apply tw-bg-green-400 tw-border-green-600;
+}
+
+.message-err--wrapper {
+  @apply tw-bg-red-400 tw-border-red-600;
+}
+
+.app-wrapper {
+  @apply tw-container tw-mx-auto;
+}
+
