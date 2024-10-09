@@ -5,7 +5,7 @@ function pasteContents(nodeId) {
 }
 
 function copyText(button) {
-    const parent = button.closest("article.page-card");
+    const parent = button.closest("article");
     const [span] = button.getElementsByTagName("span");
     navigator.clipboard
         .writeText(parent.dataset.url)

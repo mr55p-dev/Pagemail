@@ -37,10 +37,48 @@ templ App(user *queries.User, pages []queries.Page) {
 				</fieldset>
 			</form>
 		</div>
-		<div id="pages-list">
-			for _, page := range pages {
-				@PageCard(page)
+		<form
+			class="tw-group/pages"
+			id="pages-form"
+		>
+			<div class="tw-grid-cols-2 tw-gap-2 tw-px-2 tw-pt-4 tw-grid group-data-[selecting=true]/pages:tw-hidden">
+				<button type="button" class="tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out" onclick="">Search</button>
+				<button type="button" class="tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out" onclick="handleSelecting(this)">Select</button>
+			</div>
+			<div class="tw-grid-cols-2 tw-gap-2 tw-px-2 tw-pt-4 tw-hidden group-data-[selecting=true]/pages:tw-grid">
+				<button type="button" class="tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out" onclick="">Delete</button>
+				<button type="button" class="tw-px-2 tw-py-2 tw-text-left tw-w-full tw-text-gray-700 tw-font-semibold tw-bg-primary tw-rounded-lg tw-border tw-border-transparent hover:tw-border-brand-800 tw-transition-colors tw-ease-in-out" onclick="handleSelecting(this)">Cancel</button>
+			</div>
+			<div id="pages-list">
+				for _, page := range pages {
+					@PageCard(page)
+				}
+			</div>
+		</form>
+		<script>
+			function isSelecting() {
+				return document.querySelector("form#pages-form").dataset.selecting === "true"
 			}
-		</div>
+
+			function handleSelecting(trigger) {
+				const form = trigger.closest("form");
+				form.dataset.selecting = form.dataset.selecting === "true" ? "false" : "true"
+				const selecting = form.dataset.selecting === "true";
+				if (!selecting) {
+					form.querySelectorAll("input[type=checkbox]").forEach(box => {
+						box.checked = false
+					});
+				}
+			}
+
+			function handleSelect(element) {
+				if (!isSelecting()) {
+					return
+				}
+				const id = element.dataset.id;
+				const input = element.querySelector("input[type=checkbox]");
+				input.checked = !input.checked;
+			}
+		</script>
 	}
 }
