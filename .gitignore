@@ -11,3 +11,4 @@ pagemail
 migrate
 tailwind.input.css
 render/**/*.txt
+node_modules/

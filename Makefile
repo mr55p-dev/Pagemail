@@ -25,14 +25,14 @@ tools := $(tailwindcss) $(templ) $(sqlc) $(air) $(dbmate)
 $(tailwindcss): 
 	curl -fsSL \
 		-o ./bin/tailwindcss \
-		https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-$(OS)-$(ARCH)
+		https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.15/tailwindcss-$(OS)-$(ARCH)
 	chmod +x ./bin/tailwindcss
 $(dbmate):
 	curl -fsSL -o ./bin/dbmate \
 		https://github.com/amacneil/dbmate/releases/latest/download/dbmate-$(OS)-$(ARCH)
 	chmod +x ./bin/dbmate
 $(templ):
-	go install github.com/a-h/templ/cmd/templ@latest
+	go install github.com/a-h/templ/cmd/templ@v0.2.778
 $(sqlc):
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 $(air):
