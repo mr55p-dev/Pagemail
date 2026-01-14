@@ -21,13 +21,15 @@ templ := ${GOBIN}/templ
 sqlc := ${GOBIN}/sqlc
 air := ${GOBIN}/air
 dbmate := ./bin/dbmate
+bin:
+	mkdir bin/
 tools := $(tailwindcss) $(templ) $(sqlc) $(air) $(dbmate)
-$(tailwindcss): 
+$(tailwindcss): bin
 	curl -fsSL \
 		-o ./bin/tailwindcss \
 		https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.15/tailwindcss-$(OS)-$(ARCH)
 	chmod +x ./bin/tailwindcss
-$(dbmate):
+$(dbmate): bin
 	curl -fsSL -o ./bin/dbmate \
 		https://github.com/amacneil/dbmate/releases/latest/download/dbmate-$(OS)-$(ARCH)
 	chmod +x ./bin/dbmate

@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://pagemail:pagemail@db:5432/pagemail?sslmode=disable
+      - PM_ENV=dev
+      - PM_DB_PATH= # Overriding sqlite path just in case
+    ports:
+      - "10000:8080"
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=pagemail
+      - POSTGRES_PASSWORD=pagemail
+      - POSTGRES_DB=pagemail
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U pagemail" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

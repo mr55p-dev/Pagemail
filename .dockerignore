@@ -1,0 +1,11 @@
+bin
+tmp
+.git
+node_modules
+.env
+pagemail
+migrate
+tailwind.input.css
+render/**/*.txt
+Dockerfile
+docker-compose.yml
