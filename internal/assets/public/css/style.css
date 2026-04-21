@@ -8,8 +8,12 @@ script {
 
 #nav-icon {
   margin-left: 0;
-  display: none;
-  visibility: hidden;
+}
+
+@media (max-width: 480px) {
+  .brand-icon {
+    height: 22px;
+  }
 }
 
 .navbar {
